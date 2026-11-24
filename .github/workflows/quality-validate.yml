@@ -1,0 +1,53 @@
+name: quality:validate (daily, phase 1/2)
+
+on:
+  schedule:
+    # 07:00 UTC daily -- after YouTube's midnight Pacific quota reset
+    - cron: "0 7 * * *"
+  workflow_dispatch:
+    inputs:
+      seed_limit:
+        description: New seed IDs to read
+        default: '60000'
+      validate_limit:
+        description: Maximum seeds to validate
+        default: '150000'
+      validate_units:
+        description: Maximum YouTube API units
+        default: '7500'
+
+concurrency:
+  group: quality-discovery
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      YOUTUBE_API_KEYS: ${{ secrets.YOUTUBE_API_KEY }},${{ secrets.YOUTUBE_API_KEY_2 }},${{ secrets.YOUTUBE_API_KEY_3 }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Stream new TubeCensus ids (0 quota)
+        id: stream
+        continue-on-error: true
+        run: npm run census:stream -- --limit "${{ inputs.seed_limit || '60000' }}"
+
+      - name: Validate seeds into channels (rotates key on quota, up to ~7500 units)
+        run: npm run census:validate -- --limit "${{ inputs.validate_limit || '150000' }}" --max-units "${{ inputs.validate_units || '7500' }}" --formats channel
+
+      - name: Report discovery source failure after processing queued seeds
+        if: steps.stream.outcome == 'failure'
+        run: |
+          echo "::error::Discovery source unavailable. Existing seeds were still validated; saved channels were retained."
+          exit 1

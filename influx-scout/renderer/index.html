@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self'"
+    />
+    <title>Influx Scout</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Instrument+Serif:ital@0;1&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="atmosphere" aria-hidden="true"></div>
+    <div class="app">
+      <header class="top">
+        <div class="brand">
+          <span class="mark">Sc</span>
+          <div>
+            <h1>Influx Scout</h1>
+            <p>Find · score · enrich YouTube creators</p>
+          </div>
+        </div>
+        <div class="run-state" id="runState">Idle</div>
+      </header>
+
+      <main class="grid">
+        <section class="panel settings">
+          <h2>Your key</h2>
+          <p class="hint" style="margin-top:0">
+            Database is owner-managed. You only need your own YouTube Data API key
+            (quota is charged to you).
+          </p>
+          <label>
+            YouTube API key
+            <input type="password" id="youtubeKey" autocomplete="off" />
+          </label>
+          <button type="button" class="btn ghost" id="btnSave">Save key</button>
+        </section>
+
+        <section class="panel job">
+          <h2>Discovery job</h2>
+          <div class="row">
+            <label class="grow">
+              Niche
+              <select id="niche"></select>
+            </label>
+            <label>
+              Window
+              <select id="window">
+                <option value="week">This week</option>
+                <option value="month" selected>This month</option>
+                <option value="any">Any time</option>
+              </select>
+            </label>
+            <label>
+              Target depth
+              <input type="number" id="target" min="50" max="5000" value="250" />
+            </label>
+          </div>
+          <label>
+            Custom query (optional — overrides niche pack / rotate)
+            <input type="text" id="customQuery" placeholder="e.g. personal finance texas" />
+          </label>
+          <div class="checks">
+            <label class="check">
+              <input type="checkbox" id="untilQuota" checked />
+              Run until YouTube quota ends (no 250 limit)
+            </label>
+            <label class="check">
+              <input type="checkbox" id="rotateNiches" checked />
+              Rotate all niches (fitness → gaming → …)
+            </label>
+            <label class="check">
+              <input type="checkbox" id="includeComments" />
+              Mine comment authors (noisy — off by default)
+            </label>
+            <label class="check">
+              <input type="checkbox" id="hardQuality" checked />
+              Hard quality gate (only upsert outreach-ready)
+            </label>
+          </div>
+          <p class="hint" style="margin-top:0.5rem">
+            Floors: ≥1,000 subs / ≥3 videos. Search.list has a separate ~100 calls/day
+            cap — Scout now budgets ≤80 searches (1 query × 2 pages per niche when rotating).
+            Scoring uses cheap APIs. For more discovery today, use another Google Cloud project key.
+          </p>
+          <div class="actions">
+            <button type="button" class="btn primary" id="btnStart">Start scout</button>
+            <button type="button" class="btn danger" id="btnStop" disabled>Stop</button>
+          </div>
+          <p class="hint">
+            Flow: recent-video keyword search → unique channels → last-5 quality score →
+            Supabase upsert. Related/featured still via Chrome extension.
+          </p>
+        </section>
+
+        <section class="panel stats">
+          <h2>Live stats</h2>
+          <div class="stat-grid">
+            <div><span id="sFound">0</span><label>Found</label></div>
+            <div><span id="sUpserted">0</span><label>Upserted</label></div>
+            <div><span id="sPass">0</span><label>Quality pass</label></div>
+            <div><span id="sFail">0</span><label>Quality fail</label></div>
+            <div><span id="sComments">0</span><label>Comment authors</label></div>
+            <div><span id="sDepth">0</span><label>Niche depth</label></div>
+          </div>
+          <div class="depth-bar"><div class="depth-fill" id="depthFill"></div></div>
+          <p class="depth-label"><span id="depthText">0 / 250</span> toward target</p>
+        </section>
+
+        <section class="panel log">
+          <h2>Log</h2>
+          <div class="log-box" id="logBox" role="log" aria-live="polite"></div>
+        </section>
+      </main>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>

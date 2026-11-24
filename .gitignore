@@ -1,0 +1,62 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# env files
+.env
+.env*.local
+
+# scraper auth (YouTube login cookies)
+scripts/.auth/
+scripts/logs/
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+.vercel
+
+# large local data (exceeds GitHub file size limits / not needed remotely)
+/videos_main.parquet
+/Youtube_data/
+/data/*.json
+/data/*.csv
+tsconfig.tsbuildinfo
+
+# nested app node_modules / build output
+contributor-app/node_modules/
+influx-scout/node_modules/
+influx-scout/dist/
+influx-scout-mobile/node_modules/
+influx-scout-mobile/.expo/
+influx-scout-mobile/android/
+influx-scout-mobile/*.apk
+/influx-scout-mobile/
+
+# personal notes / research — kept locally, never published
+/interviewproblem.txt
+/data.txt
+/data1.txt
+/research
+/research.txt
+/problems.md
+/doc/

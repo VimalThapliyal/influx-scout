@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Influx</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        width: 320px;
+        margin: 0;
+        padding: 16px;
+        background: #0f172a;
+        color: #e2e8f0;
+      }
+      h1 {
+        font-size: 16px;
+        margin: 0 0 12px;
+      }
+      label {
+        display: block;
+        font-size: 11px;
+        color: #94a3b8;
+        margin-bottom: 4px;
+      }
+      input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 8px;
+        margin-bottom: 12px;
+        border-radius: 8px;
+        border: 1px solid #334155;
+        background: #1e293b;
+        color: #f8fafc;
+        font-size: 12px;
+      }
+      button {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        border-radius: 8px;
+        background: linear-gradient(to right, #7c3aed, #c026d3);
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      button:hover {
+        filter: brightness(1.08);
+      }
+      button.secondary {
+        background: #334155;
+        margin-bottom: 8px;
+      }
+      button.danger {
+        background: #b91c1c;
+        margin-bottom: 8px;
+      }
+      #status {
+        margin-top: 12px;
+        font-size: 12px;
+        color: #94a3b8;
+        min-height: 1.2em;
+      }
+      .ok {
+        color: #6ee7b7;
+      }
+      .err {
+        color: #fca5a5;
+      }
+      a {
+        color: #a78bfa;
+        font-size: 11px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Influx contributor</h1>
+    <label for="apiUrl">API URL</label>
+    <input id="apiUrl" type="url" placeholder="https://influencer-platform-mu.vercel.app" />
+    <label for="workerKey">Worker key (iw_…)</label>
+    <input id="workerKey" type="password" placeholder="iw_…" />
+    <label>
+      <input type="checkbox" id="lightSave" checked />
+      Light save (0 API quota — queue for overnight enrich)
+    </label>
+    <label>
+      <input type="checkbox" id="usaOnly" checked />
+      USA channels only (applied at overnight enrich for light save)
+    </label>
+    <label for="minSubscribers">Min subscribers (0 = off)</label>
+    <input id="minSubscribers" type="number" min="0" step="1000" placeholder="1000" />
+    <label for="autoDelayMs">Auto-save delay (ms)</label>
+    <input id="autoDelayMs" type="number" min="500" step="500" placeholder="1000" />
+    <label>
+      <input type="checkbox" id="relatedCrawl" checked />
+      Crawl related channels after new saves (0 quota, grows graph)
+    </label>
+    <label>
+      <input type="checkbox" id="autoRotate" checked />
+      Auto-rotate when stale (already saved), filters exhausted, or under min subs
+    </label>
+    <button type="button" id="startAutoSave" class="secondary">Start auto-save on this tab</button>
+    <button type="button" id="stopAutoSave" class="danger">Stop auto-save</button>
+    <button type="button" id="processRelated" class="secondary">Process related queue</button>
+    <button type="button" id="saveSettings">Save settings</button>
+    <p id="relatedStatus" style="font-size:11px;color:#64748b;margin:8px 0 0;"></p>
+    <p id="status"></p>
+    <p><a href="#" id="openImport">Open import page</a></p>
+    <script src="popup.js"></script>
+  </body>
+</html>

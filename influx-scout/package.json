@@ -1,0 +1,57 @@
+{
+  "name": "influx-scout",
+  "version": "1.0.0",
+  "description": "Influx Scout — find & enrich YouTube creators (niche depth, comments, quality gates)",
+  "main": "main.js",
+  "author": "Influx",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "bake": "node scripts/bake-config.js",
+    "prestart": "node scripts/bake-config.js",
+    "start": "npx electron .",
+    "predist:mac": "node scripts/bake-config.js",
+    "dist:mac": "electron-builder --mac dir",
+    "predist:win": "node scripts/bake-config.js",
+    "dist:win": "electron-builder --win zip --x64"
+  },
+  "build": {
+    "appId": "app.influx.scout",
+    "productName": "Influx Scout",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "engine/**/*",
+      "renderer/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": [
+        "dir"
+      ],
+      "identity": null
+    },
+    "win": {
+      "target": [
+        {
+          "target": "zip",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    }
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.1",
+    "ws": "^8.21.1"
+  },
+  "devDependencies": {
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8"
+  }
+}

@@ -1,0 +1,24 @@
+# Keep Vercel uploads under size limits
+node_modules
+.next
+.git
+contributor-app
+influx-scout
+influx-scout-mobile
+dist
+out
+*.log
+*.dmg
+*.zip
+*.app
+.env*.local
+.env
+data/*.json
+scripts/_*.ts
+# Local datasets — never ship to Vercel
+*.parquet
+Youtube_data
+data.txt
+research
+research.txt
+doc

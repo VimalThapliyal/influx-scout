@@ -1,0 +1,37 @@
+# Send this to your Windows friend (with the zip)
+
+Hi,
+
+Here's **Influx Contributor v1.2.9** for Windows — it helps grow our shared YouTube influencer library.
+
+## What you need
+
+1. **Worker key** — reply to the person who sent you this app and ask for one. You'll get a key starting with `iw_…`.
+2. **Your own YouTube API key** (free):
+   - https://console.cloud.google.com/
+   - Enable **YouTube Data API v3**
+   - Create an **API key**
+
+## Install
+
+1. Unzip `Influx-Contributor-1.2.9-windows-x64.zip`
+2. Open the folder → run **Influx Contributor.exe**
+3. On Dashboard enter:
+   - API URL: `https://influencer-platform-mu.vercel.app`
+   - Worker key: (the `iw_…` I send you)
+   - YouTube API key: (yours)
+4. Click **Save**
+
+## Run scraping
+
+1. Click **Start loop** — **enrich pending first** (fills `channels`), then scrapes seed lists only when pending is empty
+2. Open the **YouTube crawl** tab → click **Start** on the floating bar
+3. Auto-save rotates niches/keywords so you don't keep hitting the same USA channels
+
+Optional:
+- **Captcha email** queue on Dashboard → Open About → Save email or No email
+- **Instagram** tab to fill missing emails onto the same YouTube rows
+
+You use your own YouTube quota. The server splits pending work so people don't duplicate the same seeds.
+
+Questions → **the person who sent you this app**

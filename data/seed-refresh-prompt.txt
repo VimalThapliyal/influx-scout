@@ -1,0 +1,50 @@
+You are helping me grow an influencer discovery database for USA YouTube creators.
+
+Task: Find public "best YouTube channels" / roundup / listicle pages (blog posts, magazines, niche sites) that list many creator channels with YouTube links or @handles.
+
+Rules:
+1. Prefer 2025–2026 articles when possible.
+2. Only include pages likely to contain youtube.com/@… or full /channel/UC… (24-char) links — not paywalled, not Instagram-only.
+3. Prefer @handles and full channel IDs. Never invent truncated UC ids.
+4. Cover these niches (at least 2–3 URLs each when possible):
+   finance, fitness, beauty, fashion, food, travel, parenting, education, pets, diy, tech, gaming
+5. Prefer USA / English creators when the page says so.
+6. Do NOT invent URLs. Only include links you are confident exist. If unsure, omit.
+7. Skip pages I already have (list below).
+
+Output ONLY valid JSON in this exact shape (no markdown fences, no commentary):
+
+{
+  "updated_at": "YYYY-MM-DD",
+  "lists": [
+    {
+      "niche": "finance",
+      "title": "Short article title",
+      "url": "https://..."
+    }
+  ]
+}
+
+Already used (do not repeat):
+https://makingmomentum.net/best-personal-finance-youtube-channels/
+https://vidpros.com/best-personal-finance-youtube-channels/
+https://themoneydecoded.com/blog/best-finance-youtube-channels
+https://top10grid.com/top-10-youtube-channels-personal-finance-2026
+https://www.cnet.com/health/fitness/best-youtube-channels-for-free-workouts/
+https://top10grid.com/top-10-youtube-channels-fitness-2026
+https://www.flinque.com/blog/top-10-beauty-influencers-on-youtube/
+https://www.byrdie.com/best-beauty-youtube-channels-5077586
+https://www.thoughtfulthreads.co/p/5-fashion-youtubers-actually-worth
+https://top10grid.com/top-10-youtube-channels-cooking-food-2026
+https://vidpros.com/best-cooking-youtube-channels/
+https://influencerfee.com/blog/top-8-travel-youtubers-adventure/
+https://www.travelandleisure.com/trip-ideas/best-travel-youtube-channels
+https://www.kidnock.com/article/top-youtube-channels-for-parenting-tips-and-hacks
+https://screenwiseapp.com/guides/family-friendly-youtube-channels
+https://vidpros.com/top-10-tech-youtube-channels/
+https://blog.veefly.com/youtube-marketing/best-tech-channels-on-youtube/
+https://top10grid.com/top-10-youtube-channels-gaming-2026
+https://www.homedit.com/diy-youtube-channels/
+https://www.rover.com/blog/best-cat-youtube-channels/
+
+Return 25–40 NEW roundup URLs total.

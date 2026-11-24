@@ -1,0 +1,40 @@
+name: quality:score (daily, phase 2/2)
+
+on:
+  schedule:
+    # 08:15 UTC daily -- ~75min after validate starts, safely past its
+    # observed ~20-25min runtime even on a slow day.
+    - cron: "15 8 * * *"
+  workflow_dispatch:
+    inputs:
+      score_limit:
+        description: Maximum channels to score
+        default: '17500'
+      score_units:
+        description: Maximum YouTube API units
+        default: '19000'
+
+concurrency:
+  group: quality-score
+  cancel-in-progress: false
+
+jobs:
+  score:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      YOUTUBE_API_KEYS: ${{ secrets.YOUTUBE_API_KEY }},${{ secrets.YOUTUBE_API_KEY_2 }},${{ secrets.YOUTUBE_API_KEY_3 }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Quality-score channels (scoring-weighted budget, spills across keys 2/3 after key 1's quota)
+        run: npm run score:quality -- --all-countries --limit "${{ inputs.score_limit || '17500' }}" --max-units "${{ inputs.score_units || '19000' }}"

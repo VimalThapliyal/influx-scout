@@ -1,0 +1,115 @@
+.influx-save-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 8px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 9999px;
+  background: linear-gradient(to right, #7c3aed, #9333ea);
+  color: #fff !important;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: system-ui, sans-serif;
+  vertical-align: middle;
+  z-index: 9999;
+}
+
+.influx-save-btn:hover {
+  filter: brightness(1.1);
+}
+
+.influx-save-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.influx-save-btn.influx-ok,
+.influx-save-btn.influx-saved,
+.influx-float-btn.influx-saved {
+  background: #059669;
+  cursor: default;
+}
+
+.influx-save-btn.influx-saved,
+.influx-float-btn.influx-saved {
+  opacity: 0.92;
+}
+
+.influx-save-btn.influx-err {
+  background: #dc2626;
+}
+
+.influx-save-btn.influx-too-small,
+.influx-float-btn.influx-too-small {
+  background: #475569;
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+
+.influx-float-stack {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 99999;
+  align-items: flex-end;
+}
+
+.influx-float-btn {
+  position: static;
+  bottom: auto;
+  right: auto;
+  padding: 12px 20px;
+  border-radius: 9999px;
+  border: none;
+  background: linear-gradient(to right, #7c3aed, #c026d3);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.45);
+  font-family: system-ui, sans-serif;
+}
+
+.influx-float-btn.influx-float-related {
+  background: linear-gradient(to right, #0f766e, #059669);
+  box-shadow: 0 8px 24px rgba(5, 150, 105, 0.4);
+  font-size: 13px;
+}
+
+.influx-float-btn:hover {
+  filter: brightness(1.08);
+}
+
+.influx-float-btn:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.influx-auto-badge {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 100000;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.92);
+  color: #6ee7b7;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: system-ui, sans-serif;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+  max-width: min(360px, 90vw);
+  line-height: 1.35;
+}
+
+.influx-auto-badge.influx-quota-stop {
+  color: #fecaca;
+  background: rgba(127, 29, 29, 0.94);
+  border: 1px solid rgba(252, 165, 165, 0.35);
+}

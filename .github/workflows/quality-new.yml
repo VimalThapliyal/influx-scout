@@ -1,0 +1,36 @@
+name: quality:new (manual, all phases)
+
+# No schedule -- the daily automation runs as two separate workflows
+# (quality-validate.yml, quality-score.yml) so validate can't starve
+# score of its time budget. This one stays for manual full-pipeline
+# runs / testing.
+on:
+  workflow_dispatch: {}
+
+concurrency:
+  group: quality-discovery
+  cancel-in-progress: false
+
+jobs:
+  quality-new:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Grow + quality-score (scoring-weighted budget)
+        run: >
+          npm run quality:new --
+          --validate-limit 60000 --validate-units 1500
+          --score-limit 8000 --score-units 7500

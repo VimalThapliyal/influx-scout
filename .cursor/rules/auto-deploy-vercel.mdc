@@ -1,0 +1,20 @@
+---
+description: Always deploy influencer-platform to Vercel production after shipping app changes
+alwaysApply: true
+---
+
+# Auto-deploy to Vercel
+
+For the `influencer-platform` project, after finishing user-facing or API code changes that should go live:
+
+1. Deploy to production without waiting to be asked: `cd influencer-platform && vercel --prod --yes`
+2. Confirm the deploy succeeded and share the production URL in the reply
+3. Do this even when the folder is not a git repo (this project often deploys via Vercel CLI only)
+
+Skip auto-deploy only for:
+
+- Docs-only, canvas-only, or local-script work that does not affect the Next.js app
+- Failed builds / when the user explicitly says not to deploy
+- Pure questions with no code changes
+
+When in doubt for app code in this project: deploy.

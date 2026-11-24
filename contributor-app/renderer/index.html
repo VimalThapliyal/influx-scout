@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'"
+    />
+    <title>Influx Contributor</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <nav class="tabs" role="tablist" aria-label="Main">
+        <button type="button" class="tab active" data-tab="dashboard" role="tab" aria-selected="true">
+          Home
+        </button>
+        <button type="button" class="tab" data-tab="youtube" role="tab" aria-selected="false">
+          YouTube
+        </button>
+        <button type="button" class="tab" data-tab="instagram" role="tab" aria-selected="false">
+          Instagram
+        </button>
+        <button type="button" class="tab" data-tab="about" role="tab" aria-selected="false">
+          About
+        </button>
+        <div class="tab-spacer"></div>
+        <span id="runPill" class="pill" aria-live="polite">Idle</span>
+      </nav>
+
+      <main id="panel-dashboard" class="panel active">
+        <div class="app">
+          <header class="hero">
+            <p class="eyebrow">Influx</p>
+            <h1>Contributor</h1>
+            <p class="sub">
+              Grow the shared library, then collect emails — YouTube captcha
+              (manual) or Instagram bios.
+            </p>
+          </header>
+
+          <div class="layout">
+            <div class="col col-main">
+              <section class="block" aria-labelledby="setup-heading">
+                <div class="block-head">
+                  <span class="step" aria-hidden="true">1</span>
+                  <div>
+                    <h2 id="setup-heading">Setup</h2>
+                    <p class="block-sub">Keys stay on this device only.</p>
+                  </div>
+                </div>
+                <label>
+                  API URL
+                  <input id="apiUrl" type="url" spellcheck="false" autocomplete="off" />
+                </label>
+                <label>
+                  Worker key
+                  <span class="hint">ask at vimalmern126@gmail.com</span>
+                  <input id="workerKey" type="password" spellcheck="false" autocomplete="off" />
+                </label>
+                <label>
+                  YouTube API key
+                  <span class="hint">your Google Cloud key</span>
+                  <input id="youtubeKey" type="password" spellcheck="false" autocomplete="off" />
+                </label>
+                <div class="row">
+                  <button id="saveBtn" type="button" class="secondary">Save keys</button>
+                  <button id="statusBtn" type="button" class="secondary">Refresh pool</button>
+                </div>
+                <p id="saveMsg" class="msg" role="status"></p>
+              </section>
+
+              <section class="block" aria-labelledby="grow-heading">
+                <div class="block-head">
+                  <span class="step" aria-hidden="true">2</span>
+                  <div>
+                    <h2 id="grow-heading">Grow library</h2>
+                    <p class="block-sub">Import list URLs + enrich pending channels.</p>
+                  </div>
+                </div>
+                <div class="stats" aria-label="Pool and session stats">
+                  <div>
+                    <span class="label">Seeds left</span>
+                    <strong id="seedsAvailable">—</strong>
+                  </div>
+                  <div>
+                    <span class="label">Pending</span>
+                    <strong id="pendingUnclaimed">—</strong>
+                  </div>
+                  <div>
+                    <span class="label">Queued</span>
+                    <strong id="statQueued">0</strong>
+                  </div>
+                  <div>
+                    <span class="label">Enriched</span>
+                    <strong id="statEnriched">0</strong>
+                  </div>
+                  <div>
+                    <span class="label">IG emails</span>
+                    <strong id="statIgEmails">0</strong>
+                  </div>
+                  <div>
+                    <span class="label">IG checked</span>
+                    <strong id="statIgTried">0</strong>
+                  </div>
+                </div>
+                <div class="controls">
+                  <button id="startBtn" type="button" class="primary">Start loop</button>
+                  <button id="stopBtn" type="button" class="danger" disabled>Stop</button>
+                  <span id="runState" class="state">Idle</span>
+                </div>
+              </section>
+
+              <section class="block" aria-labelledby="log-heading">
+                <div class="block-head">
+                  <span class="step" aria-hidden="true">4</span>
+                  <div>
+                    <h2 id="log-heading">Activity</h2>
+                    <p class="block-sub">Live log from loop, queue, and fills.</p>
+                  </div>
+                </div>
+                <pre id="log" aria-live="polite"></pre>
+              </section>
+            </div>
+
+            <div class="col col-side">
+              <section class="block block-accent" aria-labelledby="email-heading">
+                <div class="block-head">
+                  <span class="step" aria-hidden="true">3</span>
+                  <div>
+                    <h2 id="email-heading">Collect emails</h2>
+                    <p class="block-sub">Fill gaps after channels are in the library.</p>
+                  </div>
+                </div>
+
+                <div class="email-section">
+                  <h3>YouTube captcha queue</h3>
+                  <p class="hint-block">
+                    Open About → you solve captcha → Scan/Save. Use
+                    <strong>No email</strong> when none exists.
+                  </p>
+                  <div class="controls queue-filters">
+                    <label class="inline-check">
+                      <input id="cqNoLinks" type="checkbox" checked />
+                      No site/IG only
+                    </label>
+                    <label class="inline-field">
+                      Min subs
+                      <input id="cqMinSubs" type="number" min="0" step="1000" value="10000" />
+                    </label>
+                    <button id="cqLoadBtn" type="button" class="secondary">Load queue</button>
+                  </div>
+                  <p id="cqMeta" class="msg"></p>
+                  <div id="cqList" class="queue-list" role="list"></div>
+                </div>
+
+                <div class="email-section email-section-ig">
+                  <h3>Instagram bios</h3>
+                  <p class="hint-block">
+                    Open the <strong>Instagram</strong> tab, log in once, then start fill.
+                  </p>
+                  <div class="controls">
+                    <button id="igFillBtn" type="button" class="secondary">
+                      Fill from Instagram
+                    </button>
+                    <button id="igFillStopBtn" type="button" class="danger" disabled>
+                      Stop
+                    </button>
+                    <span id="igFillState" class="state">Idle</span>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <main id="panel-youtube" class="panel panel-browser">
+        <div class="browser-hint">
+          YouTube opens here. Use the floating Captcha email box on channel About pages.
+        </div>
+      </main>
+
+      <main id="panel-instagram" class="panel panel-browser">
+        <div class="browser-hint">
+          Log into Instagram here, then return to Home → Fill from Instagram.
+        </div>
+      </main>
+
+      <main id="panel-about" class="panel">
+        <div class="app app-about">
+          <header class="hero">
+            <p class="eyebrow">About</p>
+            <h1>Influx Contributor</h1>
+            <p class="sub">
+              Desktop helper for growing a shared YouTube influencer library and
+              collecting public contact emails.
+            </p>
+          </header>
+
+          <section class="block about-card">
+            <h2>Creator</h2>
+            <p class="about-name">Vimal Thapliyal</p>
+            <p class="about-line">
+              <a href="mailto:vimalmern126@gmail.com">vimalmern126@gmail.com</a>
+            </p>
+            <p class="hint-block">
+              Need a worker key (<code>iw_…</code>)? Email the address above.
+            </p>
+          </section>
+
+          <section class="block">
+            <h2>How to use</h2>
+            <ol class="about-steps">
+              <li>Save your worker key and YouTube API key on Home.</li>
+              <li>Start the grow loop to import lists and enrich channels.</li>
+              <li>Use the captcha queue or Instagram fill to add emails.</li>
+            </ol>
+          </section>
+
+          <p class="about-version">Version <span id="appVersion">—</span></p>
+        </div>
+      </main>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>

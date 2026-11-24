@@ -1,0 +1,28 @@
+---
+description: Always deploy influencer-platform changes to Vercel production after implementation
+alwaysApply: true
+---
+
+# Vercel production deploy
+
+For the `influencer-platform` Next.js app, **always deploy to Vercel production** after making code changes that affect the app (UI, API routes, config used at runtime).
+
+## Workflow
+
+1. Implement and verify locally (`npm run build` if the change touches the app).
+2. Deploy production:
+   ```bash
+   cd influencer-platform && vercel --prod --yes
+   ```
+3. Confirm the live site at https://influencer-platform-mu.vercel.app reflects the change.
+4. Tell the user the deploy completed and what URL to check.
+
+## Exceptions
+
+- Do **not** deploy for local-only scripts (e.g. `scripts/scrape-enrich.ts`) unless app code changed too.
+- Do **not** deploy if the build fails — fix first, then deploy.
+- Do **not** push git or change git config unless the user asks.
+
+## Production URL
+
+- Alias: https://influencer-platform-mu.vercel.app

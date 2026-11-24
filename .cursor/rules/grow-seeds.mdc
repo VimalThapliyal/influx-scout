@@ -1,0 +1,34 @@
+---
+description: Auto-refresh seed-lists and run grow with minimal user intervention
+alwaysApply: true
+---
+
+# Influx grow + seed refresh
+
+When the user says **grow**, **run grow**, **grow loop**, or **npm run grow**:
+
+## Preferred terminal command (infinite)
+
+```bash
+npm run grow:loop
+```
+
+Repeats until **Ctrl+C**:
+1. Pull next unused batch from `data/seed-bank.json` → `seed-lists.json`
+2. `import:lists` (0 YouTube quota)
+3. `cleanup:pending`
+4. `enrich:pending` batches until pending empty or quota dead
+5. If quota dead → sleep 15m, keep cycling
+6. Repeat
+
+When bank is empty: **auto-refills** by validating Feedspot/Top10Grid/known list URL patterns, then continues. Optional manual: `npm run seed:refill` or ask Cursor to add more URLs to `seed-bank.json`.
+
+## Single cycle
+
+```bash
+npm run grow
+```
+
+## Agent-assisted seed refresh (higher quality)
+
+If loop finds 0 URLs or user wants better seeds: web-search fresh unique roundups, write `data/seed-lists.json`, exclude `seed-history.json`, then continue grow/loop.

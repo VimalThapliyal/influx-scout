@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "Influx — Save YouTube Creators",
+  "version": "1.6.2",
+  "description": "Save YouTube channels to Influx (12 niches + city/state packs, USA).",
+  "permissions": ["storage", "tabs"],
+  "host_permissions": [
+    "https://www.youtube.com/*",
+    "https://youtube.com/*",
+    "https://influencer-platform-mu.vercel.app/*",
+    "http://localhost:3000/*",
+    "http://127.0.0.1:17341/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Influx",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.youtube.com/*",
+        "https://youtube.com/*"
+      ],
+      "js": ["keywords-longtail.js", "keywords-geo.js", "keywords.js", "content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}
