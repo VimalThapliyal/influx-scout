@@ -14,6 +14,7 @@
  *   npm run score:quality -- --limit 5000 --all-countries
  *   npm run score:quality -- --country US --rescore
  *   npm run score:quality -- --all-countries --refresh-pass --refresh-days 30
+ *   npm run score:quality -- --all-countries --min-subs 10000
  *   npm run score:quality -- --no-prefilter
  *   npm run score:quality -- --min-lifetime-views 500
  *   npm run score:quality -- --dry-run
@@ -54,6 +55,7 @@ function parseArgs(argv: string[]) {
   let minLifetimeViews = 0; // 0 = disabled (lossy filter, opt-in)
   let refreshPass = false;
   let refreshDays = 30;
+  let minSubs = 0;
 
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
@@ -66,7 +68,10 @@ function parseArgs(argv: string[]) {
       // Re-check passing creators whose score is older than --refresh-days, oldest first
       refreshPass = true;
       unscoredOnly = false;
-    } else if (a === "--refresh-days" && argv[i + 1])
+    } else if (a === "--min-subs" && argv[i + 1])
+      // Skip small channels: below ~10k subs almost none become sellable leads
+      minSubs = Math.max(0, parseInt(argv[++i]!, 10) || 0);
+    else if (a === "--refresh-days" && argv[i + 1])
       refreshDays = Math.max(1, parseInt(argv[++i]!, 10) || 30);
     else if (a === "--max-units" && argv[i + 1])
       maxUnits = Math.max(11, parseInt(argv[++i]!, 10) || 9000);
@@ -88,6 +93,7 @@ function parseArgs(argv: string[]) {
     minLifetimeViews,
     refreshPass,
     refreshDays,
+    minSubs,
   };
 }
 
@@ -185,6 +191,7 @@ async function main() {
     } else {
       q = q.order("subscriber_count", { ascending: false, nullsFirst: false });
     }
+    if (args.minSubs > 0) q = q.gte("subscriber_count", args.minSubs);
     q = q.range(offset, offset + want - 1);
     if (args.country) q = q.eq("country", args.country);
     if (args.unscoredOnly && !noQualityCol) q = q.is("quality_scored_at", null);

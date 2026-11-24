@@ -23,6 +23,7 @@
     "youtube:key:setup": "bash scripts/setup-youtube-api-key.sh",
     "discover:niche": "tsx scripts/discover-niche.ts",
     "discover:comments": "tsx scripts/discover-comments.ts",
+    "discover:lookalikes": "tsx scripts/discover-lookalikes.ts",
     "refresh:activity": "tsx scripts/refresh-by-activity.ts",
     "validate:emails": "tsx scripts/validate-emails.ts",
     "enrich:forms": "tsx scripts/enrich-contact-forms.ts",

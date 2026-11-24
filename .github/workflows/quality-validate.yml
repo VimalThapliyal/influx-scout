@@ -43,6 +43,11 @@ jobs:
         continue-on-error: true
         run: npm run census:stream -- --limit "${{ inputs.seed_limit || '60000' }}"
 
+      # Featured channels of passing creators: ~70% are 10k+ subs vs ~8% of census seeds.
+      - name: Discover lookalike creators (~1 unit each)
+        continue-on-error: true
+        run: npm run discover:lookalikes -- --limit 1000 --max-units 1000
+
       - name: Validate seeds into channels (rotates key on quota, up to ~7500 units)
         run: npm run census:validate -- --limit "${{ inputs.validate_limit || '150000' }}" --max-units "${{ inputs.validate_units || '7500' }}" --formats channel
 
