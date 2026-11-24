@@ -20,7 +20,7 @@ export async function GET(
       .eq("id", params.id)
       .single();
 
-    if (error || !data) {
+    if (error || !data || data.opted_out_at) {
       return NextResponse.json({ error: "Channel not found" }, { status: 404 });
     }
 

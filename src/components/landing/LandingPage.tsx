@@ -477,6 +477,9 @@ export default function LandingPage() {
             <Link href="/compare" className="hover:text-mkt-paper">
               Compare
             </Link>
+            <Link href="/remove-my-listing" className="hover:text-mkt-paper">
+              Creators: remove listing
+            </Link>
             <Link href="/login" className="hover:text-mkt-paper">
               Sign in
             </Link>

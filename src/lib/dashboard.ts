@@ -49,6 +49,7 @@ export async function getRecommendedCreators(): Promise<Channel[]> {
     const { data } = await supabase
       .from("channels")
       .select("*")
+      .is("opted_out_at", null)
       .not("email", "is", null)
       .or(targetMarketOrFilter())
       .order("influencer_score", { ascending: false })
@@ -67,6 +68,7 @@ export async function getRecentCreators(): Promise<Channel[]> {
     const { data } = await supabase
       .from("channels")
       .select("*")
+      .is("opted_out_at", null)
       .order("last_updated", { ascending: false })
       .limit(4);
 

@@ -38,7 +38,10 @@ export async function GET(request: NextRequest) {
     const offset = Math.max(parseInt(searchParams.get("offset") ?? "0", 10), 0);
 
     const applyFilters = (useNiche: boolean, useQuality: boolean) => {
-      let query = supabase.from("channels").select("*", { count: "exact" });
+      // Creators who asked to be removed (/remove-my-listing) never appear.
+      // "estimated": exact for small result sets, planner estimate for large ones —
+      // an exact count scans ~200k wide rows and hits the statement timeout.
+      let query = supabase.from("channels").select("*", { count: "estimated" }).is("opted_out_at", null);
 
       if (q) {
         query = query.or(`title.ilike.%${q}%,description.ilike.%${q}%`);

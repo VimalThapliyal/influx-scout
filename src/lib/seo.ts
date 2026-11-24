@@ -78,6 +78,7 @@ export async function getSeoCombos(): Promise<SeoCombo[]> {
       .from("channels")
       .select("primary_niche, country")
       .eq("quality_pass", true)
+      .is("opted_out_at", null)
       .not("primary_niche", "is", null)
       .in("country", codes)
       .order("id")
@@ -129,6 +130,7 @@ export async function getTopCreators(
     .from("channels")
     .select(CREATOR_COLUMNS)
     .eq("quality_pass", true)
+    .is("opted_out_at", null)
     .eq("primary_niche", niche)
     .order("subscriber_count", { ascending: false, nullsFirst: false })
     .limit(limit);
