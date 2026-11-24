@@ -48,6 +48,11 @@ jobs:
         continue-on-error: true
         run: npm run discover:lookalikes -- --limit 1000 --max-units 1000
 
+      # Oldest stats first; ~8k channels/day refreshes the whole library every ~30 days.
+      - name: Refresh channel stats (~1 unit per 50 channels)
+        continue-on-error: true
+        run: npm run refresh:stats -- --limit 8000
+
       - name: Validate seeds into channels (rotates key on quota, up to ~7500 units)
         run: npm run census:validate -- --limit "${{ inputs.validate_limit || '150000' }}" --max-units "${{ inputs.validate_units || '7500' }}" --formats channel
 

@@ -25,6 +25,7 @@
     "discover:comments": "tsx scripts/discover-comments.ts",
     "discover:lookalikes": "tsx scripts/discover-lookalikes.ts",
     "refresh:activity": "tsx scripts/refresh-by-activity.ts",
+    "refresh:stats": "tsx scripts/refresh-stats.ts",
     "validate:emails": "tsx scripts/validate-emails.ts",
     "enrich:forms": "tsx scripts/enrich-contact-forms.ts",
     "classify:channels": "tsx scripts/classify-channels.ts",
