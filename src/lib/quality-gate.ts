@@ -268,7 +268,9 @@ export function qualityFieldsForDb(score: QualityScoreResult) {
     is_inactive: score.is_inactive,
     activity_bucket: score.activity_bucket,
     next_refresh_at: score.next_refresh_at,
-    recent_videos: score.recent_videos,
+    // Only keep video snapshots for sellable creators: failing channels made up
+    // ~195 MB of recent_videos and pushed the free-tier database over quota.
+    recent_videos: score.quality_pass ? score.recent_videos : null,
     // Keep legacy engagement_rate / avg_views in sync when we have last-5
     engagement_rate: score.engagement_last5,
     avg_views_per_video: score.avg_views_last5,
