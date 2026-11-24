@@ -47,6 +47,10 @@ export const metadata: Metadata = {
     template: "%s",
   },
   description: SEO_DESCRIPTION,
+  // Google Search Console ownership tag (content value only, not the whole <meta>).
+  verification: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+    ? { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }
+    : undefined,
   openGraph: {
     siteName: BRAND_NAME,
     type: "website",
