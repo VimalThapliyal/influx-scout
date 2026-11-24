@@ -474,6 +474,9 @@ export default function LandingPage() {
             <Link href="/tools" className="hover:text-mkt-paper">
               Free tools
             </Link>
+            <Link href="/compare" className="hover:text-mkt-paper">
+              Compare
+            </Link>
             <Link href="/login" className="hover:text-mkt-paper">
               Sign in
             </Link>
