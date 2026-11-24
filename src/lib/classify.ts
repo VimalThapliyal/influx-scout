@@ -18,7 +18,11 @@ export type NicheSlug =
   | "parenting"
   | "pets"
   | "home"
-  | "business";
+  | "business"
+  | "podcast"
+  | "self-improvement"
+  | "music"
+  | "sports";
 
 export type CountryConfidence =
   | "confirmed"
@@ -107,7 +111,6 @@ const NICHE_RULES: Array<{ niche: NicheSlug; weight: number; phrase: string }> =
   { niche: "entertainment", weight: 3, phrase: "comedy" },
   { niche: "entertainment", weight: 3, phrase: "entertainment" },
   { niche: "entertainment", weight: 2, phrase: "funny" },
-  { niche: "entertainment", weight: 2, phrase: "music" },
   // parenting
   { niche: "parenting", weight: 4, phrase: "parenting" },
   { niche: "parenting", weight: 3, phrase: "mom life" },
@@ -128,6 +131,75 @@ const NICHE_RULES: Array<{ niche: NicheSlug; weight: number; phrase: string }> =
   { niche: "business", weight: 3, phrase: "startup" },
   { niche: "business", weight: 3, phrase: "business" },
   { niche: "business", weight: 2, phrase: "marketing" },
+  // podcast (format) — weight kept below strong topic phrases so e.g. a
+  // gameplay-heavy gaming podcast still classifies as gaming
+  { niche: "podcast", weight: 4, phrase: "podcast" },
+  { niche: "podcast", weight: 3, phrase: "full episode" },
+  { niche: "podcast", weight: 2, phrase: "interview" },
+  { niche: "podcast", weight: 2, phrase: "episode" },
+  // self-improvement
+  { niche: "self-improvement", weight: 5, phrase: "self improvement" },
+  { niche: "self-improvement", weight: 5, phrase: "self-improvement" },
+  { niche: "self-improvement", weight: 5, phrase: "personal development" },
+  { niche: "self-improvement", weight: 4, phrase: "self help" },
+  { niche: "self-improvement", weight: 4, phrase: "self-help" },
+  { niche: "self-improvement", weight: 4, phrase: "mental health" },
+  { niche: "self-improvement", weight: 4, phrase: "relationship advice" },
+  { niche: "self-improvement", weight: 4, phrase: "stoicism" },
+  { niche: "self-improvement", weight: 3, phrase: "motivation" },
+  { niche: "self-improvement", weight: 3, phrase: "motivational" },
+  { niche: "self-improvement", weight: 3, phrase: "mindset" },
+  { niche: "self-improvement", weight: 3, phrase: "productivity" },
+  { niche: "self-improvement", weight: 3, phrase: "meditation" },
+  { niche: "self-improvement", weight: 2, phrase: "life advice" },
+  { niche: "self-improvement", weight: 2, phrase: "habit" },
+  // music
+  { niche: "music", weight: 6, phrase: "official music video" },
+  { niche: "music", weight: 5, phrase: "music video" },
+  { niche: "music", weight: 5, phrase: "official audio" },
+  { niche: "music", weight: 5, phrase: "lyric video" },
+  { niche: "music", weight: 5, phrase: "kpop" },
+  { niche: "music", weight: 5, phrase: "k-pop" },
+  { niche: "music", weight: 5, phrase: "fancam" },
+  { niche: "music", weight: 4, phrase: "music" },
+  { niche: "music", weight: 4, phrase: "concert" },
+  { niche: "music", weight: 4, phrase: "world tour" },
+  { niche: "music", weight: 4, phrase: "album" },
+  { niche: "music", weight: 4, phrase: "singer" },
+  { niche: "music", weight: 4, phrase: "rapper" },
+  { niche: "music", weight: 4, phrase: "remix" },
+  { niche: "music", weight: 3, phrase: "lyrics" },
+  { niche: "music", weight: 3, phrase: "song" },
+  { niche: "music", weight: 3, phrase: "live performance" },
+  { niche: "music", weight: 3, phrase: "mv" },
+  { niche: "music", weight: 3, phrase: "dj" },
+  // sports
+  { niche: "sports", weight: 5, phrase: "nfl" },
+  { niche: "sports", weight: 5, phrase: "nba" },
+  { niche: "sports", weight: 5, phrase: "mlb" },
+  { niche: "sports", weight: 5, phrase: "nhl" },
+  { niche: "sports", weight: 5, phrase: "ufc" },
+  { niche: "sports", weight: 5, phrase: "mma" },
+  { niche: "sports", weight: 5, phrase: "wwe" },
+  { niche: "sports", weight: 5, phrase: "f1" },
+  { niche: "sports", weight: 5, phrase: "formula 1" },
+  { niche: "sports", weight: 5, phrase: "premier league" },
+  { niche: "sports", weight: 4, phrase: "world cup" },
+  { niche: "sports", weight: 4, phrase: "football" },
+  { niche: "sports", weight: 4, phrase: "soccer" },
+  { niche: "sports", weight: 4, phrase: "basketball" },
+  { niche: "sports", weight: 4, phrase: "baseball" },
+  { niche: "sports", weight: 4, phrase: "hockey" },
+  { niche: "sports", weight: 4, phrase: "tennis" },
+  { niche: "sports", weight: 4, phrase: "golf" },
+  { niche: "sports", weight: 4, phrase: "boxing" },
+  { niche: "sports", weight: 4, phrase: "wrestling" },
+  { niche: "sports", weight: 4, phrase: "cricket" },
+  { niche: "sports", weight: 4, phrase: "quarterback" },
+  { niche: "sports", weight: 4, phrase: "sports" },
+  { niche: "sports", weight: 3, phrase: "athlete" },
+  { niche: "sports", weight: 3, phrase: "racing" },
+  { niche: "sports", weight: 2, phrase: "highlights" },
 ];
 
 export const NICHE_LABELS: Record<NicheSlug, string> = {
@@ -146,6 +218,10 @@ export const NICHE_LABELS: Record<NicheSlug, string> = {
   pets: "Pets",
   home: "Home & DIY",
   business: "Business",
+  podcast: "Podcast",
+  "self-improvement": "Self-improvement",
+  music: "Music",
+  sports: "Sports",
 };
 
 export const NICHE_FILTER_OPTIONS: { value: "" | NicheSlug; label: string }[] = [

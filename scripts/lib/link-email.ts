@@ -193,6 +193,14 @@ export function classifyEmailSourceType(
   return "creator_website";
 }
 
+/**
+ * Cancel a response body we won't read. An unread body whose socket later
+ * drops emits "TypeError: terminated" outside any try/catch and kills the run.
+ */
+function discardBody(res: Response): void {
+  res.body?.cancel().catch(() => {});
+}
+
 export function isJunkEmail(email: string): boolean {
   let e = email.toLowerCase().trim();
   e = e.replace(/^u003[ce]/, "").replace(/^3[ce]/, "");
@@ -432,7 +440,10 @@ export async function fetchPageHtml(
         Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
       },
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      discardBody(res);
+      return null;
+    }
     const ctype = res.headers.get("content-type") ?? "";
     if (
       ctype &&
@@ -441,6 +452,7 @@ export async function fetchPageHtml(
       !ctype.includes("application/xhtml") &&
       !ctype.includes("json")
     ) {
+      discardBody(res);
       return null;
     }
     const buf = await res.arrayBuffer();
@@ -489,7 +501,10 @@ export async function findEmailFromInstagramProfile(
         "Accept-Language": "en-US,en;q=0.9",
       },
     });
-    if (!res.ok) return { email: null, source: null };
+    if (!res.ok) {
+      discardBody(res);
+      return { email: null, source: null };
+    }
     const html = await res.text();
 
     // Structured fields Instagram sometimes embeds publicly

@@ -310,6 +310,19 @@ async function main() {
 `);
 }
 
+// A crawler talks to thousands of flaky hosts: one dropped socket must not end the run.
+const NETWORK_ERROR = /terminated|ECONNRESET|ETIMEDOUT|EPIPE|socket hang up|other side closed|aborted/i;
+function ignoreNetworkError(err: unknown) {
+  const msg = err instanceof Error ? `${err.message} ${String((err as any).cause ?? "")}` : String(err);
+  if (!NETWORK_ERROR.test(msg)) {
+    console.error(err);
+    process.exit(1);
+  }
+  console.warn("  [ignored network error]", msg.trim());
+}
+process.on("unhandledRejection", ignoreNetworkError);
+process.on("uncaughtException", ignoreNetworkError);
+
 main().catch((err) => {
   console.error(err);
   process.exit(1);
