@@ -471,6 +471,9 @@ export default function LandingPage() {
             <Link href="/youtubers" className="hover:text-mkt-paper">
               Creator lists
             </Link>
+            <Link href="/tools" className="hover:text-mkt-paper">
+              Free tools
+            </Link>
             <Link href="/login" className="hover:text-mkt-paper">
               Sign in
             </Link>

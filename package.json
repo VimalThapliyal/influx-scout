@@ -18,6 +18,7 @@
     "emails:from-descriptions": "tsx scripts/backfill-description-emails.ts",
     "enrich:socials": "tsx scripts/enrich-socials.ts",
     "score:quality": "tsx scripts/score-quality.ts",
+    "benchmarks:build": "tsx scripts/build-benchmarks.ts",
     "quality:db": "tsx scripts/score-quality.ts --all-countries --limit 5000 --max-units 6000",
     "quality:new": "tsx scripts/quality-new.ts",
     "youtube:key:setup": "bash scripts/setup-youtube-api-key.sh",

@@ -1,0 +1,51 @@
+{
+  "generatedAt": "2026-11-24T05:02:26.653Z",
+  "formula": "(likes + comments) / views, last 5 uploads",
+  "tiers": [
+    {
+      "tier": "nano",
+      "label": "1K–10K",
+      "min": 1000,
+      "sample": 3000,
+      "p25": 1.1,
+      "median": 2.23,
+      "p75": 4.35
+    },
+    {
+      "tier": "micro",
+      "label": "10K–100K",
+      "min": 10000,
+      "sample": 3000,
+      "p25": 1.14,
+      "median": 2.35,
+      "p75": 4.13
+    },
+    {
+      "tier": "mid",
+      "label": "100K–500K",
+      "min": 100000,
+      "sample": 3000,
+      "p25": 1.33,
+      "median": 2.66,
+      "p75": 4.69
+    },
+    {
+      "tier": "macro",
+      "label": "500K–1M",
+      "min": 500000,
+      "sample": 1504,
+      "p25": 2.5,
+      "median": 3.95,
+      "p75": 5.76
+    },
+    {
+      "tier": "mega",
+      "label": "1M+",
+      "min": 1000000,
+      "sample": 3000,
+      "p25": 2.82,
+      "median": 3.98,
+      "p75": 5.49
+    }
+  ]
+}
