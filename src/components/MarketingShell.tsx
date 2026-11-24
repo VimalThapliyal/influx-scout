@@ -23,6 +23,9 @@ export function MarketingShell({ children }: { children: React.ReactNode }) {
             © {new Date().getFullYear()} {BRAND_NAME}
           </p>
           <div className="flex flex-wrap justify-center gap-5">
+            <Link href="/youtubers" className="hover:text-mkt-paper">
+              Creator lists
+            </Link>
             <Link href="/privacy" className="hover:text-mkt-paper">
               Privacy
             </Link>

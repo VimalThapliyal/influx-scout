@@ -1,0 +1,194 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { MarketingShell } from "@/components/MarketingShell";
+import { CreatorRankList } from "@/components/seo/CreatorRankList";
+import { BRAND_NAME } from "@/lib/brand";
+import {
+  MIN_CREATORS_PER_PAGE,
+  SITE_URL,
+  countryByCode,
+  countryBySlug,
+  formatCount,
+  getSeoCombos,
+  getTopCreators,
+  isNicheSlug,
+  listPath,
+  nicheName,
+} from "@/lib/seo";
+
+// Rendered on first visit, then cached and rebuilt at most once a day.
+export const revalidate = 86400;
+export const dynamicParams = true;
+export function generateStaticParams() {
+  return [];
+}
+
+type Params = { params: { niche: string; country: string } };
+
+function resolve(params: Params["params"]) {
+  const country = countryBySlug(params.country);
+  if (!country || !isNicheSlug(params.niche)) return null;
+  return { niche: params.niche, country };
+}
+
+export async function generateMetadata({ params }: Params): Promise<Metadata> {
+  const r = resolve(params);
+  if (!r) return {};
+  const year = new Date().getFullYear();
+  const label = nicheName(r.niche);
+  const title = `Top ${label} YouTubers in ${r.country.name} (${year})`;
+  const description =
+    `The top ${label.toLowerCase()} YouTube creators in ${r.country.name}, ranked by subscribers, ` +
+    `with recent average views and upload activity. Updated daily. Find and contact ${r.country.demonym} creators with ${BRAND_NAME}.`;
+  const path = listPath(r.niche, r.country.slug);
+  return {
+    title,
+    description,
+    alternates: { canonical: path },
+    openGraph: { title, description, url: `${SITE_URL}${path}`, type: "website" },
+  };
+}
+
+export default async function NicheCountryPage({ params }: Params) {
+  const r = resolve(params);
+  if (!r) notFound();
+  const creators = await getTopCreators(r.niche, r.country.code);
+  if (creators.length < MIN_CREATORS_PER_PAGE) notFound();
+
+  const label = nicheName(r.niche);
+  const combos = await getSeoCombos();
+  const otherCountries = combos.filter((c) => c.niche === r.niche && c.country !== r.country.code);
+  const otherNiches = combos.filter((c) => c.country === r.country.code && c.niche !== r.niche);
+  const avgSubs = Math.round(
+    creators.reduce((s, c) => s + (c.subscriber_count ?? 0), 0) / creators.length
+  );
+  const withContact = creators.filter((c) => c.has_contact).length;
+  const updated = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  const unlockHref = `/login?redirect=${encodeURIComponent(`/channels?niche=${r.niche}&country=${r.country.code}`)}`;
+
+  const faq = [
+    {
+      q: `How are these ${label.toLowerCase()} YouTubers ranked?`,
+      a: `By subscriber count. Every creator listed is active (uploaded in the last 45 days), averages at least 5,000 views on recent videos, and has an engagement rate of 2% or more.`,
+    },
+    {
+      q: `How do I contact ${r.country.demonym} ${label.toLowerCase()} YouTubers?`,
+      a: `${withContact} of the ${creators.length} creators on this list have a public business contact (email, website, or contact form). Sign up to ${BRAND_NAME} to see contact details, save creators to lists, and track outreach.`,
+    },
+    {
+      q: "How often is this list updated?",
+      a: "Creator statistics are refreshed daily, and creators who stop uploading drop off the list automatically.",
+    },
+  ];
+
+  const jsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      name: `Top ${label} YouTubers in ${r.country.name}`,
+      itemListElement: creators.map((c, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        url: `https://www.youtube.com/channel/${c.id}`,
+        name: c.title,
+      })),
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: faq.map((f) => ({
+        "@type": "Question",
+        name: f.q,
+        acceptedAnswer: { "@type": "Answer", text: f.a },
+      })),
+    },
+  ];
+
+  return (
+    <MarketingShell>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <nav className="font-mono text-xs uppercase tracking-wider text-mkt-ash">
+        <Link href="/youtubers" className="hover:text-mkt-paper">YouTubers</Link>
+        {" / "}
+        <Link href={listPath(r.niche)} className="hover:text-mkt-paper">{label}</Link>
+        {" / "}
+        <span>{r.country.name.replace(/^the /, "")}</span>
+      </nav>
+
+      <h1 className="mkt-h2 mt-4 !text-4xl">
+        Top {label} YouTubers in {r.country.name}
+      </h1>
+      <p className="mkt-body mt-3 max-w-2xl">
+        {creators.length} active {r.country.demonym} {label.toLowerCase()} creators on YouTube, ranked by
+        subscribers (average {formatCount(avgSubs)}). Each one posted in the last 45 days and gets real
+        engagement on recent videos. {withContact} have a public business contact.
+      </p>
+      <p className="mt-2 font-mono text-[11px] uppercase tracking-wider text-mkt-ash">Updated {updated}</p>
+
+      <div className="mt-8">
+        <CreatorRankList creators={creators} unlockHref={unlockHref} />
+      </div>
+
+      <div className="mkt-card mt-8 p-6 text-center">
+        <p className="mkt-h3 !text-xl">Reach these creators</p>
+        <p className="mkt-body mx-auto mt-2 max-w-md !text-sm">
+          See contact details, filter by views and engagement, and track outreach in one place.
+        </p>
+        <Link href={unlockHref} className="mkt-btn-primary mt-5 inline-flex">
+          Get contact details — free
+        </Link>
+      </div>
+
+      <section className="mt-12 space-y-5">
+        <h2 className="mkt-h3 !text-xl">FAQ</h2>
+        {faq.map((f) => (
+          <div key={f.q}>
+            <h3 className="font-medium text-mkt-paper">{f.q}</h3>
+            <p className="mkt-body mt-1 !text-sm">{f.a}</p>
+          </div>
+        ))}
+      </section>
+
+      {(otherCountries.length > 0 || otherNiches.length > 0) && (
+        <section className="mt-12 grid gap-8 md:grid-cols-2">
+          {otherCountries.length > 0 && (
+            <div>
+              <h2 className="font-mono text-xs uppercase tracking-wider text-mkt-ash">
+                {label} YouTubers in other countries
+              </h2>
+              <ul className="mt-3 space-y-1.5 text-sm">
+                {otherCountries.map((c) => {
+                  const co = countryByCode(c.country)!;
+                  return (
+                    <li key={c.country}>
+                      <Link href={listPath(r.niche, co.slug)} className="mkt-link">
+                        {label} YouTubers in {co.name.replace(/^the /, "")}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
+          {otherNiches.length > 0 && (
+            <div>
+              <h2 className="font-mono text-xs uppercase tracking-wider text-mkt-ash">
+                More {r.country.demonym} YouTubers
+              </h2>
+              <ul className="mt-3 space-y-1.5 text-sm">
+                {otherNiches.map((c) => (
+                  <li key={c.niche}>
+                    <Link href={listPath(c.niche, r.country.slug)} className="mkt-link">
+                      {nicheName(c.niche)} YouTubers in {r.country.name.replace(/^the /, "")}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </section>
+      )}
+    </MarketingShell>
+  );
+}

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Plus_Jakarta_Sans, Bebas_Neue, IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
-import { BRAND_DESCRIPTION, BRAND_TITLE } from "@/lib/brand";
+import { BRAND_NAME } from "@/lib/brand";
+import { SITE_URL } from "@/lib/seo";
 import "./globals.css";
 
 const inter = Inter({
@@ -34,9 +35,23 @@ const plexMono = IBM_Plex_Mono({
   variable: "--font-plex-mono",
 });
 
+const SEO_DESCRIPTION =
+  "Find active YouTube influencers in the USA & Europe by niche, views and engagement — " +
+  "with public business contacts and outreach tracking.";
+
 export const metadata: Metadata = {
-  title: BRAND_TITLE,
-  description: BRAND_DESCRIPTION,
+  // Absolute URLs for canonical/OG tags; switch domains via NEXT_PUBLIC_APP_URL.
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: `${BRAND_NAME} — Find YouTube Influencers in the USA & Europe`,
+    template: "%s",
+  },
+  description: SEO_DESCRIPTION,
+  openGraph: {
+    siteName: BRAND_NAME,
+    type: "website",
+    locale: "en_US",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -468,6 +468,9 @@ export default function LandingPage() {
             <Link href="/cookies" className="hover:text-mkt-paper">
               Cookies
             </Link>
+            <Link href="/youtubers" className="hover:text-mkt-paper">
+              Creator lists
+            </Link>
             <Link href="/login" className="hover:text-mkt-paper">
               Sign in
             </Link>
