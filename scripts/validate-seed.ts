@@ -262,9 +262,16 @@ async function main() {
       return;
     }
     for (const payload of payloads) {
+      // A single slow insert (DB busy) shouldn't abort the whole run: retry timeouts.
       let { error } = await supabase
         .from("channels")
         .upsert(payload, { onConflict: "id", ignoreDuplicates: true });
+      for (let attempt = 1; error && /statement timeout/i.test(error.message) && attempt <= 3; attempt++) {
+        await new Promise((r) => setTimeout(r, attempt * 5000));
+        ({ error } = await supabase
+          .from("channels")
+          .upsert(payload, { onConflict: "id", ignoreDuplicates: true }));
+      }
       if (error && isMissingMetricsColumnError(error.message)) {
         ({ error } = await supabase
           .from("channels")

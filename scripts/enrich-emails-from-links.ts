@@ -27,6 +27,7 @@ interface CliArgs {
   offset: number;
   preferLinks: boolean;
   tryInstagram: boolean;
+  passOnly: boolean;
 }
 
 function parseArgs(argv: string[]): CliArgs {
@@ -36,6 +37,7 @@ function parseArgs(argv: string[]): CliArgs {
     offset: 0,
     preferLinks: false,
     tryInstagram: false,
+    passOnly: false,
   };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
@@ -44,6 +46,7 @@ function parseArgs(argv: string[]): CliArgs {
     else if (a === "--dry-run") args.dryRun = true;
     else if (a === "--prefer-links") args.preferLinks = true;
     else if (a === "--try-instagram") args.tryInstagram = true;
+    else if (a === "--pass-only") args.passOnly = true;
     else if (a === "--help" || a === "-h") {
       console.log(`
 Backfill emails + contact forms from websites (HTTP, no CAPTCHA bypass)
@@ -52,6 +55,7 @@ Backfill emails + contact forms from websites (HTTP, no CAPTCHA bypass)
   --offset <n>        Skip first n
   --prefer-links      Only channels with website or Instagram
   --try-instagram     Also try Instagram (off by default)
+  --pass-only         Only quality-pass creators
   --dry-run
 `);
       process.exit(0);
@@ -107,19 +111,25 @@ async function main() {
     `[enrich:emails] limit=${args.limit} preferLinks=${args.preferLinks} tryIg=${args.tryInstagram} dryRun=${args.dryRun}`
   );
 
-  let query = supabase
-    .from("channels")
-    .select("id, title, description, website, email, instagram, twitter, tiktok")
-    .is("email", null)
-    .order("subscriber_count", { ascending: false, nullsFirst: false });
+  // Load up to --limit rows, 500 per request (PostgREST caps responses at 1000).
+  // Snapshot first so rows that gain an email mid-run don't shift the pages.
+  const channels: Array<Record<string, any>> = [];
+  for (let from = args.offset; channels.length < args.limit; from += 500) {
+    let query = supabase
+      .from("channels")
+      .select("id, title, description, website, email, instagram, twitter, tiktok")
+      .is("email", null)
+      .order("subscriber_count", { ascending: false, nullsFirst: false })
+      .order("id");
+    if (args.preferLinks) query = query.or("website.not.is.null,instagram.not.is.null");
+    if (args.passOnly) query = query.eq("quality_pass", true);
 
-  if (args.preferLinks) {
-    query = query.or("website.not.is.null,instagram.not.is.null");
+    const want = Math.min(500, args.limit - channels.length);
+    const { data: rows, error } = await query.range(from, from + want - 1);
+    if (error) throw new Error(error.message);
+    channels.push(...(rows ?? []));
+    if (!rows || rows.length < want) break;
   }
-
-  const { data: rows, error } = await query.range(args.offset, args.offset + args.limit - 1);
-  if (error) throw new Error(error.message);
-  const channels = rows ?? [];
   console.log(`[enrich:emails] loaded ${channels.length} channels without email`);
 
   let foundEmail = 0;

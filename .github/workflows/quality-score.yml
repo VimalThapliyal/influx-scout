@@ -7,12 +7,15 @@ on:
     - cron: "15 8 * * *"
   workflow_dispatch:
     inputs:
+      refresh_units:
+        description: YouTube API units for re-checking passing creators (runs first)
+        default: '7000'
       score_limit:
-        description: Maximum channels to score
-        default: '17500'
+        description: Maximum new channels to score
+        default: '11000'
       score_units:
-        description: Maximum YouTube API units
-        default: '19000'
+        description: YouTube API units for scoring new channels
+        default: '12000'
 
 concurrency:
   group: quality-score
@@ -21,7 +24,7 @@ concurrency:
 jobs:
   score:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 150
     env:
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
@@ -36,5 +39,10 @@ jobs:
 
       - run: npm ci
 
-      - name: Quality-score channels (scoring-weighted budget, spills across keys 2/3 after key 1's quota)
-        run: npm run score:quality -- --all-countries --limit "${{ inputs.score_limit || '17500' }}" --max-units "${{ inputs.score_units || '19000' }}"
+      # Sellable inventory first: passing creators scored >30 days ago, oldest first.
+      - name: Re-check passing creators (freshness)
+        continue-on-error: true
+        run: npm run score:quality -- --all-countries --refresh-pass --refresh-days 30 --limit 8000 --max-units "${{ inputs.refresh_units || '7000' }}"
+
+      - name: Quality-score new channels (spills across keys 2/3 after key 1's quota)
+        run: npm run score:quality -- --all-countries --limit "${{ inputs.score_limit || '11000' }}" --max-units "${{ inputs.score_units || '12000' }}"

@@ -208,6 +208,22 @@ export function countryConfidenceLabel(level: string | null | undefined): string
   }
 }
 
+const phraseMatchers = new Map<string, RegExp>();
+
+/**
+ * Whole-word match (optional plural "s"), so "cat" doesn't fire on
+ * "education"/"vacation" and "pet" doesn't fire on "competition".
+ */
+function phraseMatcher(phrase: string): RegExp {
+  let re = phraseMatchers.get(phrase);
+  if (!re) {
+    const escaped = phrase.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    re = new RegExp(`(?<![a-z0-9])${escaped}s?(?![a-z0-9])`);
+    phraseMatchers.set(phrase, re);
+  }
+  return re;
+}
+
 export function classifyNiche(input: {
   title?: string | null;
   description?: string | null;
@@ -230,7 +246,7 @@ export function classifyNiche(input: {
   const scores = new Map<NicheSlug, { score: number; evidence: string[] }>();
 
   for (const rule of NICHE_RULES) {
-    if (!text.includes(rule.phrase)) continue;
+    if (!phraseMatcher(rule.phrase).test(text)) continue;
     const prev = scores.get(rule.niche) ?? { score: 0, evidence: [] };
     if (!prev.evidence.includes(rule.phrase)) {
       prev.evidence.push(rule.phrase);

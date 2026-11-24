@@ -13,6 +13,7 @@
  *   npm run score:quality -- --all-countries --max-units 9000
  *   npm run score:quality -- --limit 5000 --all-countries
  *   npm run score:quality -- --country US --rescore
+ *   npm run score:quality -- --all-countries --refresh-pass --refresh-days 30
  *   npm run score:quality -- --no-prefilter
  *   npm run score:quality -- --min-lifetime-views 500
  *   npm run score:quality -- --dry-run
@@ -51,6 +52,8 @@ function parseArgs(argv: string[]) {
   let videosPerChannel = 5;
   let prefilter = true;
   let minLifetimeViews = 0; // 0 = disabled (lossy filter, opt-in)
+  let refreshPass = false;
+  let refreshDays = 30;
 
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
@@ -59,6 +62,12 @@ function parseArgs(argv: string[]) {
     else if (a === "--country" && argv[i + 1]) country = argv[++i]!.toUpperCase();
     else if (a === "--all-countries") country = null;
     else if (a === "--rescore") unscoredOnly = false;
+    else if (a === "--refresh-pass") {
+      // Re-check passing creators whose score is older than --refresh-days, oldest first
+      refreshPass = true;
+      unscoredOnly = false;
+    } else if (a === "--refresh-days" && argv[i + 1])
+      refreshDays = Math.max(1, parseInt(argv[++i]!, 10) || 30);
     else if (a === "--max-units" && argv[i + 1])
       maxUnits = Math.max(11, parseInt(argv[++i]!, 10) || 9000);
     else if (a === "--videos" && argv[i + 1])
@@ -77,6 +86,8 @@ function parseArgs(argv: string[]) {
     videosPerChannel,
     prefilter,
     minLifetimeViews,
+    refreshPass,
+    refreshDays,
   };
 }
 
@@ -164,11 +175,17 @@ async function main() {
     const base =
       "id, title, country, subscriber_count, view_count, video_count, primary_niche";
     const cols = noQualityCol ? base : `${base}, quality_scored_at`;
-    let q = supabase
-      .from("channels")
-      .select(cols)
-      .order("subscriber_count", { ascending: false, nullsFirst: false })
-      .range(offset, offset + want - 1);
+    let q = supabase.from("channels").select(cols);
+    if (args.refreshPass && !noQualityCol) {
+      const cutoff = new Date(Date.now() - args.refreshDays * 86_400_000).toISOString();
+      q = q
+        .eq("quality_pass", true)
+        .lt("quality_scored_at", cutoff)
+        .order("quality_scored_at", { ascending: true });
+    } else {
+      q = q.order("subscriber_count", { ascending: false, nullsFirst: false });
+    }
+    q = q.range(offset, offset + want - 1);
     if (args.country) q = q.eq("country", args.country);
     if (args.unscoredOnly && !noQualityCol) q = q.is("quality_scored_at", null);
 
@@ -312,8 +329,9 @@ async function main() {
 
     // In real unscored-only mode processed rows leave the filter, so stay at
     // offset 0; otherwise page forward.
+    // Refresh mode also self-consumes: rescored rows get a fresh quality_scored_at.
     const windowSelfConsumes =
-      args.unscoredOnly && !noQualityCol && !args.dryRun;
+      (args.unscoredOnly || args.refreshPass) && !noQualityCol && !args.dryRun;
     if (!windowSelfConsumes || progressed + prefiltered === 0) {
       offset += rows.length;
     }
