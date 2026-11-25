@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL, countryByCode, countryPath, getSeoCombos, hubCountries, listPath } from "@/lib/seo";
 import { COMPARISONS } from "@/lib/comparisons";
+import { POSTS } from "@/content/blog";
 
 export const revalidate = 86400;
 
@@ -12,6 +13,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/tools`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE_URL}/tools/youtube-engagement-rate-calculator`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     { url: `${SITE_URL}/tools/youtube-sponsorship-calculator`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
+    { url: `${SITE_URL}/blog`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
+    ...POSTS.map((p) => ({
+      url: `${SITE_URL}/blog/${p.slug}`,
+      lastModified: new Date(p.published),
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
+    })),
     { url: `${SITE_URL}/compare`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     ...COMPARISONS.map((c) => ({
       url: `${SITE_URL}/compare/${c.slug}`,

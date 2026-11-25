@@ -29,6 +29,9 @@ export function MarketingShell({ children }: { children: React.ReactNode }) {
             <Link href="/tools" className="hover:text-mkt-paper">
               Free tools
             </Link>
+            <Link href="/blog" className="hover:text-mkt-paper">
+              Blog
+            </Link>
             <Link href="/compare" className="hover:text-mkt-paper">
               Compare
             </Link>

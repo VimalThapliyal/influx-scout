@@ -1,23 +1,31 @@
-# YouTube Influencer Platform (Free Tier)
+# Influx: find YouTube creators in the USA & Europe worth sponsoring
 
-A **$0/month** YouTube influencer discovery tool built with **Next.js + Vercel + Supabase + YouTube Data API**.
+**Live site: https://influencer-platform-mu.vercel.app**
 
-## Features
+Influx filters YouTube channels down to the creators a brand can actually work with. Of ~200,000 channels scored, fewer than 5% pass:
 
-- Keyword-based channel discovery
-- Influencer scoring and tier classification (nano → mega)
-- Channel database with search and filters
-- Campaign list building and CSV export
-- Daily channel refresh via Vercel Cron
-- API quota tracking (10,000 units/day)
+- uploaded in the last 45 days
+- 5,000+ average views on the last 5 videos (higher floor for some niches)
+- 2%+ engagement rate ((likes + comments) ÷ views)
+- based in the US, UK, Canada, Australia or Europe
+
+## Free, no signup
+
+- **Creator lists by niche and country**, e.g. [fitness YouTubers in the US](https://influencer-platform-mu.vercel.app/youtubers/fitness/united-states) or [German YouTubers](https://influencer-platform-mu.vercel.app/youtubers/germany), refreshed daily
+- **[YouTube engagement rate calculator](https://influencer-platform-mu.vercel.app/tools/youtube-engagement-rate-calculator)** with benchmarks by channel size
+- **[YouTube sponsorship price calculator](https://influencer-platform-mu.vercel.app/tools/youtube-sponsorship-calculator)**
+- **Data articles:** [engagement benchmarks by niche](https://influencer-platform-mu.vercel.app/blog/youtube-engagement-rate-benchmarks), [why subscriber count misleads](https://influencer-platform-mu.vercel.app/blog/youtube-subscribers-vs-views), [how to vet a creator](https://influencer-platform-mu.vercel.app/blog/how-to-vet-a-youtube-creator)
+
+Creators can [remove their listing](https://influencer-platform-mu.vercel.app/remove-my-listing) at any time.
 
 ## Stack
 
-| Service | Purpose | Cost |
-|---------|---------|------|
-| Vercel | Frontend + API | Free |
-| Supabase | PostgreSQL database | Free |
-| YouTube Data API v3 | Channel data | Free (10K units/day) |
+| Service | Purpose |
+|---------|---------|
+| Next.js 14 on Vercel | Site, API routes, ISR pages |
+| Supabase (Postgres) | Channel data, auth |
+| YouTube Data API v3 | Public channel and video statistics |
+| GitHub Actions | Daily validate → score pipeline |
 
 ## Quick Start
 
@@ -113,9 +121,4 @@ When you outgrow free tier:
 |------|----------|
 | More DB space | Supabase Pro ($25/mo) |
 | Email scraping | Railway worker + Playwright |
-| More API quota | Additional Google Cloud projects |
-
-## Related Docs
-
-- Full free-tier PRD: `../doc.prd.free.md`
-- Original paid PRD: `../doc.prd`
+| More API quota | YouTube API quota extension request (audit) |
