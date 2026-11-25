@@ -322,9 +322,16 @@ async function main() {
         // way (qualityFieldsForDb runs regardless of pass/fail) — failed
         // channels get the same update as passing ones, just kept visible
         // and filterable instead of deleted.
+        // A channel failing its FIRST scoring never reached the library, so its
+        // description (already mined for an email on insert) is dead weight on
+        // the free-tier database. Re-checks of passing creators keep it.
+        const fields =
+          !r.score.quality_pass && args.unscoredOnly
+            ? { ...r.dbFields, description: null }
+            : r.dbFields;
         const { error: up } = await supabase
           .from("channels")
-          .update(r.dbFields)
+          .update(fields)
           .eq("id", r.id);
         if (up && isMissingQualityColumnError(up.message)) {
           console.error("Run migration 019_quality_activity_gates.sql first.");

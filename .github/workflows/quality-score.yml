@@ -45,5 +45,5 @@ jobs:
         run: npm run score:quality -- --all-countries --refresh-pass --refresh-days 30 --limit 8000 --max-units "${{ inputs.refresh_units || '7000' }}"
 
       - name: Quality-score new channels (spills across keys 2/3 after key 1's quota)
-        # Below 10k subs only ~0.2% become sellable (pass + email), so skip them.
-        run: npm run score:quality -- --all-countries --min-subs 10000 --limit "${{ inputs.score_limit || '11000' }}" --max-units "${{ inputs.score_units || '12000' }}"
+        # Census channels are saved from 5k subs; under that almost none pass the views floor.
+        run: npm run score:quality -- --all-countries --min-subs 5000 --limit "${{ inputs.score_limit || '11000' }}" --max-units "${{ inputs.score_units || '12000' }}"

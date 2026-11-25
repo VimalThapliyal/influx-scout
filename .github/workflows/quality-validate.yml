@@ -7,14 +7,17 @@ on:
   workflow_dispatch:
     inputs:
       seed_limit:
-        description: New seed IDs to read
-        default: '60000'
+        description: Census IDs to check directly
+        default: '250000'
+      direct_units:
+        description: YouTube units for the direct census check
+        default: '5000'
       validate_limit:
         description: Maximum seeds to validate
         default: '150000'
       validate_units:
-        description: Maximum YouTube API units
-        default: '7500'
+        description: Maximum YouTube API units for queued seeds
+        default: '2000'
 
 concurrency:
   group: quality-discovery
@@ -38,10 +41,12 @@ jobs:
 
       - run: npm ci
 
-      - name: Stream new TubeCensus ids (0 quota)
+      # Census IDs are checked straight from the file (1 unit / 50 IDs); only
+      # 5k+ sub channels in US/UK/CA/AU/Europe (or no country) are saved.
+      - name: Check next census IDs directly (no seed rows)
         id: stream
         continue-on-error: true
-        run: npm run census:stream -- --limit "${{ inputs.seed_limit || '60000' }}"
+        run: npm run census:direct -- --limit "${{ inputs.seed_limit || '250000' }}" --max-units "${{ inputs.direct_units || '5000' }}"
 
       # Featured channels of passing creators: ~70% are 10k+ subs vs ~8% of census seeds.
       - name: Discover lookalike creators (~1 unit each)
@@ -53,8 +58,9 @@ jobs:
         continue-on-error: true
         run: npm run refresh:stats -- --limit 8000
 
-      - name: Validate seeds into channels (rotates key on quota, up to ~7500 units)
-        run: npm run census:validate -- --limit "${{ inputs.validate_limit || '150000' }}" --max-units "${{ inputs.validate_units || '7500' }}" --formats channel
+      # Remaining queue: lookalike seeds (small, ~1-2k/day).
+      - name: Validate queued seeds into channels
+        run: npm run census:validate -- --limit "${{ inputs.validate_limit || '150000' }}" --max-units "${{ inputs.validate_units || '2000' }}" --formats channel
 
       - name: Report discovery source failure after processing queued seeds
         if: steps.stream.outcome == 'failure'
