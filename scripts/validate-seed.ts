@@ -36,6 +36,7 @@ import {
   youtubeGet,
   type ChannelItem,
 } from "./lib/channel-payload";
+import { locationTier } from "../src/lib/quality-gate";
 
 type SeedFormat = "channel" | "handle" | "user" | "custom";
 
@@ -223,7 +224,9 @@ async function main() {
   const consider = async (item: ChannelItem, seedKey: string) => {
     const { subs, videos } = channelCounts(item);
 
-    if (subs < args.minSubs || videos < args.minVideos) {
+    // Same floor as the direct census check: big enough, and not clearly
+    // outside the US/EU markets (no country set is kept).
+    if (subs < args.minSubs || videos < args.minVideos || locationTier(item.snippet?.country) === "other") {
       tooSmall++;
       skippedKeys.push(seedKey);
       return;
@@ -349,7 +352,7 @@ async function main() {
   console.log("-----------------------");
   console.log(`units used     ~${unitsUsed}`);
   console.log(`promoted       ${promoted}`);
-  console.log(`too small      ${tooSmall} (< ${args.minSubs} subs or < ${args.minVideos} videos)`);
+  console.log(`skipped        ${tooSmall} (< ${args.minSubs} subs, < ${args.minVideos} videos or outside US/EU)`);
   console.log(`dead/hidden    ${deadCount}`);
   if (quotaHit) console.log(`\nStopped early — YouTube quota hit. Resume tomorrow.`);
   if (args.dryRun) console.log(`\nDRY RUN — no writes performed.`);

@@ -60,7 +60,7 @@ jobs:
 
       # Remaining queue: lookalike seeds (small, ~1-2k/day).
       - name: Validate queued seeds into channels
-        run: npm run census:validate -- --limit "${{ inputs.validate_limit || '150000' }}" --max-units "${{ inputs.validate_units || '2000' }}" --formats channel
+        run: npm run census:validate -- --limit "${{ inputs.validate_limit || '150000' }}" --max-units "${{ inputs.validate_units || '2000' }}" --formats channel --min-subs 5000
 
       - name: Report discovery source failure after processing queued seeds
         if: steps.stream.outcome == 'failure'

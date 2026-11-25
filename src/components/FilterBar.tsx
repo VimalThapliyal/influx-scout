@@ -6,7 +6,7 @@ import { countryLabel } from "@/lib/tags";
 import { NICHE_FILTER_OPTIONS } from "@/lib/classify";
 
 export type SubscriberRange = "all" | "nano" | "micro" | "mid" | "macro" | "mega";
-export type ContactFilter = "all" | "email" | "social" | "any" | "form";
+export type ContactFilter = "all" | "direct" | "email" | "social" | "any" | "form";
 export type AvgViewsFilter = "all" | "1k" | "10k" | "100k";
 export type MarketFilter = "us-eu" | "worldwide";
 /** Prefer real latest_upload_at when scored; falls back to last_updated. */
@@ -89,6 +89,7 @@ const COUNTRY_OPTIONS = ["", "US", "GB", "DE", "FR", "NL", "ES", "IT", "SE", "IE
 
 const CONTACT_OPTIONS: { value: ContactFilter; label: string }[] = [
   { value: "all", label: "Any contact info" },
+  { value: "direct", label: "Email or contact form" },
   { value: "email", label: "Has email" },
   { value: "form", label: "Has contact form" },
   { value: "social", label: "Has social" },

@@ -62,6 +62,10 @@ export async function GET(request: NextRequest) {
       }
       if (hasEmail === "true") query = query.not("email", "is", null);
       if (hasContactForm === "true") query = query.eq("has_contact_form", true);
+      // Email or a contact form on the creator's own site.
+      if (searchParams.get("has_direct_contact") === "true") {
+        query = query.or("email.not.is.null,has_contact_form.eq.true");
+      }
       if (hasSocial === "true") {
         query = query.or(
           "instagram.not.is.null,twitter.not.is.null,tiktok.not.is.null,website.not.is.null"

@@ -30,13 +30,16 @@ interface Args {
   maxUnits: number;
   dryRun: boolean;
   stats: boolean;
+  /** Share of the daily budget spent on creators who have a public email. */
+  emailShare: number;
 }
 
 function parseArgs(argv: string[]): Args {
-  const a: Args = { limit: 1000, maxUnits: 1500, dryRun: false, stats: false };
+  const a: Args = { limit: 1000, maxUnits: 1500, dryRun: false, stats: false, emailShare: 0.5 };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === "--limit" && argv[i + 1]) a.limit = Math.max(1, parseInt(argv[++i]!, 10) || 1000);
     else if (argv[i] === "--max-units" && argv[i + 1]) a.maxUnits = Math.max(1, parseInt(argv[++i]!, 10) || 1500);
+    else if (argv[i] === "--email-share" && argv[i + 1]) a.emailShare = Math.min(1, Math.max(0, parseFloat(argv[++i]!) || 0));
     else if (argv[i] === "--dry-run") a.dryRun = true;
     else if (argv[i] === "--stats") a.stats = true;
   }
@@ -92,27 +95,40 @@ async function main() {
   if (total === 0) return console.log("[lookalikes] no passing creators yet");
   const want = Math.min(args.limit, args.maxUnits, total);
   const day = Math.floor(Date.now() / 86_400_000);
-  const start = (day * want) % total;
 
-  const sources: string[] = [];
-  for (let from = start; sources.length < want; ) {
-    const to = Math.min(from + 999, from + (want - sources.length) - 1);
-    const { data, error } = await db
-      .from("channels")
-      .select("id")
-      .eq("quality_pass", true)
-      .order("id")
-      .range(from, to);
+  /** Next rotating slice of passing creators, optionally only those with a public email. */
+  const slice = async (count: number, emailOnly: boolean): Promise<string[]> => {
+    if (count <= 0) return [];
+    const filtered = (sel: any) => (emailOnly ? sel.eq("quality_pass", true).not("email", "is", null) : sel.eq("quality_pass", true));
+    const { count: n, error } = await filtered(db.from("channels").select("id", { count: "exact", head: true }));
     if (error) throw new Error(error.message);
-    if (!data?.length) {
-      if (from === 0) break;
-      from = 0; // wrap around
-      continue;
+    const size = n ?? 0;
+    if (size === 0) return [];
+    const take = Math.min(count, size);
+    const ids: string[] = [];
+    for (let from = (day * take) % size; ids.length < take; ) {
+      const to = Math.min(from + 999, from + (take - ids.length) - 1);
+      const { data, error: e } = await filtered(db.from("channels").select("id")).order("id").range(from, to);
+      if (e) throw new Error(e.message);
+      if (!data?.length) {
+        if (from === 0) break;
+        from = 0; // wrap around
+        continue;
+      }
+      ids.push(...data.map((r: any) => r.id as string));
+      from = to + 1;
     }
-    sources.push(...data.map((r) => r.id as string));
-    from = to + 1;
-  }
-  console.log(`[lookalikes] expanding ${sources.length} of ${total} passing creators (slice from ${start}) dryRun=${args.dryRun}`);
+    return ids;
+  };
+
+  // Creators who publish a business email tend to feature others who do too,
+  // so part of each day's budget goes to them (they cycle faster).
+  const fromEmail = await slice(Math.floor(want * args.emailShare), true);
+  const seen = new Set(fromEmail);
+  const rest = (await slice(want - fromEmail.length, false)).filter((id) => !seen.has(id));
+  const sources = [...fromEmail, ...rest];
+  const start = `${fromEmail.length} with email + ${rest.length} others`;
+  console.log(`[lookalikes] expanding ${sources.length} of ${total} passing creators (${start}) dryRun=${args.dryRun}`);
 
   // Expand (1 unit each).
   const found = new Set<string>();

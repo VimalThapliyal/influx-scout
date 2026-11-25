@@ -31,9 +31,10 @@ export default function LandingPage({ data, combos }: { data: LandingData; combo
     {
       icon: Mail,
       title: "See how each creator can be reached",
-      body: data.withEmailCount
-        ? `${nf(data.withEmailCount)} listed creators have a public business email. Others show a contact form or social links.`
-        : "Each profile shows whether the creator has a public business email, a contact form or social links.",
+      body:
+        data.reachableCount && data.withEmailCount
+          ? `${nf(data.reachableCount)} listed creators can be reached directly: ${nf(data.withEmailCount)} publish a business email and the rest have a contact form on their own site.`
+          : "Each profile shows whether the creator has a public business email, a contact form or social links.",
     },
     {
       icon: ListChecks,

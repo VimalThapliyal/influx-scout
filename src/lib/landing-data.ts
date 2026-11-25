@@ -10,6 +10,8 @@ import type { Channel } from "./types";
 export interface LandingData {
   passCount: number | null;
   withEmailCount: number | null;
+  /** Creators with a public email or a contact form on their own site. */
+  reachableCount: number | null;
   /** Rows shaped for <CreatorTable>; email is always null. */
   creators: Channel[];
 }
@@ -22,9 +24,10 @@ export async function getLandingData(): Promise<LandingData> {
   const passing = () =>
     db.from("channels").select("id", { count: "exact", head: true }).eq("quality_pass", true).is("opted_out_at", null);
 
-  const [pass, withEmail, sample] = await Promise.all([
+  const [pass, withEmail, reachable, sample] = await Promise.all([
     passing(),
     passing().not("email", "is", null),
+    passing().or("email.not.is.null,has_contact_form.eq.true"),
     db
       .from("channels")
       .select(
@@ -71,5 +74,5 @@ export async function getLandingData(): Promise<LandingData> {
     if (creators.length === 8) break;
   }
 
-  return { passCount: pass.count ?? null, withEmailCount: withEmail.count ?? null, creators };
+  return { passCount: pass.count ?? null, withEmailCount: withEmail.count ?? null, reachableCount: reachable.count ?? null, creators };
 }

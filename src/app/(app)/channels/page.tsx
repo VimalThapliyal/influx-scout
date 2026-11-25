@@ -54,7 +54,7 @@ function filtersFromSearchParams(params: URLSearchParams): SearchFilters {
   else if (params.get("has_social") === "true") filters.contact = "social";
   else if (params.get("has_contact") === "true") filters.contact = "any";
   const contact = params.get("contact") as ContactFilter | null;
-  if (contact && ["email", "social", "any", "all", "form"].includes(contact)) {
+  if (contact && ["direct", "email", "social", "any", "all", "form"].includes(contact)) {
     filters.contact = contact;
   }
   filters.uploadedWithin = parseUploadedWithin(
@@ -103,6 +103,7 @@ function buildQueryParams(
   else if (filters.market === "us-eu") params.set("market", "us-eu");
   else if (filters.market === "worldwide") params.set("market", "worldwide");
   if (filters.niche) params.set("niche", filters.niche);
+  if (filters.contact === "direct") params.set("has_direct_contact", "true");
   if (filters.contact === "email") params.set("has_email", "true");
   if (filters.contact === "form") params.set("has_contact_form", "true");
   if (filters.contact === "social") params.set("has_social", "true");
