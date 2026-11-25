@@ -168,12 +168,12 @@ export function CreatorTable({
         <thead className="table-head">
           <tr>
             <th scope="col" className={`${th} w-auto`}>Creator</th>
-            <th scope="col" className={`${th} hidden w-32 lg:table-cell`}>Niche</th>
+            <th scope="col" className={`${th} hidden w-32 xl:table-cell`}>Niche</th>
             <th scope="col" className={`${th} w-24 text-right`}>Subscribers</th>
             <th scope="col" className={`${th} hidden w-24 text-right sm:table-cell`}>Avg views</th>
-            <th scope="col" className={`${th} hidden w-24 text-right md:table-cell`}>Engagement</th>
-            <th scope="col" className={`${th} hidden w-28 lg:table-cell`}>Last upload</th>
-            <th scope="col" className={`${th} hidden w-28 md:table-cell`}>Contact</th>
+            <th scope="col" className={`${th} hidden w-24 text-right lg:table-cell`}>Engagement</th>
+            <th scope="col" className={`${th} hidden w-28 xl:table-cell`}>Last upload</th>
+            <th scope="col" className={`${th} hidden w-28 lg:table-cell`}>Contact</th>
             <th scope="col" className={`${th} w-[5.5rem]`}>
               <span className="sr-only">Actions</span>
             </th>
@@ -193,16 +193,16 @@ export function CreatorTable({
                   </span>
                 </Link>
               </td>
-              <td className="hidden truncate px-3 text-muted lg:table-cell">
+              <td className="hidden truncate px-3 text-muted xl:table-cell">
                 {c.primary_niche ? nicheLabel(c.primary_niche) : <span className="text-faint">—</span>}
               </td>
               <td className={num}>{formatNumber(c.subscriber_count)}</td>
               <td className={`${num} hidden sm:table-cell`}>{formatNumber(recentViews(c))}</td>
-              <td className={`${num} hidden md:table-cell`}>{formatEngagement(recentEngagement(c))}</td>
-              <td className="hidden px-3 text-muted lg:table-cell">
+              <td className={`${num} hidden lg:table-cell`}>{formatEngagement(recentEngagement(c))}</td>
+              <td className="hidden px-3 text-muted xl:table-cell">
                 {c.is_inactive ? <StatusTag tone="warn">Inactive</StatusTag> : formatDaysAgo(c.latest_upload_at)}
               </td>
-              <td className="hidden px-3 md:table-cell">
+              <td className="hidden px-3 lg:table-cell">
                 <ContactCell channel={c} />
               </td>
               <td className="px-2">

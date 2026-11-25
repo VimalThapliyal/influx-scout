@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { Check, Filter, ListChecks, Mail } from "lucide-react";
+import { Check } from "lucide-react";
 import { MarketingFooter, MarketingHeader } from "@/components/MarketingShell";
 import { CreatorTable } from "@/components/ui";
 import { PlanCards } from "@/components/PlanCards";
-import { countryByCode, countryPath, hubCountries, listPath, nicheName, type SeoCombo } from "@/lib/seo";
+import { countryByCode, countryPath, listPath, nicheName, type SeoData } from "@/lib/seo";
 import type { LandingData } from "@/lib/landing-data";
 
 /** Share of scored channels failing each check. Scored library, November 2026 (see /blog). */
@@ -16,20 +16,19 @@ const CHECKS: { rule: string; failShare: number }[] = [
 
 const nf = (n: number) => n.toLocaleString("en-US");
 
-export default function LandingPage({ data, combos }: { data: LandingData; combos: SeoCombo[] }) {
-  const countries = hubCountries(combos).slice(0, 8);
+export default function LandingPage({ data, seo }: { data: LandingData; seo: SeoData }) {
+  const combos = seo.combos;
+  const countries = seo.countryTotals.slice(0, 8);
   const nicheTotals = new Map<string, number>();
   for (const c of combos) nicheTotals.set(c.niche, (nicheTotals.get(c.niche) ?? 0) + c.count);
   const niches = Array.from(nicheTotals.entries()).sort((a, b) => b[1] - a[1]).slice(0, 10);
 
   const benefits = [
     {
-      icon: Filter,
       title: "Filter on what a channel does now",
       body: "Sort and filter by average views on the last five videos, engagement and last upload date, along with niche, country and size.",
     },
     {
-      icon: Mail,
       title: "See how each creator can be reached",
       body:
         data.reachableCount && data.withEmailCount
@@ -37,7 +36,6 @@ export default function LandingPage({ data, combos }: { data: LandingData; combo
           : "Each profile shows whether the creator has a public business email, a contact form or social links.",
     },
     {
-      icon: ListChecks,
       title: "Keep outreach in one list",
       body: "Save creators to a campaign, mark who you contacted and who replied, and see the reply rate for each list.",
     },
@@ -82,11 +80,10 @@ export default function LandingPage({ data, combos }: { data: LandingData; combo
         </section>
 
         <section className="mx-auto mt-20 max-w-6xl px-4 sm:px-6">
-          <div className="grid gap-x-10 gap-y-8 md:grid-cols-3">
+          <div className="grid gap-x-10 gap-y-8 border-t border-line pt-12 md:grid-cols-3">
             {benefits.map((b) => (
               <div key={b.title}>
-                <b.icon size={18} strokeWidth={1.75} aria-hidden className="text-accent" />
-                <h2 className="h-section mt-3">{b.title}</h2>
+                <h2 className="h-section">{b.title}</h2>
                 <p className="mt-1.5 text-sm leading-relaxed text-muted">{b.body}</p>
               </div>
             ))}

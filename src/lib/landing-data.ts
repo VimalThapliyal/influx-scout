@@ -4,6 +4,7 @@
  * whether a public email exists.
  */
 import { getSupabaseAdmin } from "./supabase";
+import { INDEPENDENT_FILTER, getLibraryCounts } from "./library-counts";
 import { NICHE_LABELS } from "./classify";
 import type { Channel } from "./types";
 
@@ -21,13 +22,8 @@ const PREVIEW_COUNTRIES = ["US", "GB", "CA", "AU", "DE", "FR", "NL", "IE"];
 export async function getLandingData(): Promise<LandingData> {
   const db = getSupabaseAdmin();
   const since = new Date(Date.now() - 21 * 86_400_000).toISOString();
-  const passing = () =>
-    db.from("channels").select("id", { count: "exact", head: true }).eq("quality_pass", true).is("opted_out_at", null);
-
-  const [pass, withEmail, reachable, sample] = await Promise.all([
-    passing(),
-    passing().not("email", "is", null),
-    passing().or("email.not.is.null,has_contact_form.eq.true"),
+  const [counts, sample] = await Promise.all([
+    getLibraryCounts(),
     db
       .from("channels")
       .select(
@@ -40,6 +36,7 @@ export async function getLandingData(): Promise<LandingData> {
       .gte("subscriber_count", 50_000)
       .lte("subscriber_count", 2_500_000)
       .not("primary_niche", "is", null)
+      .or(INDEPENDENT_FILTER)
       .order("avg_views_last5", { ascending: false })
       .limit(300),
   ]);
@@ -74,5 +71,10 @@ export async function getLandingData(): Promise<LandingData> {
     if (creators.length === 8) break;
   }
 
-  return { passCount: pass.count ?? null, withEmailCount: withEmail.count ?? null, reachableCount: reachable.count ?? null, creators };
+  return {
+    passCount: counts?.listed ?? null,
+    withEmailCount: counts?.withEmail ?? null,
+    reachableCount: counts?.reachable ?? null,
+    creators,
+  };
 }

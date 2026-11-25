@@ -31,7 +31,10 @@ export type CountryConfidence =
   | "low"
   | "unknown";
 
+export type ChannelKind = "independent" | "organisation";
+
 export type ClassificationFields = {
+  channel_kind: ChannelKind;
   primary_niche: NicheSlug | null;
   niche_confidence: number | null;
   niche_method: string | null;
@@ -466,7 +469,35 @@ export function classifyCountry(input: {
   return { country_confidence: "unknown", country_evidence: [] };
 }
 
+/**
+ * Independent creator, or an organisation's channel (studio, network, label,
+ * league, brand). Conservative: only clear signals mark a channel as an
+ * organisation, because brands want to sponsor people, and a wrongly hidden
+ * creator costs more than a wrongly shown studio.
+ */
+const ORG_TITLE =
+  /(?<![a-z0-9])(network|news|studios?|records|recordings|entertainment|productions?|pictures|films|movies|vevo|radio|magazine|league|federation|association|university|inc|llc|ltd|corp|clips|highlights|trailers|netflix|hbo|disney|nickelodeon|cartoon network|wwe|ufc|nba|nfl|mlb|nhl|fifa|espn|bbc|cnn|nbc|cbs|mtv|comedy central)(?![a-z0-9])/;
+const ORG_DESCRIPTION =
+  /official (youtube )?(channel|home|page) (of|for)|all rights reserved|(?<![a-z])our (company|brand|products|studio|network|shows|programming)(?![a-z])|(?<![a-z])(tv|television) (series|show|network|channel)(?![a-z])|full episodes/;
+const ORG_TOPICS = new Set(["Television_program"]);
+
+export function classifyChannelKind(input: {
+  title?: string | null;
+  description?: string | null;
+  topics?: string[] | null;
+}): ChannelKind {
+  const title = (input.title ?? "").toLowerCase();
+  const description = (input.description ?? "").toLowerCase().slice(0, 1500);
+  if (ORG_TITLE.test(title)) return "organisation";
+  if (ORG_DESCRIPTION.test(description)) return "organisation";
+  if ((input.topics ?? []).some((t) => ORG_TOPICS.has(t)) && /official/.test(`${title} ${description}`)) {
+    return "organisation";
+  }
+  return "independent";
+}
+
 export const CLASSIFICATION_COLUMN_KEYS = [
+  "channel_kind",
   "primary_niche",
   "niche_confidence",
   "niche_method",
@@ -491,7 +522,7 @@ export function isMissingClassificationColumnError(
   message: string | null | undefined
 ): boolean {
   if (!message) return false;
-  return /primary_niche|niche_confidence|niche_method|niche_evidence|niche_classified_at|country_confidence|country_evidence|country_classified_at|schema cache/i.test(
+  return /channel_kind|primary_niche|niche_confidence|niche_method|niche_evidence|niche_classified_at|country_confidence|country_evidence|country_classified_at|schema cache/i.test(
     message
   );
 }
@@ -523,6 +554,12 @@ export function withChannelClassification<T extends Record<string, unknown>>(
 
   return {
     ...row,
+    channel_kind: classifyChannelKind({
+      title: typeof row.title === "string" ? row.title : null,
+      // Only the channel's own bio: video titles would add noise ("full episodes").
+      description: typeof row.bio === "string" ? row.bio : typeof row.description === "string" ? row.description : null,
+      topics: Array.isArray(row.topic_categories) ? (row.topic_categories as string[]) : null,
+    }),
     primary_niche: primary,
     niche_confidence: niche.niche_confidence,
     niche_method: niche.niche_method,

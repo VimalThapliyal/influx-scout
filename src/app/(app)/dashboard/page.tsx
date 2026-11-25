@@ -9,7 +9,6 @@ import {
   getPipelineStats,
   getRecentCreators,
   getRecommendedCreators,
-  TARGET_MARKET_LABEL,
 } from "@/lib/dashboard";
 import { OUTREACH_LIBRARY_HREF } from "@/lib/routes";
 
@@ -30,8 +29,8 @@ export default async function OverviewPage() {
     { label: "Contracted", value: pipeline.contracted },
   ];
   const summary = [
-    { label: "Creators with a public email", value: stats.withEmail },
-    { label: `In ${TARGET_MARKET_LABEL}`, value: stats.inTargetMarket },
+    { label: "Creators listed", value: stats.total },
+    { label: "With a public email", value: stats.withEmail },
     { label: "Your campaign lists", value: pipeline.listCount },
     { label: "Creators in your lists", value: pipeline.creatorCount },
   ];
@@ -107,7 +106,7 @@ export default async function OverviewPage() {
       <section aria-labelledby="recommended-title">
         <div className="mb-3 flex items-baseline justify-between gap-3">
           <div>
-            <h2 id="recommended-title" className="h-section">Highest scoring creators with an email</h2>
+            <h2 id="recommended-title" className="h-section">Most-viewed creators with a public email</h2>
           </div>
           <Link href={OUTREACH_LIBRARY_HREF} className="text-link shrink-0 text-[0.8125rem]">
             View all

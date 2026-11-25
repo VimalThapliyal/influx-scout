@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { SITE_URL, countryByCode, countryPath, getSeoCombos, hubCountries, listPath } from "@/lib/seo";
+import { SITE_URL, countryByCode, countryPath, getSeoData, listPath, type SeoData } from "@/lib/seo";
 import { COMPARISONS } from "@/lib/comparisons";
 import { POSTS } from "@/content/blog";
 
@@ -32,13 +32,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/terms`, lastModified: now, changeFrequency: "yearly", priority: 0.2 },
   ];
 
-  let combos: Awaited<ReturnType<typeof getSeoCombos>> = [];
+  let seo: SeoData;
   try {
-    combos = await getSeoCombos();
+    seo = await getSeoData();
   } catch {
     return staticPages; // never fail the sitemap because the DB is slow
   }
 
+  const combos = seo.combos;
   const niches = Array.from(new Set(combos.map((c) => c.niche)));
   const nichePages = niches.map((n) => ({
     url: `${SITE_URL}${listPath(n)}`,
@@ -53,7 +54,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  const countryPages = hubCountries(combos).map((c) => ({
+  const countryPages = seo.countryTotals.map((c) => ({
     url: `${SITE_URL}${countryPath(countryByCode(c.code)!.slug)}`,
     lastModified: now,
     changeFrequency: "daily" as const,

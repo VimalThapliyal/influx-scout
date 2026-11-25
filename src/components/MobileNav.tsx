@@ -4,8 +4,6 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
-import { BrandMark } from "@/components/BrandMark";
-import { PlatformSwitcher } from "@/components/PlatformSwitcher";
 import { PAYMENTS_ENABLED } from "@/lib/billing";
 import {
   MoreIcon,
@@ -156,10 +154,6 @@ export function MobileNav() {
                   </Link>
                 );
               })}
-            </div>
-
-            <div className="border-t border-line p-4">
-              <PlatformSwitcher variant="sidebar" />
             </div>
 
             <div className="space-y-3 border-t border-line p-4">

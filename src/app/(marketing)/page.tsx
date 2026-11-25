@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import LandingPage from "@/components/landing/LandingPage";
 import { getLandingData, type LandingData } from "@/lib/landing-data";
-import { getSeoCombos, type SeoCombo } from "@/lib/seo";
+import { getSeoData, type SeoData } from "@/lib/seo";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
@@ -12,11 +12,11 @@ export const revalidate = 3600;
 
 export default async function Home() {
   let data: LandingData = { passCount: null, withEmailCount: null, reachableCount: null, creators: [] };
-  let combos: SeoCombo[] = [];
+  let seo: SeoData = { combos: [], countryTotals: [] };
   try {
-    [data, combos] = await Promise.all([getLandingData(), getSeoCombos()]);
+    [data, seo] = await Promise.all([getLandingData(), getSeoData()]);
   } catch {
     // The page still renders (without live numbers) if the database is slow.
   }
-  return <LandingPage data={data} combos={combos} />;
+  return <LandingPage data={data} seo={seo} />;
 }

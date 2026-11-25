@@ -10,7 +10,6 @@ import {
   countryByCode,
   countryBySlug,
   countryPath,
-  formatCount,
   getSeoCombos,
   getTopCreators,
   isNicheSlug,
@@ -19,7 +18,7 @@ import {
 } from "@/lib/seo";
 
 // Rendered on first visit, then cached and rebuilt at most once a day.
-export const revalidate = 86400;
+export const revalidate = 3600;
 export const dynamicParams = true;
 export function generateStaticParams() {
   return [];
@@ -40,8 +39,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const label = nicheName(r.niche);
   const title = `Top ${label} YouTubers in ${r.country.name} (${year})`;
   const description =
-    `The top ${label.toLowerCase()} YouTube creators in ${r.country.name}, ranked by subscribers, ` +
-    `with recent average views and upload activity. Updated daily. Find and contact ${r.country.demonym} creators with ${BRAND_NAME}.`;
+    `The top ${label.toLowerCase()} YouTube creators in ${r.country.name}, ranked by average views on their last five videos. Updated daily. Find and contact ${r.country.demonym} creators with ${BRAND_NAME}.`;
   const path = listPath(r.niche, r.country.slug);
   return {
     title,
@@ -59,11 +57,9 @@ export default async function NicheCountryPage({ params }: Params) {
 
   const label = nicheName(r.niche);
   const combos = await getSeoCombos();
+  const listed = combos.find((c) => c.niche === r.niche && c.country === r.country.code)?.count ?? creators.length;
   const otherCountries = combos.filter((c) => c.niche === r.niche && c.country !== r.country.code);
   const otherNiches = combos.filter((c) => c.country === r.country.code && c.niche !== r.niche);
-  const avgSubs = Math.round(
-    creators.reduce((s, c) => s + (c.subscriber_count ?? 0), 0) / creators.length
-  );
   const withContact = creators.filter((c) => c.has_contact).length;
   const updated = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
   const unlockHref = `/login?redirect=${encodeURIComponent(`/channels?niche=${r.niche}&country=${r.country.code}`)}`;
@@ -71,7 +67,7 @@ export default async function NicheCountryPage({ params }: Params) {
   const faq = [
     {
       q: `How are these ${label.toLowerCase()} YouTubers ranked?`,
-      a: `By subscriber count. Every creator listed is active (uploaded in the last 45 days), averages at least 5,000 views on recent videos, and has an engagement rate of 2% or more.`,
+      a: `By average views on their last five videos. Every creator listed is independent, active (uploaded in the last 45 days), averages at least 5,000 views on recent videos, and has an engagement rate of 2% or more.`,
     },
     {
       q: `How do I contact ${r.country.demonym} ${label.toLowerCase()} YouTubers?`,
@@ -123,9 +119,11 @@ export default async function NicheCountryPage({ params }: Params) {
         Top {label} YouTubers in {r.country.name}
       </h1>
       <p className="text-body mt-3 max-w-2xl">
-        {creators.length} active {r.country.demonym} {label.toLowerCase()} creators on YouTube, ranked by
-        subscribers (average {formatCount(avgSubs)}). Each one posted in the last 45 days and gets real
-        engagement on recent videos. {withContact} have a public business contact.
+        {listed > creators.length
+          ? `The ${creators.length} most-viewed of ${listed.toLocaleString("en-US")} independent ${r.country.demonym} ${label.toLowerCase()} creators`
+          : `${creators.length} independent ${r.country.demonym} ${label.toLowerCase()} creators`}
+        , ranked by average views on their last five videos. Each one posted in the last 45 days.{" "}
+        {withContact} of those shown have a public business contact.
       </p>
       <p className="mt-2 text-xs text-muted">Updated {updated}</p>
 

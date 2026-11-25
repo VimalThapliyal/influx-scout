@@ -69,3 +69,15 @@ test("real fitness channels stay fitness with topics", () => {
 test("without topics, keyword rules behave as before", () => {
   assert.equal(classifyNiche({ title: "Home workout", description: "daily gym routine" }).primary_niche, "fitness");
 });
+
+test("organisations are separated from independent creators", async () => {
+  const { classifyChannelKind } = await import("../src/lib/classify");
+  assert.equal(classifyChannelKind({ title: "WWE" }), "organisation");
+  assert.equal(classifyChannelKind({ title: "Dry Bar Comedy", description: "The official YouTube channel of Dry Bar Comedy." }), "organisation");
+  assert.equal(classifyChannelKind({ title: "Taskmaster", description: "Watch full episodes of the hit TV show." }), "organisation");
+  assert.equal(classifyChannelKind({ title: "Universal Pictures" }), "organisation");
+  // People stay independent, including ones with "TV" or "Gaming" in the name.
+  assert.equal(classifyChannelKind({ title: "Nightblue TV", description: "I stream every day." }), "independent");
+  assert.equal(classifyChannelKind({ title: "Chloe Ting", description: "Free workout programs." }), "independent");
+  assert.equal(classifyChannelKind({ title: "Outdoor Tom", description: "Travel vlogs. Business: tom@example.com" }), "independent");
+});

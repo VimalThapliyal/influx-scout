@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Check } from "lucide-react";
 import { PAYMENTS_ENABLED } from "@/lib/billing";
+import { WaitlistForm } from "@/components/WaitlistForm";
 
 const FREE = [
   "Browse every listed creator",
@@ -61,9 +62,9 @@ export function PlanCards() {
             Upgrade to Pro
           </Link>
         ) : (
-          <p className="mt-6 text-[0.8125rem] text-muted">
-            Create a free account and you&apos;ll be able to upgrade from inside the app when Pro opens.
-          </p>
+          <div className="mt-6">
+            <WaitlistForm source="pricing" />
+          </div>
         )}
       </section>
     </div>

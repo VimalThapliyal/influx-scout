@@ -17,6 +17,19 @@ pieces are in `src/components/ui.tsx`.
 4. **Plain words.** Sentence case everywhere. Buttons say what happens ("Draft
    outreach email"). No internal terms (quota, pipeline jobs, scraping) in the UI.
 
+## Data rules
+
+- **One definition of "listed":** passes the four checks, uploaded in the last 45
+  days, has not asked to be removed. Totals come from `getLibraryCounts()`
+  (`src/lib/library-counts.ts`) and list counts from `getSeoData()`; do not count
+  creators anywhere else, or pages will disagree.
+- **Default ranking is recent average views** (last five videos), in the library
+  and on every public list. Subscribers are shown, never used to rank by default.
+- **Independent creators by default.** Studios, networks, labels and brands
+  (`channel_kind = organisation`) are kept out of public lists and behind the
+  "Creator type" filter in the library.
+- Public data pages revalidate hourly.
+
 ## Tokens
 
 ### Colour

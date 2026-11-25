@@ -1,7 +1,6 @@
 "use client";
 
 import { ChevronDown } from "lucide-react";
-import { TARGET_MARKET_LABEL } from "@/lib/markets";
 import { countryLabel } from "@/lib/tags";
 import { NICHE_FILTER_OPTIONS } from "@/lib/classify";
 
@@ -13,6 +12,7 @@ export type MarketFilter = "us-eu" | "worldwide";
 export type UploadedWithinFilter = "all" | "7" | "30" | "45" | "90";
 export type NicheFilter = string;
 export type QualityFilter = "all" | "ready" | "emerging" | "inactive";
+export type KindFilter = "independent" | "organisation" | "all";
 
 export interface SearchFilters {
   subscriberRange: SubscriberRange;
@@ -24,6 +24,7 @@ export interface SearchFilters {
   tier: string;
   uploadedWithin: UploadedWithinFilter;
   quality: QualityFilter;
+  kind: KindFilter;
 }
 
 export const defaultFilters: SearchFilters = {
@@ -36,6 +37,7 @@ export const defaultFilters: SearchFilters = {
   tier: "",
   uploadedWithin: "all",
   quality: "ready",
+  kind: "independent",
 };
 
 export function subscriberRangeToMinMax(range: SubscriberRange) {
@@ -81,11 +83,11 @@ const VIEWS_OPTIONS: { value: AvgViewsFilter; label: string }[] = [
 ];
 
 const MARKET_OPTIONS: { value: MarketFilter; label: string }[] = [
-  { value: "us-eu", label: TARGET_MARKET_LABEL },
+  { value: "us-eu", label: "US, Canada, Australia, Europe" },
   { value: "worldwide", label: "Worldwide" },
 ];
 
-const COUNTRY_OPTIONS = ["", "US", "GB", "DE", "FR", "NL", "ES", "IT", "SE", "IE", "AT", "CH", "PL", "NO", "DK", "FI", "PT"];
+const COUNTRY_OPTIONS = ["", "US", "GB", "CA", "AU", "DE", "FR", "NL", "ES", "IT", "SE", "IE", "AT", "CH", "PL", "NO", "DK", "FI", "PT"];
 
 const CONTACT_OPTIONS: { value: ContactFilter; label: string }[] = [
   { value: "all", label: "Any contact info" },
@@ -106,9 +108,15 @@ const ACTIVITY_OPTIONS: { value: UploadedWithinFilter; label: string }[] = [
 
 const QUALITY_OPTIONS: { value: QualityFilter; label: string }[] = [
   { value: "all", label: "All creators" },
-  { value: "ready", label: "Outreach ready" },
+  { value: "ready", label: "Passing all checks" },
   { value: "emerging", label: "Emerging" },
   { value: "inactive", label: "Inactive" },
+];
+
+const KIND_OPTIONS: { value: KindFilter; label: string }[] = [
+  { value: "independent", label: "Independent creators" },
+  { value: "organisation", label: "Studios, networks and brands" },
+  { value: "all", label: "All channel types" },
 ];
 
 interface FilterBarProps {
@@ -126,7 +134,8 @@ export function activeFilterCount(filters: SearchFilters): number {
     filters.niche !== "",
     filters.contact !== "all",
     filters.uploadedWithin !== "all",
-    filters.quality !== "all",
+    filters.quality !== "ready",
+    filters.kind !== "independent",
   ].filter(Boolean).length;
 }
 
@@ -136,9 +145,16 @@ export function FilterBar({ filters, onChange, onClear }: FilterBarProps) {
   return (
     <div className="-mx-4 flex items-center gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0 [&>*]:shrink-0">
       <FilterSelect
+        label="Creator type"
+        value={filters.kind}
+        isActive={filters.kind !== "independent"}
+        options={KIND_OPTIONS}
+        onChange={(v) => onChange({ ...filters, kind: v as KindFilter })}
+      />
+      <FilterSelect
         label="Quality"
         value={filters.quality}
-        isActive={filters.quality !== "all"}
+        isActive={filters.quality !== "ready"}
         options={QUALITY_OPTIONS}
         onChange={(v) => onChange({ ...filters, quality: v as QualityFilter })}
       />

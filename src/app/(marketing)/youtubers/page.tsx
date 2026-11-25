@@ -5,15 +5,14 @@ import { BRAND_NAME } from "@/lib/brand";
 import {
   countryByCode,
   countryPath,
-  getSeoCombos,
-  hubCountries,
+  getSeoData,
   listPath,
   nicheName,
   type SeoCombo,
 } from "@/lib/seo";
 import type { NicheSlug } from "@/lib/classify";
 
-export const revalidate = 86400;
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: `YouTube Influencer Lists by Niche & Country — ${BRAND_NAME}`,
@@ -23,7 +22,7 @@ export const metadata: Metadata = {
 };
 
 export default async function YoutubersIndexPage() {
-  const combos = await getSeoCombos();
+  const { combos, countryTotals } = await getSeoData();
   const byNiche = new Map<NicheSlug, SeoCombo[]>();
   for (const c of combos) {
     if (!byNiche.has(c.niche)) byNiche.set(c.niche, []);
@@ -37,14 +36,14 @@ export default async function YoutubersIndexPage() {
     <MarketingShell>
       <h1 className="h-page">YouTube influencers by niche &amp; country</h1>
       <p className="text-body mt-3 max-w-2xl">
-        Ranked lists of active YouTube creators in the USA and Europe. Every creator posted in the last
-        45 days, averages 5,000+ views on recent videos, and has real engagement.
+        Independent YouTube creators in the US and Europe, ranked by average views on their last five
+        videos. Every creator posted in the last 45 days and has at least 2% engagement.
       </p>
 
       <section className="mt-8">
         <h2 className="text-xs text-muted">Browse by country</h2>
         <div className="mt-3 flex flex-wrap gap-2">
-          {hubCountries(combos).map((c) => {
+          {countryTotals.map((c) => {
             const co = countryByCode(c.code)!;
             return (
               <Link key={c.code} href={countryPath(co.slug)} className="tag-pill hover:text-fg">

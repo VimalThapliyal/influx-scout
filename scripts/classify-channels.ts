@@ -105,13 +105,10 @@ async function main() {
         website: row.website,
         category: row.category,
         topic_categories: row.topic_categories,
+        bio: row.description ?? "",
       });
       const hasTopics = Array.isArray(row.topic_categories) && row.topic_categories.length > 0;
 
-      if (!classified.primary_niche && !hasTopics && classified.country_confidence === "unknown") {
-        skipped++;
-        continue;
-      }
       if (classified.primary_niche) {
         byNiche[classified.primary_niche] = (byNiche[classified.primary_niche] ?? 0) + 1;
         if (extra) usedVideos++;
@@ -123,6 +120,7 @@ async function main() {
       }
 
       const patch: Record<string, unknown> = {
+        channel_kind: classified.channel_kind,
         country_confidence: classified.country_confidence,
         country_evidence: classified.country_evidence,
         country_classified_at: classified.country_classified_at,

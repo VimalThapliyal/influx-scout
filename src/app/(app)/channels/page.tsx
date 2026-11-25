@@ -26,7 +26,7 @@ import { EmailLockedBanner } from "@/components/EmailGate";
 
 const PAGE_SIZE = 25;
 
-export type LibrarySort = "recent" | "score";
+export type LibrarySort = "views" | "subscribers" | "recent";
 
 function parseUploadedWithin(v: string | null): UploadedWithinFilter {
   if (v === "7" || v === "30" || v === "45" || v === "90") return v;
@@ -60,6 +60,8 @@ function filtersFromSearchParams(params: URLSearchParams): SearchFilters {
   filters.uploadedWithin = parseUploadedWithin(
     params.get("uploaded_within") ?? params.get("uploaded_within_days")
   );
+  const kind = params.get("kind");
+  if (kind === "organisation" || kind === "all" || kind === "independent") filters.kind = kind;
   const quality = params.get("quality");
   if (quality === "all" || quality === "ready" || quality === "emerging" || quality === "inactive") {
     filters.quality = quality;
@@ -68,7 +70,8 @@ function filtersFromSearchParams(params: URLSearchParams): SearchFilters {
 }
 
 function sortFromSearchParams(params: URLSearchParams): LibrarySort {
-  return params.get("sort") === "score" ? "score" : "recent";
+  const v = params.get("sort");
+  return v === "subscribers" || v === "recent" ? v : "views";
 }
 
 function pageFromSearchParams(params: URLSearchParams): number {
@@ -86,13 +89,9 @@ function buildQueryParams(
     limit: String(PAGE_SIZE),
     offset: String((page - 1) * PAGE_SIZE),
   });
-  if (sort === "recent") {
-    params.set("sort", "created_at");
-    params.set("order", "desc");
-  } else {
-    params.set("sort", "influencer_score");
-    params.set("order", "desc");
-  }
+  params.set("sort", sort === "recent" ? "created_at" : sort === "subscribers" ? "subscriber_count" : "avg_views_last5");
+  params.set("order", "desc");
+  if (filters.kind !== "all") params.set("kind", filters.kind);
   if (q) params.set("q", q);
   const { min, max } = subscriberRangeToMinMax(filters.subscriberRange);
   if (min) params.set("min_subscribers", String(min));
@@ -122,7 +121,8 @@ function buildShareParams(
 ): URLSearchParams {
   const params = new URLSearchParams();
   if (q) params.set("q", q);
-  if (sort !== "recent") params.set("sort", sort);
+  if (sort !== "views") params.set("sort", sort);
+  if (filters.kind !== "independent") params.set("kind", filters.kind);
   if (page > 1) params.set("page", String(page));
   if (filters.subscriberRange !== "all") params.set("subscribers", filters.subscriberRange);
   if (filters.avgViews !== "all") params.set("avg_views", filters.avgViews);
@@ -294,16 +294,17 @@ function ChannelsPageContent() {
           <h1 className="h-page">Creators</h1>
           <p className="page-subtitle tabular-nums">
             {loading ? "Loading creators" : `${total.toLocaleString()} ${total === 1 ? "creator" : "creators"}`}
-            {!loading && filters.quality === "ready" ? " ready for outreach" : ""}
-            {!loading && filters.market === "us-eu" && !filters.country ? " in the US and Europe" : ""}
+            {!loading && filters.kind === "independent" ? ", independent" : ""}
+            {!loading && filters.quality === "ready" ? ", passing all four checks" : ""}
           </p>
         </div>
         <FilterSelect
           label="Sort by"
           value={sort}
           options={[
-            { value: "recent", label: "Newest first" },
-            { value: "score", label: "Highest score" },
+            { value: "views", label: "Sort: recent average views" },
+            { value: "subscribers", label: "Sort: subscribers" },
+            { value: "recent", label: "Sort: newest added" },
           ]}
           onChange={(v) => updateSort(v as LibrarySort)}
         />
@@ -332,8 +333,8 @@ function ChannelsPageContent() {
 
       {filters.quality === "ready" && (
         <p className="text-xs text-muted">
-          Ready for outreach means the creator posted in the last 45 days, averages 5,000+ views on recent
-          videos and has 2%+ engagement.
+          The four checks: posted in the last 45 days, 5,000+ average views on the last five videos, 2%+
+          engagement, and based in the US or Europe. Average views are for the last five videos.
         </p>
       )}
 

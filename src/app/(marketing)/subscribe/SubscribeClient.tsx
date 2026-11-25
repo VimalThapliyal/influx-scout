@@ -6,6 +6,7 @@ import { Check, CircleCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { OUTREACH_LIBRARY_HREF } from "@/lib/routes";
 import { PAYMENTS_ENABLED } from "@/lib/billing";
+import { WaitlistForm } from "@/components/WaitlistForm";
 
 interface SubState {
   user: { id: string; email: string | undefined } | null;
@@ -126,14 +127,14 @@ export default function SubscribeClient() {
           Email addresses and CSV export will be part of Pro. We haven&apos;t set a date or a price. Until
           then, browsing, filters and campaign lists are free.
         </p>
-        <div className="mt-6 flex flex-wrap gap-2">
-          <Link href={OUTREACH_LIBRARY_HREF} className="btn-primary">
-            Browse creators
-          </Link>
-          <Link href="/pricing" className="btn-secondary">
+        <div className="mt-6">
+          <WaitlistForm source="subscribe" />
+        </div>
+        <p className="mt-6 text-[0.8125rem] text-muted">
+          <Link href="/pricing" className="text-link">
             See what each plan includes
           </Link>
-        </div>
+        </p>
       </div>
     );
   }

@@ -10,7 +10,7 @@ export function SignInToSaveBanner({ compact = false }: { compact?: boolean }) {
   if (compact) {
     return (
       <p className="text-sm text-muted">
-        <Link href={loginHref} className="font-medium text-accent hover:text-accent">
+        <Link href={loginHref} className="text-link">
           Sign in
         </Link>{" "}
         to save campaign lists and track outreach.
@@ -19,13 +19,12 @@ export function SignInToSaveBanner({ compact = false }: { compact?: boolean }) {
   }
 
   return (
-    <div className="rounded-lg border border-accent/25 bg-accent-soft px-4 py-3 sm:px-5 sm:py-4">
-      <p className="text-sm font-medium text-accent">Sign in to save progress</p>
-      <p className="mt-1 text-xs text-muted">
-        Campaign lists and outreach tracking are saved to your account. Browse creators without
-        signing in — sign in when you&apos;re ready to build lists.
+    <div className="card px-4 py-3">
+      <p className="text-sm font-medium text-fg">Sign in to save lists</p>
+      <p className="mt-1 text-[0.8125rem] text-muted">
+        Campaign lists and outreach tracking are saved to your account.
       </p>
-      <Link href={loginHref} className="btn-primary mt-3 inline-flex text-xs">
+      <Link href={loginHref} className="btn-primary btn-sm mt-3">
         Sign in
       </Link>
     </div>

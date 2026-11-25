@@ -17,7 +17,7 @@ import {
   nicheName,
 } from "@/lib/seo";
 
-export const revalidate = 86400;
+export const revalidate = 3600;
 export const dynamicParams = true;
 export function generateStaticParams() {
   return [];
@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const title = `Top ${label} YouTubers in the USA & Europe (${year})`;
   const description =
     `The top active ${label.toLowerCase()} YouTube creators in the US, UK, Canada, Australia and Europe, ` +
-    `ranked by subscribers with recent views. Updated daily. Find and contact them with ${BRAND_NAME}.`;
+    `ranked by average views on their last five videos. Updated daily. Find and contact them with ${BRAND_NAME}.`;
   const path = listPath(params.niche);
   return {
     title,
@@ -56,6 +56,7 @@ export default async function NichePage({ params }: Params) {
 
   const label = nicheName(niche);
   const countries = (await getSeoCombos()).filter((c) => c.niche === niche);
+  const total = Math.max(creators.length, countries.reduce((s, c) => s + c.count, 0));
   const unlockHref = `/login?redirect=${encodeURIComponent(`/channels?niche=${niche}`)}`;
 
   return (
@@ -67,8 +68,9 @@ export default async function NichePage({ params }: Params) {
       </nav>
       <h1 className="h-page mt-4">Top {label} YouTubers in the USA &amp; Europe</h1>
       <p className="text-body mt-3 max-w-2xl">
-        Active {label.toLowerCase()} creators across the US, UK, Canada, Australia and Europe, ranked by
-        subscribers. Every creator posted in the last 45 days and gets real engagement on recent videos.
+        The {creators.length} most-viewed of {total.toLocaleString("en-US")} independent {label.toLowerCase()} creators
+        across the US, UK, Canada, Australia and Europe, ranked by average views on their last five videos.
+        Every creator posted in the last 45 days.
       </p>
 
       {countries.length > 0 && (

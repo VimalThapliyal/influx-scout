@@ -1,7 +1,8 @@
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { canViewEmails } from "@/lib/auth";
 import { redactChannels } from "@/lib/email";
-import { TARGET_MARKET_LABEL, targetMarketOrFilter } from "@/lib/markets";
+import { TARGET_MARKET_LABEL } from "@/lib/markets";
+import { INDEPENDENT_FILTER, activeSince, getLibraryCounts } from "@/lib/library-counts";
 import type { Channel, InfluencerStatus } from "@/lib/types";
 
 export interface LibraryStats {
@@ -21,27 +22,15 @@ export interface PipelineStats {
 }
 
 export async function getLibraryStats(): Promise<LibraryStats> {
-  try {
-    const supabase = getSupabaseAdmin();
-    const [totalRes, emailRes, marketRes] = await Promise.all([
-      supabase.from("channels").select("*", { count: "exact", head: true }),
-      supabase.from("channels").select("*", { count: "exact", head: true }).not("email", "is", null),
-      supabase
-        .from("channels")
-        .select("*", { count: "exact", head: true })
-        .or(targetMarketOrFilter()),
-    ]);
-
-    return {
-      total: totalRes.count ?? 0,
-      withEmail: emailRes.count ?? 0,
-      inTargetMarket: marketRes.count ?? 0,
-    };
-  } catch {
-    return { total: 0, withEmail: 0, inTargetMarket: 0 };
-  }
+  const counts = await getLibraryCounts();
+  return {
+    total: counts?.listed ?? 0,
+    withEmail: counts?.withEmail ?? 0,
+    inTargetMarket: counts?.independent ?? 0,
+  };
 }
 
+/** Most-viewed independent creators with a public email. */
 export async function getRecommendedCreators(): Promise<Channel[]> {
   try {
     const supabase = getSupabaseAdmin();
@@ -49,11 +38,13 @@ export async function getRecommendedCreators(): Promise<Channel[]> {
     const { data } = await supabase
       .from("channels")
       .select("*")
+      .eq("quality_pass", true)
+      .gte("latest_upload_at", activeSince())
       .is("opted_out_at", null)
       .not("email", "is", null)
-      .or(targetMarketOrFilter())
-      .order("influencer_score", { ascending: false })
-      .limit(4);
+      .or(INDEPENDENT_FILTER)
+      .order("avg_views_last5", { ascending: false, nullsFirst: false })
+      .limit(5);
 
     return redactChannels(data ?? [], canView);
   } catch {
@@ -61,6 +52,7 @@ export async function getRecommendedCreators(): Promise<Channel[]> {
   }
 }
 
+/** Newest listed creators. */
 export async function getRecentCreators(): Promise<Channel[]> {
   try {
     const supabase = getSupabaseAdmin();
@@ -68,9 +60,12 @@ export async function getRecentCreators(): Promise<Channel[]> {
     const { data } = await supabase
       .from("channels")
       .select("*")
+      .eq("quality_pass", true)
+      .gte("latest_upload_at", activeSince())
       .is("opted_out_at", null)
-      .order("last_updated", { ascending: false })
-      .limit(4);
+      .or(INDEPENDENT_FILTER)
+      .order("created_at", { ascending: false })
+      .limit(5);
 
     return redactChannels(data ?? [], canView);
   } catch {

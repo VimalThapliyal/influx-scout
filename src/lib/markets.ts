@@ -27,8 +27,11 @@ export const EUROPE_COUNTRY_CODES = [
 
 export const USA_COUNTRY_CODE = "US";
 
+/** Same countries the quality checks accept: US, Canada, Australia and Europe. */
 export const TARGET_COUNTRY_CODES: string[] = [
   USA_COUNTRY_CODE,
+  "CA",
+  "AU",
   ...EUROPE_COUNTRY_CODES,
 ];
 

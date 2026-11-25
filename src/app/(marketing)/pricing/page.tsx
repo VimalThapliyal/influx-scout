@@ -16,7 +16,7 @@ const FAQ = [
   },
   {
     q: "When will Pro be available?",
-    a: "We haven't set a date or a price. Free accounts will be able to upgrade from inside the app when it opens.",
+    a: "We haven't set a date or a price. Join the waitlist above and we'll send you one email when it opens.",
   },
   {
     q: "Where does the data come from?",

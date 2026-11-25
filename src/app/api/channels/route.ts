@@ -3,6 +3,7 @@ import { getSupabaseAdmin } from "@/lib/supabase";
 import { canViewEmails } from "@/lib/auth";
 import { redactChannels } from "@/lib/email";
 import { targetMarketOrFilter } from "@/lib/markets";
+import { INDEPENDENT_FILTER, activeSince } from "@/lib/library-counts";
 
 export async function GET(request: NextRequest) {
   try {
@@ -23,7 +24,8 @@ export async function GET(request: NextRequest) {
     const hasContactForm = searchParams.get("has_contact_form");
     const uploadedWithinDays = searchParams.get("uploaded_within_days");
     const quality = searchParams.get("quality"); // ready | emerging | inactive
-    const sortParam = searchParams.get("sort") ?? "created_at";
+    const kind = searchParams.get("kind"); // independent | organisation
+    const sortParam = searchParams.get("sort") ?? "avg_views_last5";
     const allowedSorts = new Set([
       "influencer_score",
       "last_updated",
@@ -32,7 +34,7 @@ export async function GET(request: NextRequest) {
       "avg_views_last5",
       "latest_upload_at",
     ]);
-    const sort = allowedSorts.has(sortParam) ? sortParam : "created_at";
+    const sort = allowedSorts.has(sortParam) ? sortParam : "avg_views_last5";
     const order = searchParams.get("order") === "asc";
     const limit = Math.min(parseInt(searchParams.get("limit") ?? "50", 10), 100);
     const offset = Math.max(parseInt(searchParams.get("offset") ?? "0", 10), 0);
@@ -41,7 +43,13 @@ export async function GET(request: NextRequest) {
       // Creators who asked to be removed (/remove-my-listing) never appear.
       // "estimated": exact for small result sets, planner estimate for large ones —
       // an exact count scans ~200k wide rows and hits the statement timeout.
-      let query = supabase.from("channels").select("*", { count: "estimated" }).is("opted_out_at", null);
+      // Listed creators are a small set (a partial index covers them), so their
+      // count is exact and matches the totals shown elsewhere on the site.
+      const countMode = useQuality && quality === "ready" ? "exact" : "estimated";
+      let query = supabase.from("channels").select("*", { count: countMode }).is("opted_out_at", null);
+      if (kind === "independent") query = query.or(INDEPENDENT_FILTER);
+      else if (kind === "organisation") query = query.eq("channel_kind", "organisation");
+
 
       if (q) {
         query = query.or(`title.ilike.%${q}%,description.ilike.%${q}%`);
@@ -77,7 +85,8 @@ export async function GET(request: NextRequest) {
         );
       }
       if (useQuality && quality === "ready") {
-        query = query.eq("quality_pass", true);
+        // Same definition of "listed" as the rest of the site: passing and active.
+        query = query.eq("quality_pass", true).gte("latest_upload_at", activeSince());
       } else if (useQuality && quality === "emerging") {
         query = query.eq("is_emerging", true);
       } else if (useQuality && quality === "inactive") {
@@ -95,7 +104,7 @@ export async function GET(request: NextRequest) {
       }
 
       return query
-        .order(sort, { ascending: order })
+        .order(sort, { ascending: order, nullsFirst: false })
         .order("id", { ascending: true })
         .range(offset, offset + limit - 1);
     };
