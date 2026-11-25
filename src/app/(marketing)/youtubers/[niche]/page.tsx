@@ -60,13 +60,13 @@ export default async function NichePage({ params }: Params) {
 
   return (
     <MarketingShell>
-      <nav className="font-mono text-xs uppercase tracking-wider text-mkt-ash">
-        <Link href="/youtubers" className="hover:text-mkt-paper">YouTubers</Link>
+      <nav className="text-xs text-muted">
+        <Link href="/youtubers" className="hover:text-fg">YouTubers</Link>
         {" / "}
         <span>{label}</span>
       </nav>
-      <h1 className="mkt-h2 mt-4 !text-4xl">Top {label} YouTubers in the USA &amp; Europe</h1>
-      <p className="mkt-body mt-3 max-w-2xl">
+      <h1 className="h-page mt-4">Top {label} YouTubers in the USA &amp; Europe</h1>
+      <p className="text-body mt-3 max-w-2xl">
         Active {label.toLowerCase()} creators across the US, UK, Canada, Australia and Europe, ranked by
         subscribers. Every creator posted in the last 45 days and gets real engagement on recent videos.
       </p>
@@ -76,7 +76,7 @@ export default async function NichePage({ params }: Params) {
           {countries.map((c) => {
             const co = countryByCode(c.country)!;
             return (
-              <Link key={c.country} href={listPath(niche, co.slug)} className="mkt-tag hover:text-mkt-paper">
+              <Link key={c.country} href={listPath(niche, co.slug)} className="tag-pill hover:text-fg">
                 {co.name.replace(/^the /, "")} ({c.count})
               </Link>
             );
@@ -89,7 +89,7 @@ export default async function NichePage({ params }: Params) {
       </div>
 
       <div className="mt-8 text-center">
-        <Link href={unlockHref} className="mkt-btn-primary inline-flex">
+        <Link href={unlockHref} className="btn-primary inline-flex">
           Get contact details — free
         </Link>
       </div>

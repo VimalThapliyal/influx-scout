@@ -36,20 +36,20 @@ function MetricCard({
     <div className="card p-5">
       <p className="metric-label">{label}</p>
       <p
-        className={`metric-value mt-1 ${accent ? "text-amber-300" : "text-white"}`}
+        className={`metric-value mt-1 ${accent ? "text-warn" : "text-fg"}`}
       >
         {value}
       </p>
-      {sub ? <p className="mt-1 text-xs text-slate-500">{sub}</p> : null}
+      {sub ? <p className="mt-1 text-xs text-muted">{sub}</p> : null}
     </div>
   );
 }
 
 function StatusRow({ label, value }: { label: string; value: number }) {
   return (
-    <div className="flex items-center justify-between border-b border-white/5 py-2.5 text-sm last:border-0">
-      <span className="text-slate-400">{label}</span>
-      <span className="font-medium tabular-nums text-white">
+    <div className="flex items-center justify-between border-b border-line py-2.5 text-sm last:border-0">
+      <span className="text-muted">{label}</span>
+      <span className="font-medium tabular-nums text-fg">
         {formatNumber(value)}
       </span>
     </div>
@@ -123,7 +123,7 @@ export default function AdminOpsPage() {
   if (loading && !data) {
     return (
       <div className="flex justify-center py-16">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/10 border-t-violet-500" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-line border-t-violet-500" />
       </div>
     );
   }
@@ -131,8 +131,8 @@ export default function AdminOpsPage() {
   if (status === 401) {
     return (
       <div className="card space-y-4 p-8 text-center">
-        <h1 className="page-title">Admin ops</h1>
-        <p className="text-slate-400">Sign in to view the crawler dashboard.</p>
+        <h1 className="h-page">Admin ops</h1>
+        <p className="text-muted">Sign in to view the crawler dashboard.</p>
         <Link href="/login?redirect=/admin" className="btn-primary inline-flex">
           Sign in
         </Link>
@@ -143,13 +143,13 @@ export default function AdminOpsPage() {
   if (status === 403) {
     return (
       <div className="card space-y-3 p-8 text-center">
-        <h1 className="page-title">Admin ops</h1>
-        <p className="text-slate-400">
+        <h1 className="h-page">Admin ops</h1>
+        <p className="text-muted">
           Your account is not on the admin allowlist.
         </p>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-muted">
           Add your email to{" "}
-          <code className="text-slate-300">ADMIN_EMAILS</code> in env (local +
+          <code className="text-fg">ADMIN_EMAILS</code> in env (local +
           Vercel), then redeploy.
         </p>
       </div>
@@ -159,7 +159,7 @@ export default function AdminOpsPage() {
   if (error || !data) {
     return (
       <div className="card space-y-4 p-8 text-center">
-        <h1 className="page-title">Admin ops</h1>
+        <h1 className="h-page">Admin ops</h1>
         <p className="text-rose-400">{error ?? "No data"}</p>
         <button type="button" onClick={load} className="btn-secondary">
           Retry
@@ -179,10 +179,10 @@ export default function AdminOpsPage() {
     <div className="space-y-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-violet-400">
+          <p className="text-xs font-semibold text-violet-400">
             Operations
           </p>
-          <h1 className="page-title mt-1">Crawler & pipeline</h1>
+          <h1 className="h-page mt-1">Crawler & pipeline</h1>
           <p className="page-subtitle">
             Pending queue, seeds, enrich failures, robots blocks, and expired
             YouTube metrics.
@@ -194,11 +194,11 @@ export default function AdminOpsPage() {
           disabled={loading}
           className="btn-secondary shrink-0"
         >
-          {loading ? "Refreshing…" : "Refresh"}
+          {loading ? "Refreshing" : "Refresh"}
         </button>
       </div>
 
-      <p className="text-xs text-slate-500">
+      <p className="text-xs text-muted">
         Snapshot {formatRelative(data.generated_at)}
       </p>
 
@@ -230,32 +230,32 @@ export default function AdminOpsPage() {
 
       {quota ? (
         <section className="card p-5">
-          <h2 className="section-title">YouTube API quota</h2>
+          <h2 className="h-section">YouTube API quota</h2>
           <div className="mt-3 flex flex-wrap items-end gap-6">
             <div>
               <p className="metric-label">Used today</p>
-              <p className="metric-value text-white">
+              <p className="metric-value text-fg">
                 {formatNumber(quota.used)}
-                <span className="text-base font-normal text-slate-500">
+                <span className="text-base font-normal text-muted">
                   {" "}
                   / {formatNumber(quota.limit)}
                 </span>
               </p>
             </div>
             <div className="min-w-[12rem] flex-1">
-              <div className="h-2 overflow-hidden rounded-full bg-white/10">
+              <div className="h-2 overflow-hidden rounded-full bg-subtle">
                 <div
                   className={`h-full rounded-full ${
                     quota.percent_used > 80
                       ? "bg-rose-500"
                       : quota.percent_used > 50
-                        ? "bg-amber-500"
-                        : "bg-emerald-500"
+                        ? "bg-warn"
+                        : "bg-success"
                   }`}
                   style={{ width: `${Math.min(100, quota.percent_used)}%` }}
                 />
               </div>
-              <p className="mt-1.5 text-xs text-slate-500">
+              <p className="mt-1.5 text-xs text-muted">
                 {quota.percent_used}% · {formatNumber(quota.remaining)} remaining
               </p>
             </div>
@@ -265,7 +265,7 @@ export default function AdminOpsPage() {
 
       <div className="grid gap-6 lg:grid-cols-3">
         <section className="card p-5">
-          <h2 className="section-title">Seed URLs</h2>
+          <h2 className="h-section">Seed URLs</h2>
           <div className="mt-2">
             <StatusRow label="Available" value={seeds.available} />
             <StatusRow label="Claimed" value={seeds.claimed} />
@@ -275,7 +275,7 @@ export default function AdminOpsPage() {
         </section>
 
         <section className="card p-5">
-          <h2 className="section-title">Channel pending</h2>
+          <h2 className="h-section">Channel pending</h2>
           <div className="mt-2">
             <StatusRow label="Unclaimed" value={pending.unclaimed} />
             <StatusRow label="Claimed (in flight)" value={pending.claimed} />
@@ -286,7 +286,7 @@ export default function AdminOpsPage() {
         </section>
 
         <section className="card p-5">
-          <h2 className="section-title">Email status</h2>
+          <h2 className="h-section">Email status</h2>
           <div className="mt-2">
             <StatusRow label="Found" value={library.email_found} />
             <StatusRow label="Locked on source" value={library.email_locked} />
@@ -297,14 +297,14 @@ export default function AdminOpsPage() {
       </div>
 
       <section className="card overflow-hidden">
-        <div className="border-b border-white/5 px-5 py-4">
-          <h2 className="section-title">Workers</h2>
-          <p className="mt-1 text-sm text-slate-500">
+        <div className="border-b border-line px-5 py-4">
+          <h2 className="h-section">Workers</h2>
+          <p className="mt-1 text-sm text-muted">
             Contributor keys and submit activity
           </p>
         </div>
 
-        <div className="border-b border-white/5 px-5 py-4">
+        <div className="border-b border-line px-5 py-4">
           <div className="flex flex-wrap items-center gap-2">
             <input
               type="text"
@@ -314,26 +314,26 @@ export default function AdminOpsPage() {
                 if (e.key === "Enter") createWorker();
               }}
               placeholder="Contributor name (e.g. alice)"
-              className="min-w-0 flex-1 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-violet-500 focus:outline-none"
+              className="min-w-0 flex-1 rounded-lg border border-line bg-subtle px-3 py-2 text-sm text-fg placeholder:text-muted focus:border-violet-500 focus:outline-none"
             />
             <button
               onClick={createWorker}
               disabled={creatingWorker || !newWorkerName.trim()}
               className="btn-primary shrink-0 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {creatingWorker ? "Creating…" : "Create worker key"}
+              {creatingWorker ? "Creating" : "Create worker key"}
             </button>
           </div>
           {createError ? (
-            <p className="mt-2 text-sm text-red-400">{createError}</p>
+            <p className="mt-2 text-sm text-danger">{createError}</p>
           ) : null}
           {createdKey ? (
-            <div className="mt-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3">
-              <p className="text-sm text-emerald-300">
+            <div className="mt-3 rounded-lg border border-success/30 bg-success-soft p-3">
+              <p className="text-sm text-success">
                 Key for <span className="font-medium">{createdKey.name}</span> —
                 shown once, copy it now:
               </p>
-              <code className="mt-1 block break-all text-sm text-white">
+              <code className="mt-1 block break-all text-sm text-fg">
                 {createdKey.key}
               </code>
             </div>
@@ -341,7 +341,7 @@ export default function AdminOpsPage() {
         </div>
 
         {workers.length === 0 ? (
-          <p className="px-5 py-8 text-center text-sm text-slate-500">
+          <p className="px-5 py-8 text-center text-sm text-muted">
             No scrape workers yet — create one above.
           </p>
         ) : (
@@ -359,25 +359,25 @@ export default function AdminOpsPage() {
               <tbody>
                 {workers.map((w) => (
                   <tr key={w.id} className="table-row">
-                    <td className="px-5 py-3 text-white">{w.name}</td>
+                    <td className="px-5 py-3 text-fg">{w.name}</td>
                     <td className="px-5 py-3">
                       <span
                         className={
                           w.active
-                            ? "text-emerald-400"
-                            : "text-slate-500"
+                            ? "text-success"
+                            : "text-muted"
                         }
                       >
                         {w.active ? "Active" : "Inactive"}
                       </span>
                     </td>
-                    <td className="px-5 py-3 tabular-nums text-slate-300">
+                    <td className="px-5 py-3 tabular-nums text-fg">
                       {formatNumber(w.channels_submitted)}
                     </td>
-                    <td className="px-5 py-3 tabular-nums text-slate-300">
+                    <td className="px-5 py-3 tabular-nums text-fg">
                       {formatNumber(w.channels_accepted)}
                     </td>
-                    <td className="px-5 py-3 text-slate-500">
+                    <td className="px-5 py-3 text-muted">
                       {formatRelative(w.last_submit_at)}
                     </td>
                   </tr>
@@ -390,29 +390,29 @@ export default function AdminOpsPage() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="card overflow-hidden">
-          <div className="border-b border-white/5 px-5 py-4">
-            <h2 className="section-title">Recent enrich failures</h2>
+          <div className="border-b border-line px-5 py-4">
+            <h2 className="h-section">Recent enrich failures</h2>
           </div>
           {recent_failures.length === 0 ? (
-            <p className="px-5 py-8 text-center text-sm text-slate-500">
+            <p className="px-5 py-8 text-center text-sm text-muted">
               No failed pending rows.
             </p>
           ) : (
-            <ul className="divide-y divide-white/5">
+            <ul className="divide-y divide-line">
               {recent_failures.map((row) => (
                 <li key={row.id} className="px-5 py-3">
-                  <p className="text-sm text-white">
+                  <p className="text-sm text-fg">
                     {row.handle || row.title || row.id.slice(0, 8)}
                   </p>
                   {row.handle && row.title && row.title !== row.handle ? (
-                    <p className="mt-0.5 truncate text-xs text-slate-500">
+                    <p className="mt-0.5 truncate text-xs text-muted">
                       {row.title}
                     </p>
                   ) : null}
                   <p className="mt-0.5 text-xs text-rose-400/90">
                     {row.reject_reason || "failed"}
                   </p>
-                  <p className="mt-0.5 text-[11px] text-slate-600">
+                  <p className="mt-0.5 text-xs text-muted">
                     {formatRelative(row.updated_at)}
                   </p>
                 </li>
@@ -422,15 +422,15 @@ export default function AdminOpsPage() {
         </section>
 
         <section className="card overflow-hidden">
-          <div className="border-b border-white/5 px-5 py-4">
-            <h2 className="section-title">Robots-disallowed sample</h2>
+          <div className="border-b border-line px-5 py-4">
+            <h2 className="h-section">Robots-disallowed sample</h2>
           </div>
           {robots_blocked_sample.length === 0 ? (
-            <p className="px-5 py-8 text-center text-sm text-slate-500">
+            <p className="px-5 py-8 text-center text-sm text-muted">
               No robots-blocked websites recorded.
             </p>
           ) : (
-            <ul className="divide-y divide-white/5">
+            <ul className="divide-y divide-line">
               {robots_blocked_sample.map((row) => (
                 <li key={row.id} className="px-5 py-3">
                   <Link
@@ -439,10 +439,10 @@ export default function AdminOpsPage() {
                   >
                     {row.title}
                   </Link>
-                  <p className="mt-0.5 truncate text-xs text-slate-500">
+                  <p className="mt-0.5 truncate text-xs text-muted">
                     {row.website || "No website URL"}
                   </p>
-                  <p className="mt-0.5 text-[11px] text-slate-600">
+                  <p className="mt-0.5 text-xs text-muted">
                     Checked {formatRelative(row.website_robots_checked_at)}
                   </p>
                 </li>

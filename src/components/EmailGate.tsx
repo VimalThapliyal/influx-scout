@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Check, Copy, Lock } from "lucide-react";
 import { PAYMENTS_ENABLED, UPGRADE_LABEL } from "@/lib/billing";
 
 export function EmailGate({
@@ -38,11 +39,11 @@ export function EmailGate({
   const preview = maskedPreview ?? (email ? `${email[0]}••••@${email.split("@")[1]}` : null);
 
   if (!email && !maskedPreview && !locked) {
-    return <span className={`text-mkt-ash/60 ${className}`}>Not available</span>;
+    return <span className={`text-muted ${className}`}>Not available</span>;
   }
 
   if (isSubscribed === null) {
-    return <span className={`font-mono text-sm text-mkt-ash/60 ${className}`}>•••••@•••••.com</span>;
+    return <span className={`text-sm text-muted ${className}`}>•••••@•••••.com</span>;
   }
 
   if (showFull && email) {
@@ -50,7 +51,7 @@ export function EmailGate({
       return (
         <button
           type="button"
-          className={`flex items-center gap-1 text-mkt-tally hover:brightness-110 ${className}`}
+          className={`flex items-center gap-1 text-accent hover:text-accent-hover ${className}`}
           onClick={() => {
             navigator.clipboard.writeText(email);
             setCopied(true);
@@ -58,12 +59,12 @@ export function EmailGate({
           }}
         >
           {email}
-          <span className="text-xs">{copied ? "✓" : "⎘"}</span>
+          {copied ? <Check size={14} strokeWidth={1.75} aria-label="Copied" /> : <Copy size={14} strokeWidth={1.75} aria-label="Copy" />}
         </button>
       );
     }
     return (
-      <a href={`mailto:${email}`} className={`text-mkt-tally hover:brightness-110 ${className}`}>
+      <a href={`mailto:${email}`} className={`text-accent hover:text-accent-hover ${className}`}>
         {email}
       </a>
     );
@@ -71,16 +72,16 @@ export function EmailGate({
 
   return (
     <div className={`flex flex-col gap-1 ${className}`}>
-      <span className="font-mono text-sm text-mkt-ash">{preview ?? "•••••@•••••.com"}</span>
+      <span className="text-sm text-muted">{preview ?? "•••••@•••••.com"}</span>
       {PAYMENTS_ENABLED ? (
         <Link
           href={hasUser ? "/subscribe" : "/login?redirect=/subscribe"}
-          className="text-xs font-medium text-mkt-tally hover:brightness-110"
+          className="text-xs font-medium text-accent hover:text-accent-hover"
         >
-          {hasUser ? "Upgrade to unlock →" : "Sign in to unlock →"}
+          {hasUser ? "Upgrade to unlock" : "Sign in to unlock"}
         </Link>
       ) : (
-        <span className="text-xs font-medium text-mkt-ash">{UPGRADE_LABEL}</span>
+        <span className="text-xs font-medium text-muted">{UPGRADE_LABEL}</span>
       )}
     </div>
   );
@@ -88,22 +89,21 @@ export function EmailGate({
 
 export function EmailLockedBanner() {
   return (
-    <div className="flex items-start gap-3 rounded-sm border border-mkt-tally/25 bg-mkt-tally/10 px-4 py-3 text-sm text-mkt-paper">
-      <span className="text-base">🔒</span>
+    <p className="flex items-start gap-2 text-[0.8125rem] text-muted">
+      <Lock size={14} strokeWidth={1.75} aria-hidden className="mt-0.5 shrink-0" />
       {PAYMENTS_ENABLED ? (
-        <p>
-          Contact emails are hidden on the free plan.{" "}
-          <Link href="/subscribe" className="font-semibold text-mkt-tally underline hover:brightness-110">
-            Upgrade to Pro
-          </Link>{" "}
-          to unlock emails and CSV export.
-        </p>
+        <span>
+          Email addresses and CSV export are part of Pro.{" "}
+          <Link href="/subscribe" className="text-link">
+            See plans
+          </Link>
+        </span>
       ) : (
-        <p>
-          Contact emails and CSV export are part of Pro, which is coming soon. Until then, use
-          the YouTube About page or the creator&apos;s socials to reach out.
-        </p>
+        <span>
+          Email addresses and CSV export will be part of Pro, which isn&apos;t available yet. For now, use
+          the links on each creator&apos;s profile to reach them.
+        </span>
       )}
-    </div>
+    </p>
   );
 }

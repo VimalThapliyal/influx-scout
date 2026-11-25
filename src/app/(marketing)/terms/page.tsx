@@ -30,7 +30,7 @@ export default function TermsPage() {
           YouTube Data API and is subject to Google’s policies.
         </p>
         <p>
-          We are <strong className="text-slate-200">not</strong> affiliated with
+          We are <strong className="text-fg">not</strong> affiliated with
           YouTube, Google, or any creator. The Service is an independent
           discovery and outreach workflow tool.
         </p>
@@ -81,7 +81,7 @@ export default function TermsPage() {
           <li>Upload malware or interfere with Service operations</li>
         </ul>
         <p>
-          <strong className="text-slate-200">You</strong> are the sender of any
+          <strong className="text-fg">You</strong> are the sender of any
           outreach to creators. {BRAND_NAME} provides data and drafting helpers;
           you are responsible for lawful, consensual, and professional
           communication.

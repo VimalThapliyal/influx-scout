@@ -7,17 +7,17 @@ const sizeClasses: Record<
   { box: string; text: string; label: string }
 > = {
   sm: {
-    box: "h-8 w-8 rounded-lg text-[10px]",
+    box: "h-8 w-8 rounded-lg text-xs",
     text: "text-xs font-bold",
     label: "text-sm font-semibold",
   },
   md: {
-    box: "h-9 w-9 rounded-xl text-xs",
+    box: "h-9 w-9 rounded-lg text-xs",
     text: "text-xs font-bold",
     label: "text-sm font-semibold",
   },
   lg: {
-    box: "h-10 w-10 rounded-xl text-sm",
+    box: "h-10 w-10 rounded-lg text-sm",
     text: "text-sm font-bold",
     label: "text-lg font-semibold tracking-tight",
   },
@@ -43,17 +43,17 @@ export function BrandMark({
     return (
       <div className={`flex items-center gap-2.5 ${className}`}>
         <div
-          className={`flex shrink-0 items-center justify-center rounded-sm border-2 border-mkt-tally font-mono font-bold text-mkt-tally ${s.box}`}
+          className={`flex shrink-0 items-center justify-center rounded-md border-2 border-accent font-bold text-accent ${s.box}`}
           aria-hidden
         >
           {BRAND_LOGO_LETTERS}
         </div>
         {showName && (
           <div>
-            <p className={`font-poster uppercase tracking-wide text-mkt-paper ${s.label}`}>
+            <p className={`text-fg ${s.label}`}>
               {BRAND_NAME}
             </p>
-            {tagline && <p className="font-mono text-[10px] text-mkt-ash">{tagline}</p>}
+            {tagline && <p className="text-xs text-muted">{tagline}</p>}
           </div>
         )}
       </div>
@@ -63,16 +63,16 @@ export function BrandMark({
   return (
     <div className={`flex items-center gap-2.5 ${className}`}>
       <div
-        className={`flex shrink-0 items-center justify-center bg-gradient-to-br from-violet-600 to-fuchsia-600 font-bold text-white shadow-lg shadow-violet-500/30 ${s.box}`}
+        className={`flex shrink-0 items-center justify-center bg-gradient-to-br from-violet-600 to-fuchsia-600 font-bold text-fg shadow-pop shadow-violet-500/30 ${s.box}`}
         aria-hidden
       >
         {BRAND_LOGO_LETTERS}
       </div>
       {showName && (
         <div>
-          <p className={`font-display text-white ${s.label}`}>{BRAND_NAME}</p>
+          <p className={`text-fg ${s.label}`}>{BRAND_NAME}</p>
           {tagline && (
-            <p className="text-[10px] text-slate-500">{tagline}</p>
+            <p className="text-xs text-muted">{tagline}</p>
           )}
         </div>
       )}

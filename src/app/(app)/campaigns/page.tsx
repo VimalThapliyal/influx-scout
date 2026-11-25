@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { Campaign, CampaignInfluencer, Channel } from "@/lib/types";
-import { LoadingSpinner } from "@/components/ui";
+import { Download, Mail, Plus } from "lucide-react";
+import { Avatar, EmptyState, StatusTag, TableSkeleton } from "@/components/ui";
 import { EmailGate } from "@/components/EmailGate";
 import { EmailOutreachModal } from "@/components/EmailOutreachModal";
-import { SignInToSaveBanner } from "@/components/SignInToSaveBanner";
 import {
   CampaignTrackingModal,
   PipelineSummary,
@@ -97,220 +97,242 @@ export default function CampaignsPage() {
     }
   }
 
+  const members = selected?.influencers ?? [];
+
   return (
-    <div className="space-y-8">
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-mkt-tally">Campaigns</p>
-        <h1 className="page-title mt-1">Manage creator lists</h1>
-        <p className="page-subtitle">Organize influencers into lists and track your outreach pipeline.</p>
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="h-page">Campaigns</h1>
+          <p className="page-subtitle">Group creators into lists and track who you contacted and who replied.</p>
+        </div>
+        {!requiresAuth && !showCreate && (
+          <button type="button" onClick={() => setShowCreate(true)} className="btn-primary">
+            <Plus size={15} strokeWidth={1.75} aria-hidden />
+            New list
+          </button>
+        )}
       </div>
 
-      {requiresAuth && <SignInToSaveBanner />}
-
-      <section className="card overflow-hidden">
-        <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
-          <div>
-            <h2 className="section-title">Outreach pipeline</h2>
-            {selected && (
-              <p className="mt-0.5 text-xs text-slate-500">{selected.name}</p>
-            )}
-          </div>
-          <span className="text-xs text-slate-500">Select a list below to view creators</span>
-        </div>
-
-        {selected?.influencers && selected.influencers.length > 0 && (
-          <PipelineSummary influencers={selected.influencers} />
-        )}
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="table-head">
-              <tr>
-                <th className="px-6 py-3">Creator</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">Last contact</th>
-                <th className="px-4 py-3">Replied</th>
-                <th className="px-4 py-3">Email</th>
-                <th className="px-4 py-3">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {selected?.influencers?.length ? (
-                selected.influencers.map((inf) => (
-                  <tr key={inf.id} className="table-row">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        {inf.channel?.thumbnail_url && (
-                          <img src={inf.channel.thumbnail_url} alt="" className="h-8 w-8 rounded-lg object-cover" />
-                        )}
-                        <div className="min-w-0">
-                          <span className="font-medium text-white">{inf.channel?.title ?? inf.channel_id}</span>
-                          {inf.notes && (
-                            <p className="mt-0.5 line-clamp-1 text-xs text-slate-500">{inf.notes}</p>
-                          )}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-4">
-                      <StatusBadge status={inf.status} />
-                    </td>
-                    <td className="px-4 py-4 text-slate-400">
-                      {inf.email_sent_at
-                        ? new Date(inf.email_sent_at).toLocaleDateString()
-                        : "—"}
-                    </td>
-                    <td className="px-4 py-4">
-                      {inf.replied ? (
-                        <span className="text-xs font-medium text-emerald-400">Yes</span>
-                      ) : (
-                        <span className="text-xs text-slate-600">No</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-4">
-                      {inf.channel?.has_email || inf.channel?.email || inf.channel?.email_masked ? (
-                        <EmailGate
-                          email={inf.channel?.email}
-                          maskedPreview={inf.channel?.email_masked}
-                          locked={inf.channel?.email_locked}
-                          showCopy
-                        />
-                      ) : (
-                        <span className="text-slate-600">—</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-4">
-                      {inf.channel && (
-                        <div className="flex flex-wrap gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setTrackingInfluencer(inf)}
-                            className="text-link text-sm"
-                          >
-                            Track
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setOutreachTarget({
-                                channel: inf.channel!,
-                                influencerId: inf.id,
-                              })
-                            }
-                            className="text-link text-sm"
-                          >
-                            Outreach
-                          </button>
-                          <Link href={`/channels/${inf.channel_id}`} className="text-link text-sm">
-                            Profile
-                          </Link>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
-                    Select a creator list below to view outreach details
-                  </td>
-                </tr>
+      {requiresAuth ? (
+        <EmptyState
+          title="Sign in to use campaign lists"
+          description="Lists and outreach tracking are saved to your account. You can keep browsing creators without one."
+          action={
+            <Link href={`/login?redirect=${encodeURIComponent("/campaigns")}`} className="btn-primary btn-sm">
+              Sign in
+            </Link>
+          }
+        />
+      ) : (
+        <>
+          {showCreate && (
+            <form onSubmit={handleCreate} className="card p-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="list-name" className="field-label">List name</label>
+                  <input
+                    id="list-name"
+                    type="text"
+                    className="input-field"
+                    placeholder="Spring launch, fitness creators"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    autoFocus
+                  />
+                </div>
+                <div>
+                  <label htmlFor="list-description" className="field-label">
+                    Description <span className="font-normal text-muted">(optional)</span>
+                  </label>
+                  <input
+                    id="list-description"
+                    type="text"
+                    className="input-field"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                  />
+                </div>
+              </div>
+              {error && (
+                <p className="mt-3 rounded-md bg-danger-soft px-3 py-2 text-[0.8125rem] text-danger" role="alert">
+                  {error}
+                </p>
               )}
-            </tbody>
-          </table>
-        </div>
-      </section>
+              <div className="mt-4 flex gap-2">
+                <button type="submit" className="btn-primary" disabled={creating}>
+                  {creating ? "Creating list" : "Create list"}
+                </button>
+                <button type="button" className="btn-ghost" onClick={() => setShowCreate(false)}>
+                  Cancel
+                </button>
+              </div>
+            </form>
+          )}
 
-      <section className="card overflow-hidden">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 px-6 py-4">
-          <h2 className="section-title">Your lists</h2>
-          <button type="button" onClick={() => setShowCreate(true)} className="btn-primary min-h-[36px] text-sm">
-            + New list
-          </button>
-        </div>
-
-        {showCreate && (
-          <form onSubmit={handleCreate} className="border-b border-white/10 bg-white/5 p-6">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <input
-                type="text"
-                className="input-field"
-                placeholder="List name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-              <input
-                type="text"
-                className="input-field"
-                placeholder="Description (optional)"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              />
-            </div>
-            {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
-            <div className="mt-4 flex gap-2">
-              <button type="submit" className="btn-primary" disabled={creating}>
-                {creating ? "Creating…" : "Create list"}
-              </button>
-              <button type="button" className="btn-secondary" onClick={() => setShowCreate(false)}>
-                Cancel
-              </button>
-            </div>
-          </form>
-        )}
-
-        {loading ? (
-          <LoadingSpinner />
-        ) : campaigns.length === 0 ? (
-          <div className="py-12 text-center text-slate-500">
-            {requiresAuth ? (
-              <p>Sign in to create your first creator list.</p>
-            ) : (
-              <p>No creator lists yet. Create your first list above.</p>
-            )}
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="table-head">
-                <tr>
-                  <th className="px-6 py-3">List name</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">Description</th>
-                  <th className="px-4 py-3">Created</th>
-                  <th className="px-4 py-3">Export</th>
-                </tr>
-              </thead>
-              <tbody>
-                {campaigns.map((c) => (
-                  <tr
-                    key={c.id}
-                    className={`table-row cursor-pointer ${selected?.id === c.id ? "table-row-selected" : ""}`}
-                    onClick={() => loadCampaignDetail(c.id)}
-                  >
-                    <td className="px-6 py-4 font-medium text-white">{c.name}</td>
-                    <td className="px-4 py-4 capitalize text-slate-400">{c.status}</td>
-                    <td className="px-4 py-4 text-slate-400">{c.description ?? "—"}</td>
-                    <td className="px-4 py-4 text-slate-500">
-                      {new Date(c.created_at).toLocaleDateString()}
-                    </td>
-                    <td className="px-4 py-4">
-                      <a
-                        href={`/api/campaigns/${c.id}/export`}
-                        className="text-link text-sm"
-                        onClick={(e) => e.stopPropagation()}
-                        download
-                      >
-                        Export CSV
-                      </a>
-                    </td>
+          {loading ? (
+            <TableSkeleton rows={3} />
+          ) : campaigns.length === 0 ? (
+            <EmptyState
+              title="No lists yet"
+              description="Create a list, then add creators to it with the bookmark button in the creator library."
+              action={
+                !showCreate ? (
+                  <button type="button" onClick={() => setShowCreate(true)} className="btn-secondary btn-sm">
+                    New list
+                  </button>
+                ) : undefined
+              }
+            />
+          ) : (
+            <div className="card overflow-x-auto">
+              <table className="w-full text-[0.8125rem]">
+                <thead className="table-head">
+                  <tr>
+                    <th scope="col" className="h-9 px-4 font-medium">List</th>
+                    <th scope="col" className="h-9 px-3 font-medium">Status</th>
+                    <th scope="col" className="hidden h-9 px-3 font-medium md:table-cell">Description</th>
+                    <th scope="col" className="hidden h-9 px-3 font-medium sm:table-cell">Created</th>
+                    <th scope="col" className="h-9 w-28 px-3 font-medium"><span className="sr-only">Export</span></th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
+                </thead>
+                <tbody>
+                  {campaigns.map((c) => (
+                    <tr
+                      key={c.id}
+                      className={`table-row h-11 cursor-pointer ${selected?.id === c.id ? "table-row-selected" : ""}`}
+                      onClick={() => loadCampaignDetail(c.id)}
+                    >
+                      <td className="px-4">
+                        <button
+                          type="button"
+                          aria-pressed={selected?.id === c.id}
+                          className="font-medium text-fg hover:text-accent"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            loadCampaignDetail(c.id);
+                          }}
+                        >
+                          {c.name}
+                        </button>
+                      </td>
+                      <td className="px-3"><StatusBadge status={c.status} /></td>
+                      <td className="hidden max-w-xs truncate px-3 text-muted md:table-cell">{c.description || "—"}</td>
+                      <td className="hidden px-3 tabular-nums text-muted sm:table-cell">
+                        {new Date(c.created_at).toLocaleDateString()}
+                      </td>
+                      <td className="px-3 text-right">
+                        <a
+                          href={`/api/campaigns/${c.id}/export`}
+                          className="btn-ghost btn-sm"
+                          onClick={(e) => e.stopPropagation()}
+                          download
+                        >
+                          <Download size={14} strokeWidth={1.75} aria-hidden />
+                          CSV
+                        </a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {campaigns.length > 0 && (
+            <section aria-labelledby="members-title">
+              <h2 id="members-title" className="h-section mb-3">
+                {selected ? selected.name : "Creators in a list"}
+              </h2>
+              {!selected ? (
+                <p className="card px-4 py-5 text-sm text-muted">Select a list above to see its creators and their status.</p>
+              ) : members.length === 0 ? (
+                <EmptyState
+                  title="This list is empty"
+                  description="Add creators with the bookmark button in the creator library."
+                  action={
+                    <Link href="/channels" className="btn-secondary btn-sm">
+                      Find creators
+                    </Link>
+                  }
+                />
+              ) : (
+                <div className="card overflow-hidden">
+                  <PipelineSummary influencers={members} />
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-[0.8125rem]">
+                      <thead className="table-head">
+                        <tr>
+                          <th scope="col" className="h-9 px-4 font-medium">Creator</th>
+                          <th scope="col" className="h-9 px-3 font-medium">Status</th>
+                          <th scope="col" className="h-9 px-3 font-medium">Last contact</th>
+                          <th scope="col" className="h-9 px-3 font-medium">Replied</th>
+                          <th scope="col" className="h-9 px-3 font-medium">Email</th>
+                          <th scope="col" className="h-9 px-3 font-medium"><span className="sr-only">Actions</span></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {members.map((inf) => (
+                          <tr key={inf.id} className="table-row h-12">
+                            <td className="px-4">
+                              <Link href={`/channels/${inf.channel_id}`} className="group flex min-w-0 items-center gap-2.5">
+                                <Avatar src={inf.channel?.thumbnail_url} name={inf.channel?.title ?? "?"} size={28} />
+                                <span className="min-w-0">
+                                  <span className="block truncate font-medium text-fg group-hover:text-accent">
+                                    {inf.channel?.title ?? inf.channel_id}
+                                  </span>
+                                  {inf.notes && <span className="block max-w-xs truncate text-xs text-muted">{inf.notes}</span>}
+                                </span>
+                              </Link>
+                            </td>
+                            <td className="px-3"><StatusBadge status={inf.status} /></td>
+                            <td className="px-3 tabular-nums text-muted">
+                              {inf.email_sent_at ? new Date(inf.email_sent_at).toLocaleDateString() : "—"}
+                            </td>
+                            <td className="px-3">
+                              {inf.replied ? <StatusTag tone="success">Replied</StatusTag> : <span className="text-faint">—</span>}
+                            </td>
+                            <td className="px-3">
+                              {inf.channel?.has_email || inf.channel?.email || inf.channel?.email_masked ? (
+                                <EmailGate
+                                  email={inf.channel?.email}
+                                  maskedPreview={inf.channel?.email_masked}
+                                  locked={inf.channel?.email_locked}
+                                  showCopy
+                                />
+                              ) : (
+                                <span className="text-faint">—</span>
+                              )}
+                            </td>
+                            <td className="px-3">
+                              {inf.channel && (
+                                <div className="flex justify-end gap-1">
+                                  <button type="button" onClick={() => setTrackingInfluencer(inf)} className="btn-ghost btn-sm">
+                                    Update status
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setOutreachTarget({ channel: inf.channel!, influencerId: inf.id })}
+                                    className="btn-secondary btn-sm"
+                                  >
+                                    <Mail size={14} strokeWidth={1.75} aria-hidden />
+                                    Draft email
+                                  </button>
+                                </div>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </section>
+          )}
+        </>
+      )}
 
       {outreachTarget && (
         <EmailOutreachModal

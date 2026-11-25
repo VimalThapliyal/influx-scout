@@ -50,11 +50,11 @@ export default function BlogPostPage({ params }: Params) {
   return (
     <MarketingShell>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <nav className="font-mono text-xs uppercase tracking-wider text-mkt-ash">
-        <Link href="/blog" className="hover:text-mkt-paper">Blog</Link>
+      <nav className="text-xs text-muted">
+        <Link href="/blog" className="hover:text-fg">Blog</Link>
       </nav>
-      <h1 className="mkt-h2 mt-4 max-w-3xl !text-4xl">{post.title}</h1>
-      <p className="mt-3 font-mono text-[11px] uppercase tracking-wider text-mkt-ash">
+      <h1 className="h-page mt-4 max-w-3xl">{post.title}</h1>
+      <p className="mt-3 text-xs text-muted">
         {new Date(post.published).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
       </p>
 
@@ -62,24 +62,24 @@ export default function BlogPostPage({ params }: Params) {
         <Prose>{post.body()}</Prose>
       </article>
 
-      <div className="mkt-card mt-12 max-w-2xl p-6">
-        <p className="mkt-h3 !text-xl">Find creators who pass these checks</p>
-        <p className="mkt-body mt-2 !text-sm">
+      <div className="card mt-12 max-w-2xl p-6">
+        <p className="h-section">Find creators who pass these checks</p>
+        <p className="text-body mt-2 !text-sm">
           Ranked lists of active YouTube creators in the US, UK and Europe, filtered for recent views and real
           engagement.
         </p>
-        <Link href="/youtubers" className="mkt-btn-primary mt-5 inline-flex">
+        <Link href="/youtubers" className="btn-primary mt-5 inline-flex">
           Browse creator lists — free
         </Link>
       </div>
 
       {others.length > 0 && (
         <section className="mt-12 max-w-2xl">
-          <h2 className="font-mono text-xs uppercase tracking-wider text-mkt-ash">More from the blog</h2>
+          <h2 className="text-xs text-muted">More from the blog</h2>
           <ul className="mt-3 space-y-1.5 text-sm">
             {others.map((p) => (
               <li key={p.slug}>
-                <Link href={`/blog/${p.slug}`} className="mkt-link">{p.title}</Link>
+                <Link href={`/blog/${p.slug}`} className="text-link">{p.title}</Link>
               </li>
             ))}
           </ul>

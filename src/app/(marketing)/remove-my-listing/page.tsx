@@ -14,14 +14,13 @@ export default function RemoveMyListingPage() {
   return (
     <MarketingShell>
       <div className="mx-auto max-w-xl">
-        <p className="mkt-eyebrow">For creators</p>
-        <h1 className="mkt-h2 mt-3 !text-4xl">Remove my listing</h1>
-        <p className="mkt-body mt-3">
+        <h1 className="h-page">Remove my listing</h1>
+        <p className="text-body mt-3">
           {BRAND_NAME} lists public information about YouTube channels — channel name, public statistics and
           business contact details the creator has published. If you&apos;d rather not be listed, send this form
           and we&apos;ll hide your channel right away.
         </p>
-        <ul className="mt-4 space-y-1.5 text-sm text-mkt-ash">
+        <ul className="mt-4 space-y-1.5 text-sm text-muted">
           <li>• Your channel disappears from our public pages and from search results inside {BRAND_NAME}.</li>
           <li>• We won&apos;t re-add it when our lists refresh.</li>
           <li>• You can also ask us to delete the stored data entirely — mention it in the reason.</li>
@@ -29,8 +28,8 @@ export default function RemoveMyListingPage() {
         <div className="mt-8">
           <RemovalRequestForm />
         </div>
-        <p className="mt-6 text-xs text-mkt-ash">
-          See our <Link href="/privacy" className="mkt-link">Privacy Policy</Link> for how we handle data.
+        <p className="mt-6 text-xs text-muted">
+          See our <Link href="/privacy" className="text-link">Privacy Policy</Link> for how we handle data.
         </p>
       </div>
     </MarketingShell>

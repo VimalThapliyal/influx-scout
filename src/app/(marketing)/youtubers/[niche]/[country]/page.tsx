@@ -109,46 +109,46 @@ export default async function NicheCountryPage({ params }: Params) {
   return (
     <MarketingShell>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <nav className="font-mono text-xs uppercase tracking-wider text-mkt-ash">
-        <Link href="/youtubers" className="hover:text-mkt-paper">YouTubers</Link>
+      <nav className="text-xs text-muted">
+        <Link href="/youtubers" className="hover:text-fg">YouTubers</Link>
         {" / "}
-        <Link href={listPath(r.niche)} className="hover:text-mkt-paper">{label}</Link>
+        <Link href={listPath(r.niche)} className="hover:text-fg">{label}</Link>
         {" / "}
-        <Link href={countryPath(r.country.slug)} className="hover:text-mkt-paper">
+        <Link href={countryPath(r.country.slug)} className="hover:text-fg">
           {r.country.name.replace(/^the /, "")}
         </Link>
       </nav>
 
-      <h1 className="mkt-h2 mt-4 !text-4xl">
+      <h1 className="h-page mt-4">
         Top {label} YouTubers in {r.country.name}
       </h1>
-      <p className="mkt-body mt-3 max-w-2xl">
+      <p className="text-body mt-3 max-w-2xl">
         {creators.length} active {r.country.demonym} {label.toLowerCase()} creators on YouTube, ranked by
         subscribers (average {formatCount(avgSubs)}). Each one posted in the last 45 days and gets real
         engagement on recent videos. {withContact} have a public business contact.
       </p>
-      <p className="mt-2 font-mono text-[11px] uppercase tracking-wider text-mkt-ash">Updated {updated}</p>
+      <p className="mt-2 text-xs text-muted">Updated {updated}</p>
 
       <div className="mt-8">
         <CreatorRankList creators={creators} unlockHref={unlockHref} />
       </div>
 
-      <div className="mkt-card mt-8 p-6 text-center">
-        <p className="mkt-h3 !text-xl">Reach these creators</p>
-        <p className="mkt-body mx-auto mt-2 max-w-md !text-sm">
+      <div className="card mt-8 p-6 text-center">
+        <p className="h-section">Reach these creators</p>
+        <p className="text-body mx-auto mt-2 max-w-md !text-sm">
           See contact details, filter by views and engagement, and track outreach in one place.
         </p>
-        <Link href={unlockHref} className="mkt-btn-primary mt-5 inline-flex">
+        <Link href={unlockHref} className="btn-primary mt-5 inline-flex">
           Get contact details — free
         </Link>
       </div>
 
       <section className="mt-12 space-y-5">
-        <h2 className="mkt-h3 !text-xl">FAQ</h2>
+        <h2 className="h-section">FAQ</h2>
         {faq.map((f) => (
           <div key={f.q}>
-            <h3 className="font-medium text-mkt-paper">{f.q}</h3>
-            <p className="mkt-body mt-1 !text-sm">{f.a}</p>
+            <h3 className="font-medium text-fg">{f.q}</h3>
+            <p className="text-body mt-1 !text-sm">{f.a}</p>
           </div>
         ))}
       </section>
@@ -157,7 +157,7 @@ export default async function NicheCountryPage({ params }: Params) {
         <section className="mt-12 grid gap-8 md:grid-cols-2">
           {otherCountries.length > 0 && (
             <div>
-              <h2 className="font-mono text-xs uppercase tracking-wider text-mkt-ash">
+              <h2 className="text-xs text-muted">
                 {label} YouTubers in other countries
               </h2>
               <ul className="mt-3 space-y-1.5 text-sm">
@@ -165,7 +165,7 @@ export default async function NicheCountryPage({ params }: Params) {
                   const co = countryByCode(c.country)!;
                   return (
                     <li key={c.country}>
-                      <Link href={listPath(r.niche, co.slug)} className="mkt-link">
+                      <Link href={listPath(r.niche, co.slug)} className="text-link">
                         {label} YouTubers in {co.name.replace(/^the /, "")}
                       </Link>
                     </li>
@@ -176,13 +176,13 @@ export default async function NicheCountryPage({ params }: Params) {
           )}
           {otherNiches.length > 0 && (
             <div>
-              <h2 className="font-mono text-xs uppercase tracking-wider text-mkt-ash">
+              <h2 className="text-xs text-muted">
                 More {r.country.demonym} YouTubers
               </h2>
               <ul className="mt-3 space-y-1.5 text-sm">
                 {otherNiches.map((c) => (
                   <li key={c.niche}>
-                    <Link href={listPath(c.niche, r.country.slug)} className="mkt-link">
+                    <Link href={listPath(c.niche, r.country.slug)} className="text-link">
                       {nicheName(c.niche)} YouTubers in {r.country.name.replace(/^the /, "")}
                     </Link>
                   </li>

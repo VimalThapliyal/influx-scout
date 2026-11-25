@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Check, CircleCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { OUTREACH_LIBRARY_HREF } from "@/lib/routes";
 import { PAYMENTS_ENABLED } from "@/lib/billing";
@@ -91,27 +92,27 @@ export default function SubscribeClient() {
       return;
     }
 
-    setError("Payment not configured. Contact the site owner.");
+    setError("Payments aren't set up yet, so we can't start your upgrade.");
   }
 
   if (!state) {
     return (
-      <div className="flex justify-center py-16">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-mkt-manila/20 border-t-mkt-tally" />
+      <div className="mx-auto max-w-md space-y-3 py-6" role="status" aria-label="Loading your plan">
+        <div className="skeleton h-6 w-40" />
+        <div className="skeleton h-4 w-full" />
+        <div className="skeleton h-9 w-44" />
       </div>
     );
   }
 
   if (state.isSubscribed) {
     return (
-      <div className="mkt-card mx-auto max-w-lg p-8 text-center">
-        <div className="text-4xl text-mkt-signal">✓</div>
-        <h1 className="mkt-h3 mt-4 !text-2xl">You&apos;re subscribed!</h1>
-        <p className="mkt-body mt-2 !text-sm">
-          Full influencer email addresses are now unlocked.
-        </p>
-        <Link href={OUTREACH_LIBRARY_HREF} className="mkt-btn-primary mt-6 inline-flex">
-          Browse outreach-ready creators
+      <div className="mx-auto max-w-md py-6">
+        <CircleCheck size={20} strokeWidth={1.75} aria-hidden className="text-success" />
+        <h1 className="h-page mt-3">You&apos;re on Pro</h1>
+        <p className="page-subtitle">Email addresses and CSV export are unlocked on every creator.</p>
+        <Link href={OUTREACH_LIBRARY_HREF} className="btn-primary mt-6">
+          Browse creators
         </Link>
       </div>
     );
@@ -119,103 +120,75 @@ export default function SubscribeClient() {
 
   if (!PAYMENTS_ENABLED) {
     return (
-      <div className="mkt-card mx-auto max-w-lg p-8 text-center">
-        <p className="mkt-tag mx-auto w-fit border-mkt-tally/40 text-mkt-tally">Pro plan</p>
-        <h1 className="mkt-h3 mt-4 !text-2xl">Pro is coming soon</h1>
-        <p className="mkt-body mt-2 !text-sm">
-          We&apos;re still building out verified contact data. Until Pro opens, you can browse
-          the creator library, see scores, and build campaign lists for free.
+      <div className="mx-auto max-w-md py-6">
+        <h1 className="h-page">Pro isn&apos;t available yet</h1>
+        <p className="page-subtitle">
+          Email addresses and CSV export will be part of Pro. We haven&apos;t set a date or a price. Until
+          then, browsing, filters and campaign lists are free.
         </p>
-        <Link href={OUTREACH_LIBRARY_HREF} className="mkt-btn-primary mt-6 inline-flex">
-          Browse creators free
-        </Link>
+        <div className="mt-6 flex flex-wrap gap-2">
+          <Link href={OUTREACH_LIBRARY_HREF} className="btn-primary">
+            Browse creators
+          </Link>
+          <Link href="/pricing" className="btn-secondary">
+            See what each plan includes
+          </Link>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <div className="text-center">
-        <p className="mkt-eyebrow justify-center">Subscribe</p>
-        <h1 className="mkt-h2 mt-3 !text-4xl">Unlock influencer emails</h1>
-        <p className="mkt-body mx-auto mt-2 max-w-md">
-          Subscribe to view full email addresses, export contact CSVs, and reach YouTube creators
-          in your library.
+    <div className="mx-auto max-w-md py-6">
+      <h1 className="h-page">Upgrade to Pro</h1>
+      <p className="page-subtitle">See full email addresses and export campaign lists as CSV.</p>
+
+      <div className="card mt-6 p-6">
+        <p className="text-2xl font-semibold tracking-[-0.02em] text-fg">
+          $9 <span className="text-sm font-normal text-muted">per month, cancel anytime</span>
         </p>
-      </div>
+        <ul className="mt-5 space-y-2.5 text-sm text-fg">
+          {["Full email addresses", "CSV export of campaign lists", "AI-drafted outreach emails", "Everything in Free"].map((f) => (
+            <li key={f} className="flex items-start gap-2">
+              <Check size={16} strokeWidth={1.75} aria-hidden className="mt-0.5 shrink-0 text-success" />
+              {f}
+            </li>
+          ))}
+        </ul>
 
-      <div className="mkt-card overflow-hidden">
-        <div className="border-b mkt-hairline bg-white/[0.02] px-6 py-8">
-          <p className="mkt-tag border-mkt-tally/40 text-mkt-tally">Pro plan</p>
-          <p className="mt-3 font-poster text-5xl text-mkt-paper">
-            $9<span className="font-plex text-lg font-normal text-mkt-ash">/month</span>
+        {state.user ? (
+          <p className="mt-5 text-xs text-muted">
+            Signed in as <span className="font-medium text-fg">{state.user.email}</span>
           </p>
-        </div>
-        <div className="p-6">
-          <ul className="space-y-3 text-sm text-mkt-ash">
-            <li className="flex gap-2">
-              <span className="text-mkt-signal">✓</span> View full influencer email addresses
-            </li>
-            <li className="flex gap-2">
-              <span className="text-mkt-signal">✓</span> Export campaigns with contact CSV
-            </li>
-            <li className="flex gap-2">
-              <span className="text-mkt-signal">✓</span> Unlimited saved creator lists
-            </li>
-            <li className="flex gap-2">
-              <span className="text-mkt-signal">✓</span> Outreach tracking by list
-            </li>
-          </ul>
+        ) : (
+          <p className="mt-5 text-[0.8125rem] text-muted">
+            <Link href="/login?redirect=/subscribe" className="text-link">
+              Sign in
+            </Link>{" "}
+            first so the plan is attached to your account.
+          </p>
+        )}
 
-          {state.user ? (
-            <p className="mt-4 font-mono text-xs text-mkt-ash">
-              Signed in as <strong className="text-mkt-paper">{state.user.email}</strong>
-            </p>
-          ) : (
-            <p className="mt-4 text-sm text-mkt-ash">
-              <Link href="/login?redirect=/subscribe" className="mkt-link">
-                Sign in
-              </Link>{" "}
-              before subscribing.
-            </p>
-          )}
+        {error && (
+          <p className="mt-4 rounded-md bg-danger-soft px-3 py-2 text-[0.8125rem] text-danger" role="alert">
+            {error}
+          </p>
+        )}
 
-          {error && (
-            <p className="mt-4 text-sm text-red-400" role="alert">{error}</p>
-          )}
+        <button type="button" onClick={handleSubscribe} disabled={loading} className="btn-primary mt-5 w-full">
+          {loading
+            ? "Activating"
+            : state.user
+              ? demoMode && !stripeLink
+                ? "Activate Pro (demo)"
+                : "Continue to payment"
+              : "Sign in to upgrade"}
+        </button>
 
-          <button
-            type="button"
-            onClick={handleSubscribe}
-            disabled={loading}
-            className="mkt-btn-primary mt-6 w-full"
-          >
-            {loading
-              ? "Activating…"
-              : state.user
-                ? stripeLink
-                  ? "Subscribe with Stripe"
-                  : demoMode
-                    ? "Subscribe now (demo)"
-                    : "Subscribe now"
-                : "Sign in to subscribe"}
-          </button>
-
-          {demoMode && (
-            <p className="mt-3 text-center font-mono text-[11px] uppercase tracking-wider text-mkt-ash">
-              Demo mode: subscription activates instantly without payment.
-            </p>
-          )}
-        </div>
+        {demoMode && (
+          <p className="mt-3 text-xs text-muted">Demo mode: the plan activates without payment.</p>
+        )}
       </div>
-
-      <p className="text-center font-mono text-[11px] uppercase tracking-wider text-mkt-ash">
-        Emails are shown as{" "}
-        <code className="rounded-sm bg-white/5 px-1 normal-case text-mkt-ash">
-          c••••@domain.com
-        </code>{" "}
-        until you subscribe. Cancel anytime.
-      </p>
     </div>
   );
 }

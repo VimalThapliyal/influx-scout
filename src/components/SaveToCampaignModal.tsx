@@ -25,22 +25,23 @@ export function SaveToCampaignModal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-fg/40 p-4">
       <div
-        className="card w-full max-w-md p-6 shadow-2xl shadow-mkt-tally/10"
+        className="card w-full max-w-md p-6 shadow-pop"
         role="dialog"
+        aria-modal="true"
         aria-labelledby="save-title"
       >
-        <h2 id="save-title" className="font-display text-lg font-semibold text-white">
+        <h2 id="save-title" className="h-section">
           Add to campaign list
         </h2>
-        <p className="mt-1 text-sm text-slate-500">{channelTitle}</p>
-        <p className="mt-2 text-xs text-slate-600">
+        <p className="mt-1 text-sm text-muted">{channelTitle}</p>
+        <p className="mt-2 text-xs text-muted">
           Pick an existing list or create a new one — then track outreach from Campaigns.
         </p>
 
         {saved ? (
-          <p className="mt-4 text-sm text-emerald-400">Added to list successfully.</p>
+          <p className="mt-4 text-sm text-success">Added to list successfully.</p>
         ) : (
           <div className="mt-4">
             <CampaignPicker

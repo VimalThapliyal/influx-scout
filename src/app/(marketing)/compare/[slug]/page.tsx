@@ -62,89 +62,89 @@ export default function ComparePage({ params }: Params) {
   return (
     <MarketingShell>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <nav className="font-mono text-xs uppercase tracking-wider text-mkt-ash">
-        <Link href="/compare" className="hover:text-mkt-paper">Compare</Link> / <span>{c.name}</span>
+      <nav className="text-xs text-muted">
+        <Link href="/compare" className="hover:text-fg">Compare</Link> / <span>{c.name}</span>
       </nav>
-      <h1 className="mkt-h2 mt-4 !text-4xl">The YouTube-focused {c.name} alternative</h1>
-      <p className="mkt-body mt-3 max-w-2xl">
+      <h1 className="h-page mt-4">The YouTube-focused {c.name} alternative</h1>
+      <p className="text-body mt-3 max-w-2xl">
         {c.name} is {c.tagline}. {BRAND_NAME} does one thing: helps brands find active YouTube creators in the
         USA and Europe and reach them. Here&apos;s an honest comparison.
       </p>
 
-      <div className="mkt-card mt-8 overflow-x-auto">
+      <div className="card mt-8 overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <thead className="font-mono text-[11px] uppercase tracking-wider text-mkt-ash">
+          <thead className="text-xs text-muted">
             <tr>
               <th className="px-4 py-3" />
-              <th className="px-4 py-3 text-mkt-tally">{BRAND_NAME}</th>
+              <th className="px-4 py-3 text-accent">{BRAND_NAME}</th>
               <th className="px-4 py-3">{c.name}</th>
             </tr>
           </thead>
           <tbody>
             {rows.map(([label, ours, theirs]) => (
-              <tr key={label} className="border-t border-mkt-manila/15 align-top">
-                <td className="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mkt-ash">{label}</td>
-                <td className="px-4 py-3 text-mkt-paper">{ours}</td>
-                <td className="px-4 py-3 text-mkt-paper">{theirs}</td>
+              <tr key={label} className="border-t border-line align-top">
+                <td className="px-4 py-3 text-xs text-muted">{label}</td>
+                <td className="px-4 py-3 text-fg">{ours}</td>
+                <td className="px-4 py-3 text-fg">{theirs}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      <p className="mt-2 font-mono text-[11px] text-mkt-ash">
+      <p className="mt-2 text-xs text-muted">
         {c.name} details from public sources, last checked {COMPARISONS_LAST_CHECKED}. See{" "}
-        <a href={c.pricingUrl} rel="nofollow noopener noreferrer" target="_blank" className="mkt-link">
+        <a href={c.pricingUrl} rel="nofollow noopener noreferrer" target="_blank" className="text-link">
           {c.name}&apos;s pricing
         </a>{" "}
         for current plans.
       </p>
 
       <section className="mt-12 grid gap-6 md:grid-cols-2">
-        <div className="mkt-card p-6">
-          <h2 className="mkt-h3 !text-lg">Choose {BRAND_NAME} if…</h2>
-          <ul className="mt-4 space-y-2 text-sm text-mkt-ash">
+        <div className="card p-6">
+          <h2 className="h-section">Choose {BRAND_NAME} if…</h2>
+          <ul className="mt-4 space-y-2 text-sm text-muted">
             {INFLUX_STRENGTHS.map((s) => (
-              <li key={s} className="flex gap-2"><span className="text-mkt-signal">✓</span>{s}</li>
+              <li key={s} className="flex gap-2"><span className="text-success">✓</span>{s}</li>
             ))}
           </ul>
         </div>
-        <div className="mkt-card p-6">
-          <h2 className="mkt-h3 !text-lg">Choose {c.name} if…</h2>
-          <ul className="mt-4 space-y-2 text-sm text-mkt-ash">
+        <div className="card p-6">
+          <h2 className="h-section">Choose {c.name} if…</h2>
+          <ul className="mt-4 space-y-2 text-sm text-muted">
             {c.chooseThemIf.map((s) => (
-              <li key={s} className="flex gap-2"><span className="text-mkt-ash">→</span>{s}</li>
+              <li key={s} className="flex gap-2"><span className="text-muted"></span>{s}</li>
             ))}
           </ul>
-          <p className="mt-4 text-xs text-mkt-ash/80">{c.name} strengths: {c.strengths.join("; ")}.</p>
+          <p className="mt-4 text-xs text-muted">{c.name} strengths: {c.strengths.join("; ")}.</p>
         </div>
       </section>
 
-      <div className="mkt-card mt-10 p-6 text-center">
-        <p className="mkt-h3 !text-xl">Try {BRAND_NAME} free</p>
-        <p className="mkt-body mx-auto mt-2 max-w-md !text-sm">
+      <div className="card mt-10 p-6 text-center">
+        <p className="h-section">Try {BRAND_NAME} free</p>
+        <p className="text-body mx-auto mt-2 max-w-md !text-sm">
           Browse ranked lists of active YouTube creators — no credit card.
         </p>
         <div className="mt-5 flex flex-wrap justify-center gap-3">
-          <Link href="/youtubers" className="mkt-btn-primary inline-flex">Browse creator lists</Link>
-          <Link href="/login" className="mkt-btn-secondary inline-flex">Sign up free</Link>
+          <Link href="/youtubers" className="btn-primary inline-flex">Browse creator lists</Link>
+          <Link href="/login" className="btn-secondary inline-flex">Sign up free</Link>
         </div>
       </div>
 
       <section className="mt-12 space-y-5">
-        <h2 className="mkt-h3 !text-xl">FAQ</h2>
+        <h2 className="h-section">FAQ</h2>
         {faq.map((f) => (
           <div key={f.q}>
-            <h3 className="font-medium text-mkt-paper">{f.q}</h3>
-            <p className="mkt-body mt-1 !text-sm">{f.a}</p>
+            <h3 className="font-medium text-fg">{f.q}</h3>
+            <p className="text-body mt-1 !text-sm">{f.a}</p>
           </div>
         ))}
       </section>
 
-      <p className="mt-10 text-sm text-mkt-ash">
+      <p className="mt-10 text-sm text-muted">
         Other comparisons:{" "}
         {COMPARISONS.filter((o) => o.slug !== c.slug).map((o, i, arr) => (
           <span key={o.slug}>
-            <Link href={`/compare/${o.slug}`} className="mkt-link">{o.name} alternative</Link>
+            <Link href={`/compare/${o.slug}`} className="text-link">{o.name} alternative</Link>
             {i < arr.length - 1 ? " · " : ""}
           </span>
         ))}

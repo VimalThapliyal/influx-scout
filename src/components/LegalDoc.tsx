@@ -12,34 +12,34 @@ export function LegalDoc({
   return (
     <MarketingShell>
       <article className="mx-auto max-w-3xl">
-        <p className="text-xs font-medium uppercase tracking-wider text-mkt-tally/90">
+        <p className="text-xs font-medium text-accent">
           Legal
         </p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white md:text-4xl">
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-fg md:text-4xl">
           {title}
         </h1>
-        <p className="mt-3 text-sm text-slate-500">
+        <p className="mt-3 text-sm text-muted">
           Effective date: {LEGAL_EFFECTIVE_DATE} · {BRAND_NAME}
         </p>
-        <div className="prose-legal mt-10 space-y-8 text-[15px] leading-relaxed text-slate-300">
+        <div className="prose-legal mt-10 space-y-8 text-[15px] leading-relaxed text-fg">
           {children}
         </div>
         <nav
-          className="mt-14 flex flex-wrap gap-4 border-t border-white/10 pt-8 text-sm text-slate-500"
+          className="mt-14 flex flex-wrap gap-4 border-t border-line pt-8 text-sm text-muted"
           aria-label="Other legal documents"
         >
-          <Link href="/privacy" className="hover:text-white">
+          <Link href="/privacy" className="hover:text-fg">
             Privacy Policy
           </Link>
-          <Link href="/terms" className="hover:text-white">
+          <Link href="/terms" className="hover:text-fg">
             Terms of Service
           </Link>
-          <Link href="/cookies" className="hover:text-white">
+          <Link href="/cookies" className="hover:text-fg">
             Cookie Notice
           </Link>
           <a
             href={`mailto:${SUPPORT_EMAIL}`}
-            className="hover:text-white"
+            className="hover:text-fg"
           >
             Contact
           </a>
@@ -58,7 +58,7 @@ export function LegalSection({
 }) {
   return (
     <section>
-      <h2 className="text-lg font-semibold text-white">{title}</h2>
+      <h2 className="text-lg font-semibold text-fg">{title}</h2>
       <div className="mt-3 space-y-3">{children}</div>
     </section>
   );

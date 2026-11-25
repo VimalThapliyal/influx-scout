@@ -25,14 +25,13 @@ const TOOLS = [
 export default function ToolsPage() {
   return (
     <MarketingShell>
-      <p className="mkt-eyebrow">Free tools</p>
-      <h1 className="mkt-h2 mt-3 !text-4xl">Free YouTube influencer marketing tools</h1>
+      <h1 className="h-page">Free YouTube influencer marketing tools</h1>
       <div className="mt-10 grid gap-6 md:grid-cols-2">
         {TOOLS.map((t) => (
-          <Link key={t.href} href={t.href} className="mkt-card block p-6 hover:border-mkt-tally/50">
-            <h2 className="mkt-h3 !text-lg">{t.title}</h2>
-            <p className="mkt-body mt-2 !text-sm">{t.desc}</p>
-            <span className="mt-4 inline-block font-mono text-xs uppercase tracking-wider text-mkt-tally">Open →</span>
+          <Link key={t.href} href={t.href} className="card block p-6 hover:border-accent/50">
+            <h2 className="h-section">{t.title}</h2>
+            <p className="text-body mt-2 !text-sm">{t.desc}</p>
+            <span className="mt-4 inline-block text-xs text-accent">Open</span>
           </Link>
         ))}
       </div>

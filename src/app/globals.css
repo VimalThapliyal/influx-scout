@@ -2,244 +2,166 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Design tokens (RGB channels, used through tailwind.config.ts).
+   Rules for using them are in DESIGN_SYSTEM.md. */
 @layer base {
-  /* Palette as RGB channels (see tailwind.config.ts "mkt"). Defaults are the
-     dark app look; .mkt-shell below switches the public site to the light
-     "research report" look. */
   :root {
-    --mkt-ink: 21 24 30;
-    --mkt-paper: 243 238 227;
-    --mkt-ash: 139 147 160;
-    --mkt-manila: 201 191 166;
-    --mkt-tally: 232 163 61;
-    --mkt-signal: 79 186 111;
-    --mkt-surface: 27 31 39;
-    --mkt-fail: 224 102 74;
-    --mkt-display: var(--font-bebas);
-    --mkt-label: var(--font-plex-mono);
+    /* Surfaces: warm neutrals */
+    --canvas: 250 249 247; /* page background        #FAF9F7 */
+    --surface: 255 255 255; /* panels, tables, inputs  #FFFFFF */
+    --subtle: 243 241 238; /* hover rows, quiet fills #F3F1EE */
+    --line: 230 227 222; /* default border          #E6E3DE */
+    --line-strong: 208 204 197; /* inputs, emphasis   #D0CCC5 */
+
+    /* Text */
+    --fg: 26 25 23; /* primary text            #1A1917 */
+    --muted: 99 96 90; /* secondary text, 6.1:1 on canvas */
+    --faint: 138 134 127; /* placeholders, disabled only */
+
+    /* Brand: one indigo */
+    --accent: 67 56 202; /* #4338CA, 7.4:1 on white */
+    --accent-hover: 55 48 163;
+    --accent-soft: 238 240 255;
+    --accent-fg: 255 255 255;
+
+    /* Status (text colours pass AA on their soft background) */
+    --success: 21 111 61;
+    --success-soft: 231 245 236;
+    --warn: 154 82 7;
+    --warn-soft: 253 243 225;
+    --danger: 180 35 24;
+    --danger-soft: 253 236 234;
+  }
+
+  html {
+    font-family: var(--font-inter), system-ui, sans-serif;
+    font-feature-settings: "cv11", "ss01", "calt";
+    -webkit-text-size-adjust: 100%;
   }
 
   body {
-    @apply bg-mkt-ink text-mkt-ash antialiased;
+    @apply bg-canvas text-fg antialiased;
+    font-size: 0.875rem; /* 14px product default */
+    line-height: 1.5;
+  }
+
+  :focus-visible {
+    outline: 2px solid rgb(var(--accent));
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: rgb(var(--accent-soft));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
 
 @layer components {
-  /* ── App shell (contact-sheet / production-log, same system as marketing) ── */
-  .app-shell {
-    @apply min-h-screen bg-mkt-ink text-mkt-ash;
+  /* ── Type ── */
+  .h-display {
+    @apply text-[2rem] font-semibold leading-[1.1] tracking-[-0.025em] text-fg sm:text-[2.75rem];
   }
-
-  .btn-primary {
-    @apply inline-flex min-h-[44px] items-center justify-center rounded-sm bg-mkt-tally px-5 py-2 text-sm font-semibold uppercase tracking-wide text-mkt-ink transition hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mkt-tally disabled:cursor-not-allowed disabled:opacity-50;
+  .h-page {
+    @apply text-xl font-semibold leading-tight tracking-[-0.015em] text-fg sm:text-2xl;
   }
-
-  .btn-secondary {
-    @apply inline-flex min-h-[44px] items-center justify-center rounded-sm border border-mkt-manila/30 bg-transparent px-5 py-2 text-sm font-medium text-mkt-paper transition hover:border-mkt-manila hover:bg-white/[0.03] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mkt-tally disabled:cursor-not-allowed disabled:opacity-50;
+  .h-section {
+    @apply text-base font-semibold leading-snug tracking-[-0.01em] text-fg;
   }
-
-  .btn-ghost {
-    @apply inline-flex min-h-[44px] items-center justify-center rounded-sm px-4 py-2 text-sm font-medium text-mkt-ash transition hover:bg-white/5 hover:text-mkt-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mkt-tally;
-  }
-
-  .input-field {
-    @apply w-full min-h-[48px] rounded-sm border border-mkt-manila/30 bg-white/[0.02] px-4 py-2.5 text-sm text-mkt-paper placeholder:text-mkt-ash/60 focus:border-mkt-tally focus:outline-none focus:ring-1 focus:ring-mkt-tally/40;
-  }
-
-  .card {
-    @apply rounded-sm border border-mkt-manila/20 bg-[#1B1F27];
-  }
-
-  .filter-chip {
-    @apply inline-flex min-h-[36px] cursor-pointer items-center gap-2 rounded-sm border border-mkt-manila/25 bg-white/[0.02] px-3.5 py-1.5 text-sm text-mkt-ash transition hover:border-mkt-tally/50 hover:bg-mkt-tally/10;
-  }
-
-  .filter-chip-active {
-    @apply border-mkt-tally/60 bg-mkt-tally/15 text-mkt-tally;
-  }
-
-  .tag-pill {
-    @apply inline-flex rounded-sm border border-mkt-manila/25 px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-wide text-mkt-ash;
-  }
-
-  .metric-label {
-    @apply font-mono text-[11px] font-medium uppercase tracking-wider text-mkt-ash;
-  }
-
-  .metric-value {
-    @apply font-mono text-sm font-semibold tabular-nums text-mkt-paper;
-  }
-
-  .nav-item {
-    @apply flex items-center gap-3 rounded-sm border-l-2 border-transparent px-3 py-2.5 text-sm font-medium text-mkt-ash transition hover:bg-white/[0.03] hover:text-mkt-paper;
-  }
-
-  .nav-item-active {
-    @apply border-mkt-tally bg-mkt-tally/10 text-mkt-tally;
-  }
-
-  .landing-gradient {
-    background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(139, 92, 246, 0.18), transparent),
-      radial-gradient(ellipse 60% 40% at 80% 50%, rgba(239, 68, 68, 0.1), transparent),
-      radial-gradient(ellipse 50% 30% at 20% 80%, rgba(6, 182, 212, 0.08), transparent);
-  }
-
-  .glass-card {
-    @apply rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl;
-  }
-
-  .search-glow {
-    box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.2), 0 8px 40px rgba(139, 92, 246, 0.08);
-  }
-
-  .page-title {
-    @apply font-poster text-3xl uppercase tracking-tight text-mkt-paper md:text-4xl;
-  }
-
   .page-subtitle {
-    @apply mt-2 text-sm text-mkt-ash;
+    @apply mt-1 text-sm text-muted;
   }
-
-  .section-title {
-    @apply text-lg font-semibold text-mkt-paper;
+  .text-body {
+    @apply text-[0.9375rem] leading-relaxed text-muted;
   }
-
-  .text-muted {
-    @apply text-mkt-ash;
-  }
-
   .text-link {
-    @apply text-mkt-tally hover:brightness-110 transition;
+    @apply font-medium text-accent underline decoration-accent/30 underline-offset-[3px] hover:decoration-accent;
   }
 
-  .table-head {
-    @apply border-b border-mkt-manila/20 bg-white/[0.02] text-left font-mono text-xs font-semibold uppercase tracking-wider text-mkt-ash;
+  /* ── Buttons: 36px default, 32px with .btn-sm ── */
+  .btn-primary,
+  .btn-secondary,
+  .btn-ghost {
+    @apply inline-flex h-9 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-md px-3.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply bg-accent text-accent-fg hover:bg-accent-hover;
+  }
+  .btn-secondary {
+    @apply border border-line-strong bg-surface text-fg hover:bg-subtle;
+  }
+  .btn-ghost {
+    @apply text-muted hover:bg-subtle hover:text-fg;
+  }
+  .btn-sm {
+    @apply h-8 px-2.5 text-[0.8125rem];
+  }
+  .btn-lg {
+    @apply h-11 px-5 text-[0.9375rem];
   }
 
-  .table-row {
-    @apply border-b border-mkt-manila/10 text-mkt-ash transition hover:bg-white/[0.03];
+  /* ── Form controls ── */
+  .input-field {
+    @apply h-9 w-full rounded-md border border-line-strong bg-surface px-3 text-sm text-fg placeholder:text-faint hover:border-muted/50 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 disabled:bg-subtle disabled:text-faint;
+  }
+  textarea.input-field {
+    @apply h-auto py-2;
+  }
+  .field-label {
+    @apply mb-1.5 block text-[0.8125rem] font-medium text-fg;
   }
 
-  .table-row-selected {
-    @apply bg-mkt-tally/10 hover:bg-mkt-tally/15;
+  /* ── Surfaces ── */
+  .card {
+    @apply rounded-lg border border-line bg-surface;
   }
-
   .metric-box {
-    @apply rounded-sm border border-mkt-manila/20 bg-white/[0.02] p-4;
+    @apply rounded-lg border border-line bg-surface p-4;
+  }
+  .metric-label {
+    @apply text-xs font-medium text-muted;
+  }
+  .metric-value {
+    @apply text-sm font-semibold tabular-nums text-fg;
   }
 
-  /* ── Marketing site: contact-sheet / production-log direction ──
-     This is the same system as the app-shell classes above, just with
-     a few marketing-only additions (poster display sizes, eyebrows,
-     stamps) for the landing/login/subscribe pages. No backdrop-blur,
-     no rounded-2xl glass cards: solid ink surfaces, manila hairlines,
-     amber as the one accent. */
-
-  .mkt-shell {
-    @apply min-h-screen bg-mkt-ink font-plex text-mkt-ash;
+  /* ── Chips and tags ── */
+  .filter-chip {
+    @apply inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md border border-line-strong bg-surface px-2.5 text-[0.8125rem] font-medium text-fg transition-colors hover:bg-subtle;
+  }
+  .filter-chip-active {
+    @apply border-accent/40 bg-accent-soft text-accent hover:bg-accent-soft;
+  }
+  .tag-pill {
+    @apply inline-flex items-center rounded-sm bg-subtle px-1.5 py-0.5 text-xs font-medium text-muted;
   }
 
-  .mkt-eyebrow {
-    @apply font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-mkt-tally;
+  /* ── Navigation ── */
+  .nav-item {
+    @apply flex h-8 items-center gap-2.5 rounded-md px-2.5 text-[0.8125rem] font-medium text-muted transition-colors hover:bg-subtle hover:text-fg;
+  }
+  .nav-item-active {
+    @apply bg-subtle text-fg;
   }
 
-  .mkt-h1 {
-    @apply font-poster text-6xl uppercase leading-[0.92] tracking-tight text-mkt-paper md:text-8xl;
+  /* ── Tables ── */
+  .table-head {
+    @apply border-b border-line bg-canvas text-left text-xs font-medium text-muted;
+  }
+  .table-row {
+    @apply border-b border-line text-fg transition-colors last:border-0 hover:bg-subtle/60;
+  }
+  .table-row-selected {
+    @apply bg-accent-soft hover:bg-accent-soft;
   }
 
-  .mkt-h2 {
-    @apply font-poster text-4xl uppercase leading-[0.95] tracking-tight text-mkt-paper md:text-6xl;
-  }
-
-  .mkt-h3 {
-    @apply font-poster text-2xl uppercase tracking-tight text-mkt-paper;
-  }
-
-  .mkt-body {
-    @apply font-plex text-base leading-relaxed text-mkt-ash;
-  }
-
-  .mkt-hairline {
-    @apply border-mkt-manila/25;
-  }
-
-  .mkt-card {
-    @apply rounded-sm border border-mkt-manila/25 bg-mkt-surface;
-  }
-
-  .mkt-btn-primary {
-    @apply inline-flex min-h-[48px] items-center justify-center gap-2 rounded-sm bg-mkt-tally px-6 text-sm font-semibold uppercase tracking-wide text-mkt-ink transition hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mkt-tally disabled:cursor-not-allowed disabled:opacity-50;
-  }
-
-  .mkt-btn-secondary {
-    @apply inline-flex min-h-[48px] items-center justify-center gap-2 rounded-sm border border-mkt-manila/40 px-6 text-sm font-semibold uppercase tracking-wide text-mkt-paper transition hover:border-mkt-manila hover:bg-white/[0.03] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mkt-tally disabled:cursor-not-allowed disabled:opacity-50;
-  }
-
-  .mkt-link {
-    @apply text-mkt-tally underline decoration-mkt-tally/30 underline-offset-4 transition hover:decoration-mkt-tally;
-  }
-
-  .mkt-input {
-    @apply w-full min-h-[48px] rounded-sm border border-mkt-manila/30 bg-mkt-ink px-4 py-2.5 font-plex text-sm text-mkt-paper placeholder:text-mkt-ash/60 focus:border-mkt-tally focus:outline-none focus:ring-1 focus:ring-mkt-tally/40;
-  }
-
-  .mkt-tag {
-    @apply inline-flex items-center rounded-sm border border-mkt-manila/30 px-2 py-0.5 font-mono text-[11px] uppercase tracking-wider text-mkt-ash;
-  }
-
-  .mkt-stamp {
-    @apply -rotate-3 rounded-sm border-2 border-mkt-tally px-3 py-1 font-mono text-[11px] font-semibold uppercase tracking-widest text-mkt-tally;
-  }
-
-  .mkt-frame-count {
-    @apply font-mono text-xs tabular-nums text-mkt-tally;
-  }
-
-  .mkt-perforation {
-    background-image: radial-gradient(circle, rgba(201, 191, 166, 0.35) 1.5px, transparent 1.5px);
-    background-size: 14px 14px;
+  /* ── Loading ── */
+  .skeleton {
+    @apply animate-pulse rounded-md bg-subtle;
   }
 }
-
-/* ── Public site: "research report" ──────────────────────────────────────
-   Cool paper, green-black ink, one green accent (= passes the quality gate),
-   brick red only for failures in charts. Literata for headlines, Plex Sans for
-   everything else. No all-caps labels and no monospace: those utilities are
-   neutralised inside .mkt-shell so older marketing pages follow along. */
-.mkt-shell {
-  --mkt-ink: 244 246 243;
-  --mkt-paper: 23 32 28;
-  --mkt-ash: 70 81 76;
-  --mkt-manila: 46 58 52;
-  --mkt-tally: 29 107 69;
-  --mkt-signal: 29 107 69;
-  --mkt-surface: 255 255 255;
-  --mkt-fail: 168 67 44;
-  --mkt-display: var(--font-literata);
-  --mkt-label: var(--font-plex-sans);
-  font-feature-settings: "kern", "liga";
-}
-.mkt-shell .uppercase { text-transform: none; }
-.mkt-shell .tracking-wider,
-.mkt-shell .tracking-widest,
-.mkt-shell .tracking-wide,
-.mkt-shell .tracking-\[0\.2em\] { letter-spacing: 0; }
-.mkt-shell .mkt-h1,
-.mkt-shell .mkt-h2,
-.mkt-shell .mkt-h3 {
-  text-transform: none;
-  font-weight: 500;
-  letter-spacing: -0.015em;
-  line-height: 1.12;
-}
-.mkt-shell .mkt-h1 { font-size: clamp(2.3rem, 4.6vw, 3.5rem); line-height: 1.05; }
-.mkt-shell .mkt-h2 { font-size: clamp(1.9rem, 3.6vw, 2.6rem); }
-.mkt-shell .mkt-h3 { font-size: 1.3rem; }
-.mkt-shell .mkt-eyebrow { color: rgb(var(--mkt-ash)); font-size: 0.875rem; }
-.mkt-shell .mkt-btn-primary,
-.mkt-shell .mkt-btn-secondary { text-transform: none; letter-spacing: 0; font-weight: 600; border-radius: 6px; }
-.mkt-shell .mkt-btn-primary:hover { filter: brightness(1.12); }
-.mkt-shell .mkt-card { border-radius: 6px; }
-.mkt-shell .mkt-tag { border-radius: 999px; font-size: 0.8rem; padding: 0.2rem 0.7rem; }
-.mkt-shell :focus-visible { outline: 2px solid rgb(var(--mkt-tally)); outline-offset: 2px; }
-.mkt-shell .font-poster { font-optical-sizing: auto; }

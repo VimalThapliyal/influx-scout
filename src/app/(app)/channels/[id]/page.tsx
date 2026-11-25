@@ -3,12 +3,15 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import type { Channel } from "@/lib/types";
+import { BookmarkPlus, ChevronLeft, Mail, RefreshCw } from "lucide-react";
 import {
+  Avatar,
   ContactPanel,
+  EmptyState,
   formatNumber,
   formatEngagement,
-  LoadingSpinner,
   ProfileTrustBanner,
+  StatusTag,
   TierBadge,
 } from "@/components/ui";
 import { countryLabel, inferTags, youtubeChannelUrl } from "@/lib/tags";
@@ -49,20 +52,23 @@ function TabGroup({
   options,
   value,
   onChange,
+  label,
 }: {
   options: { id: string; label: string }[];
   value: string;
   onChange: (id: string) => void;
+  label: string;
 }) {
   return (
-    <div className="flex rounded-lg border border-white/10 bg-white/5 p-0.5 text-sm">
+    <div role="group" aria-label={label} className="inline-flex rounded-md border border-line-strong bg-surface p-0.5">
       {options.map((opt) => (
         <button
           key={opt.id}
           type="button"
+          aria-pressed={value === opt.id}
           onClick={() => onChange(opt.id)}
-          className={`rounded-md px-3 py-1 transition ${
-            value === opt.id ? "bg-mkt-tally/20 text-mkt-tally" : "text-slate-400 hover:text-slate-200"
+          className={`h-7 rounded-sm px-2.5 text-[0.8125rem] font-medium transition-colors ${
+            value === opt.id ? "bg-subtle text-fg" : "text-muted hover:text-fg"
           }`}
         >
           {opt.label}
@@ -196,254 +202,232 @@ export default function ChannelDetailPage({ params }: { params: { id: string } }
     }
   }
 
-  if (loading) return <LoadingSpinner />;
-  if (!channel) {
+  if (loading) {
     return (
-      <div className="card py-16 text-center">
-        <p className="text-slate-400">Channel not found.</p>
-        <Link href="/channels" className="btn-primary mt-4 inline-flex">
-          Back to your database
-        </Link>
+      <div className="space-y-6" role="status" aria-label="Loading creator">
+        <div className="flex items-center gap-4">
+          <span className="skeleton h-14 w-14 rounded-full" />
+          <div className="space-y-2">
+            <div className="skeleton h-5 w-56" />
+            <div className="skeleton h-3 w-40" />
+          </div>
+        </div>
+        <div className="skeleton h-20 w-full" />
+        <div className="skeleton h-48 w-full" />
       </div>
     );
   }
+  if (!channel) {
+    return (
+      <EmptyState
+        title="We couldn&rsquo;t find this creator"
+        description="The channel may have been removed from Influx or from YouTube."
+        action={
+          <Link href="/channels" className="btn-secondary btn-sm">
+            Back to creators
+          </Link>
+        }
+      />
+    );
+  }
 
-  const tags = inferTags(
-    channel.title,
-    channel.description,
-    channel.primary_niche
-  );
+  const tags = inferTags(channel.title, channel.description, channel.primary_niche);
+  const metricsExpired =
+    youtubeMetricsStatus(channel.metrics_expires_at, channel.metrics_fetched_at) === "expired";
+  const metrics = [
+    { label: periodMetrics?.subscribersLabel ?? "Subscribers", value: formatMetricValue(periodMetrics?.subscribers, isDeltaMetrics) },
+    { label: "Average views", value: formatNumber(periodMetrics?.avgViews) },
+    { label: "Engagement", value: formatEngagement(periodMetrics?.engagement) },
+    { label: periodMetrics?.totalViewsLabel ?? "Total views", value: formatMetricValue(periodMetrics?.totalViews, isDeltaMetrics) },
+    { label: periodMetrics?.videosLabel ?? "Videos", value: formatMetricValue(periodMetrics?.videos, isDeltaMetrics) },
+    { label: "Influx score", value: String(channel.influencer_score) },
+  ];
 
   return (
     <div className="min-w-0 space-y-6">
-      <Link href="/channels" className="text-link text-sm">
-        ← Back to your database
+      <Link href="/channels" className="inline-flex items-center gap-1 text-[0.8125rem] font-medium text-muted hover:text-fg">
+        <ChevronLeft size={14} strokeWidth={1.75} aria-hidden />
+        Creators
       </Link>
 
-      <div className="grid min-w-0 gap-6 lg:grid-cols-[300px_minmax(0,1fr)]">
-        <aside className="card min-w-0 p-6">
-          <div className="flex flex-col items-center text-center">
-            {channel.thumbnail_url ? (
-              <img
-                src={channel.thumbnail_url}
-                alt=""
-                className="h-24 w-24 rounded-full object-cover ring-4 ring-white/10"
-              />
-            ) : (
-              <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white/10 text-2xl font-medium text-white">
-                {channel.title.charAt(0)}
-              </div>
-            )}
-            <h1 className="mt-4 break-words text-lg font-medium text-white">{channel.title}</h1>
-            <a
-              href={youtubeChannelUrl(channel)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-link mt-1 text-sm"
-            >
-              {channel.handle ?? "View channel"}
-            </a>
-            <p className="mt-2 text-xs text-slate-500">
-              {formatNumber(channel.video_count)} videos · {formatNumber(channel.subscriber_count)} subscribers · {countryLabel(channel.country)}
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex min-w-0 items-center gap-4">
+          <Avatar src={channel.thumbnail_url} name={channel.title} size={56} />
+          <div className="min-w-0">
+            <h1 className="h-page break-words">{channel.title}</h1>
+            <p className="mt-1 text-sm text-muted">
+              <a href={youtubeChannelUrl(channel)} target="_blank" rel="noopener noreferrer" className="text-link">
+                {channel.handle ?? "View on YouTube"}
+              </a>
+              {channel.country ? `, ${countryLabel(channel.country)}` : ""}
             </p>
-            <div className="mt-3 flex flex-wrap justify-center gap-1.5">
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {channel.quality_pass === true && <StatusTag tone="success">Ready for outreach</StatusTag>}
+              {channel.is_inactive === true && <StatusTag tone="warn">Inactive</StatusTag>}
               {tags.map((t) => (
-                <span key={t} className="tag-pill bg-mkt-tally/15 text-mkt-tally">
-                  {t}
-                </span>
+                <StatusTag key={t}>{t}</StatusTag>
               ))}
               {channel.tier && <TierBadge tier={channel.tier} />}
             </div>
           </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={refreshChannel}
+            disabled={refreshing}
+            className="btn-ghost"
+            title="Update subscriber, view and video counts from YouTube"
+          >
+            <RefreshCw size={15} strokeWidth={1.75} aria-hidden className={refreshing ? "animate-spin" : ""} />
+            {refreshing ? "Refreshing" : "Refresh"}
+          </button>
+          <button type="button" onClick={() => setShowSave(true)} className="btn-secondary">
+            <BookmarkPlus size={15} strokeWidth={1.75} aria-hidden />
+            Add to campaign
+          </button>
+          <button type="button" onClick={() => setShowOutreach(true)} className="btn-primary">
+            <Mail size={15} strokeWidth={1.75} aria-hidden />
+            Draft outreach email
+          </button>
+        </div>
+      </header>
 
-          <div className="mt-5">
-            <ProfileTrustBanner channel={channel} />
+      <section aria-labelledby="metrics-title">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 id="metrics-title" className="h-section">Performance</h2>
+            {periodMetrics?.rangeLabel && (
+              <p className="text-xs text-muted">
+                {periodMetrics.rangeLabel}
+                {periodMetrics.source === "videos" ? ", based on recent uploads" : ""}
+              </p>
+            )}
           </div>
+          <TabGroup
+            label="Time range"
+            value={metricsRange}
+            onChange={(id) => setMetricsRange(id as MetricsRange)}
+            options={[
+              { id: "28", label: "28 days" },
+              { id: "90", label: "90 days" },
+              { id: "all", label: "All time" },
+            ]}
+          />
+        </div>
+        {metricsExpired && (
+          <p className="mb-3 rounded-md bg-warn-soft px-3 py-2 text-[0.8125rem] text-warn">
+            These numbers are more than 30 days old. Refresh to get current counts.
+          </p>
+        )}
+        <dl className={`card grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 lg:divide-x lg:divide-line ${metricsLoading ? "opacity-60" : ""}`} aria-busy={metricsLoading}>
+          {metrics.map((m) => (
+            <div key={m.label} className="px-4 py-3.5">
+              <dt className="text-xs text-muted">{m.label}</dt>
+              <dd className="mt-1 text-lg font-semibold tabular-nums tracking-[-0.01em] text-fg">{m.value}</dd>
+            </div>
+          ))}
+        </dl>
 
-          <div className="mt-6 space-y-2">
-            <ContactPanel channel={channel} />
-            <button type="button" onClick={() => setShowSave(true)} className="btn-secondary w-full">
-              Add to campaign list
-            </button>
-            <button type="button" onClick={() => setShowOutreach(true)} className="btn-primary w-full gap-2">
-              ✦ Write outreach email
-            </button>
-            <button
-              type="button"
-              onClick={refreshChannel}
-              disabled={refreshing}
-              className="btn-ghost w-full text-sm"
-            >
-              {refreshing ? "Refreshing…" : "Refresh from YouTube"}
-            </button>
-            <p className="text-center text-[11px] text-slate-600">
-              Refresh updates subscriber, view, and video counts
-            </p>
-          </div>
-        </aside>
+        {chartPoints.length > 1 && (
+          <figure className="card mt-3 p-4">
+            <figcaption className="text-xs text-muted">
+              Subscribers over time{metricsRange !== "all" ? `, last ${metricsRange} days` : ""}
+            </figcaption>
+            <div className="mt-3 flex h-20 items-end gap-1">
+              {chartPoints.map((point, i) => {
+                const max = Math.max(...chartPoints.map((a) => a.subscriber_count ?? 0));
+                const h = max > 0 ? ((point.subscriber_count ?? 0) / max) * 100 : 0;
+                return (
+                  <div
+                    key={i}
+                    className="flex-1 rounded-t-sm bg-accent/70"
+                    style={{ height: `${Math.max(h, 4)}%` }}
+                    title={`${point.subscriber_count?.toLocaleString()} on ${new Date(point.recorded_at).toLocaleDateString()}`}
+                  />
+                );
+              })}
+            </div>
+          </figure>
+        )}
+      </section>
 
+      <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
         <div className="min-w-0 space-y-6">
-          <section className="card min-w-0 overflow-hidden p-6">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="min-w-0">
-                <h2 className="section-title">Featured videos</h2>
-                <p className="text-sm text-slate-500">
-                  {videoTab === "popular"
-                    ? "Top videos by view count"
-                    : "Latest uploads from this channel"}
-                </p>
-              </div>
+          <section aria-labelledby="videos-title" className="min-w-0">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <h2 id="videos-title" className="h-section">Videos</h2>
               <TabGroup
+                label="Video order"
                 value={videoTab}
                 onChange={(id) => setVideoTab(id as "recent" | "popular")}
                 options={[
-                  { id: "popular", label: "Popular videos" },
-                  { id: "recent", label: "Recent videos" },
+                  { id: "recent", label: "Most recent" },
+                  { id: "popular", label: "Most viewed" },
                 ]}
               />
             </div>
 
             {videosLoading ? (
-              <div className="mt-6 flex justify-center py-8">
-                <LoadingSpinner />
+              <div className="flex gap-3 overflow-hidden" role="status" aria-label="Loading videos">
+                {Array.from({ length: 4 }, (_, i) => (
+                  <div key={i} className="w-44 shrink-0 space-y-2">
+                    <div className="skeleton aspect-video w-full" />
+                    <div className="skeleton h-3 w-full" />
+                    <div className="skeleton h-3 w-16" />
+                  </div>
+                ))}
               </div>
             ) : videos.length === 0 ? (
-              <p className="mt-6 text-sm text-slate-500">No videos loaded. Try refreshing the channel.</p>
+              <p className="card px-4 py-5 text-sm text-muted">
+                No videos are stored for this creator yet. Use Refresh to load them from YouTube.
+              </p>
             ) : (
-              <div className="mt-4 flex min-w-0 gap-4 overflow-x-auto pb-2">
+              <div className="flex min-w-0 gap-3 overflow-x-auto pb-2">
                 {videos.map((v) => (
                   <a
                     key={v.id}
                     href={`https://www.youtube.com/watch?v=${v.id}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-48 shrink-0"
+                    className="group w-44 shrink-0"
                   >
-                    <div className="relative overflow-hidden rounded-lg bg-white/10">
+                    <div className="relative overflow-hidden rounded-md border border-line bg-subtle">
                       {v.thumbnail_url && (
-                        <img src={v.thumbnail_url} alt="" className="aspect-video w-full object-cover" />
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={v.thumbnail_url} alt="" loading="lazy" className="aspect-video w-full object-cover" />
                       )}
                       {v.duration && (
-                        <span className="absolute bottom-1 right-1 rounded bg-black/80 px-1 text-xs text-white">
+                        <span className="absolute bottom-1 right-1 rounded-sm bg-fg/80 px-1 text-[0.6875rem] font-medium tabular-nums text-surface">
                           {formatDuration(v.duration)}
                         </span>
                       )}
                     </div>
-                    <p className="mt-2 line-clamp-2 text-sm font-medium text-white">{v.title}</p>
-                    <p className="text-xs text-slate-500">{formatNumber(v.view_count)} views</p>
+                    <p className="mt-2 line-clamp-2 text-[0.8125rem] font-medium text-fg group-hover:text-accent">{v.title}</p>
+                    <p className="mt-0.5 text-xs tabular-nums text-muted">{formatNumber(v.view_count)} views</p>
                   </a>
                 ))}
               </div>
             )}
           </section>
 
-          <section className="card min-w-0 overflow-hidden p-6">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div>
-                <h2 className="section-title">Core metrics</h2>
-                {periodMetrics?.rangeLabel && (
-                  <p className="text-sm text-slate-500">
-                    Showing {periodMetrics.rangeLabel}
-                    {periodMetrics.source === "videos"
-                      ? " · based on recent uploads"
-                      : ""}
-                  </p>
-                )}
-                {youtubeMetricsStatus(
-                  channel.metrics_expires_at,
-                  channel.metrics_fetched_at
-                ) === "expired" ? (
-                  <p className="mt-1 text-sm text-amber-400/90">
-                    YouTube snapshot is past its 30-day window — refresh for current counts.
-                  </p>
-                ) : null}
-              </div>
-              <TabGroup
-                value={metricsRange}
-                onChange={(id) => setMetricsRange(id as MetricsRange)}
-                options={[
-                  { id: "28", label: "28 days" },
-                  { id: "90", label: "90 days" },
-                  { id: "all", label: "All time" },
-                ]}
-              />
-            </div>
-
-            {metricsLoading ? (
-              <div className="mt-6 flex justify-center py-8">
-                <LoadingSpinner />
-              </div>
-            ) : (
-              <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-                <MetricCard
-                  label={periodMetrics?.subscribersLabel ?? "Subscribers"}
-                  value={formatMetricValue(
-                    periodMetrics?.subscribers,
-                    isDeltaMetrics
-                  )}
-                />
-                <MetricCard
-                  label={periodMetrics?.totalViewsLabel ?? "Total views"}
-                  value={formatMetricValue(
-                    periodMetrics?.totalViews,
-                    isDeltaMetrics
-                  )}
-                />
-                <MetricCard
-                  label="Avg views"
-                  value={formatNumber(periodMetrics?.avgViews)}
-                />
-                <MetricCard
-                  label="Engagement"
-                  value={formatEngagement(periodMetrics?.engagement)}
-                />
-                <MetricCard
-                  label="Influencer score"
-                  value={String(channel.influencer_score)}
-                />
-                <MetricCard
-                  label={periodMetrics?.videosLabel ?? "Videos"}
-                  value={formatMetricValue(periodMetrics?.videos, isDeltaMetrics)}
-                />
-                <MetricCard label="Tier" value={channel.tier ?? "—"} />
-              </div>
-            )}
-
-            {chartPoints.length > 1 && (
-              <div className="mt-6">
-                <h3 className="text-sm font-medium text-slate-500">
-                  Subscriber history
-                  {metricsRange !== "all" ? ` — last ${metricsRange} days` : ""}
-                </h3>
-                <div className="mt-3 flex h-24 items-end gap-1">
-                  {chartPoints.map((point, i) => {
-                    const max = Math.max(
-                      ...chartPoints.map((a) => a.subscriber_count ?? 0)
-                    );
-                    const h = max > 0 ? ((point.subscriber_count ?? 0) / max) * 100 : 0;
-                    return (
-                      <div
-                        key={i}
-                        className="flex-1 rounded-t bg-mkt-tally opacity-80"
-                        style={{ height: `${Math.max(h, 4)}%` }}
-                        title={`${point.subscriber_count?.toLocaleString()} on ${new Date(point.recorded_at).toLocaleDateString()}`}
-                      />
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </section>
-
           {channel.description && (
-            <section className="card min-w-0 overflow-hidden p-6">
-              <h2 className="section-title">About</h2>
-              <p className="mt-3 line-clamp-6 break-words whitespace-pre-wrap text-sm text-slate-400">
+            <section aria-labelledby="about-title">
+              <h2 id="about-title" className="h-section">About</h2>
+              <p className="mt-2 line-clamp-6 max-w-2xl whitespace-pre-wrap break-words text-sm leading-relaxed text-muted">
                 {channel.description}
               </p>
             </section>
           )}
         </div>
+
+        <aside className="min-w-0 space-y-4">
+          <section className="card p-4" aria-labelledby="contact-title">
+            <h2 id="contact-title" className="h-section mb-3">Contact</h2>
+            <ContactPanel channel={channel} />
+          </section>
+          <ProfileTrustBanner channel={channel} />
+        </aside>
       </div>
 
       <SaveToCampaignModal
@@ -453,20 +437,7 @@ export default function ChannelDetailPage({ params }: { params: { id: string } }
         onClose={() => setShowSave(false)}
       />
 
-      <EmailOutreachModal
-        channel={channel}
-        open={showOutreach}
-        onClose={() => setShowOutreach(false)}
-      />
-    </div>
-  );
-}
-
-function MetricCard({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="metric-box">
-      <p className="metric-label">{label}</p>
-      <p className="metric-value mt-1 break-words text-lg capitalize">{value}</p>
+      <EmailOutreachModal channel={channel} open={showOutreach} onClose={() => setShowOutreach(false)} />
     </div>
   );
 }

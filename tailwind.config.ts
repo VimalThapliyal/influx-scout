@@ -1,50 +1,41 @@
 import type { Config } from "tailwindcss";
 
+/** Design tokens live in src/app/globals.css as CSS variables. See DESIGN_SYSTEM.md. */
+const token = (name: string) => `rgb(var(--${name}) / <alpha-value>)`;
+
 const config: Config = {
   content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-plex-sans)", "system-ui", "sans-serif"],
-        display: ["var(--font-jakarta)", "system-ui", "sans-serif"],
-        // Marketing/app type tokens. Values come from CSS variables so the public
-        // site (.mkt-shell, "research report" look) and the app can differ.
-        poster: ["var(--mkt-display)", "system-ui", "sans-serif"],
-        plex: ["var(--font-plex-sans)", "system-ui", "sans-serif"],
-        mono: ["var(--mkt-label)", "ui-monospace", "monospace"],
+        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
       },
       colors: {
-        brand: {
-          50: "#fef2f2",
-          100: "#fee2e2",
-          500: "#ef4444",
-          600: "#dc2626",
-          700: "#b91c1c",
-          900: "#7f1d1d",
+        canvas: token("canvas"),
+        surface: token("surface"),
+        subtle: token("subtle"),
+        line: { DEFAULT: token("line"), strong: token("line-strong") },
+        fg: token("fg"),
+        muted: token("muted"),
+        faint: token("faint"),
+        accent: {
+          DEFAULT: token("accent"),
+          hover: token("accent-hover"),
+          soft: token("accent-soft"),
+          fg: token("accent-fg"),
         },
-        // Semantic palette, defined as RGB channels in globals.css:
-        // ink = page background, paper = strongest text, ash = body text,
-        // manila = rules/borders, tally = accent, signal = positive.
-        mkt: {
-          ink: "rgb(var(--mkt-ink) / <alpha-value>)",
-          manila: "rgb(var(--mkt-manila) / <alpha-value>)",
-          tally: "rgb(var(--mkt-tally) / <alpha-value>)",
-          signal: "rgb(var(--mkt-signal) / <alpha-value>)",
-          paper: "rgb(var(--mkt-paper) / <alpha-value>)",
-          ash: "rgb(var(--mkt-ash) / <alpha-value>)",
-          surface: "rgb(var(--mkt-surface) / <alpha-value>)",
-          fail: "rgb(var(--mkt-fail) / <alpha-value>)",
-        },
+        success: { DEFAULT: token("success"), soft: token("success-soft") },
+        warn: { DEFAULT: token("warn"), soft: token("warn-soft") },
+        danger: { DEFAULT: token("danger"), soft: token("danger-soft") },
       },
-      animation: {
-        "float": "float 6s ease-in-out infinite",
-        "pulse-slow": "pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+      borderRadius: {
+        sm: "4px",
+        DEFAULT: "6px",
+        md: "6px",
+        lg: "8px",
       },
-      keyframes: {
-        float: {
-          "0%, 100%": { transform: "translateY(0px)" },
-          "50%": { transform: "translateY(-20px)" },
-        },
+      boxShadow: {
+        pop: "0 4px 16px rgb(26 25 23 / 0.08), 0 0 0 1px rgb(26 25 23 / 0.06)",
       },
     },
   },

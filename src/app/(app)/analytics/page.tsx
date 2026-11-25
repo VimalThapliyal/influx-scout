@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { formatNumber } from "@/components/ui";
-import { SignInToSaveBanner } from "@/components/SignInToSaveBanner";
+import { EmptyState, LoadingSpinner } from "@/components/ui";
 import { OUTREACH_LIBRARY_HREF } from "@/lib/routes";
 
 interface CampaignListInsight {
@@ -66,9 +67,7 @@ export default function AnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center py-16">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/10 border-t-mkt-tally" />
-      </div>
+      <LoadingSpinner />
     );
   }
 
@@ -77,32 +76,30 @@ export default function AnalyticsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-mkt-tally">
-          Campaign insights
-        </p>
-        <h1 className="page-title mt-1">Outreach performance</h1>
-        <p className="page-subtitle">
-          Track contacted creators, replies, and pipeline health across your lists.
-        </p>
+        <h1 className="h-page">Insights</h1>
+        <p className="page-subtitle">How many creators you contacted, how many replied, and where each list stands.</p>
       </div>
 
       {campaign?.requiresAuth ? (
-        <SignInToSaveBanner />
+        <EmptyState
+          title="Sign in to see your outreach results"
+          description="Insights are built from your own campaign lists."
+          action={
+            <Link href={`/login?redirect=${encodeURIComponent("/analytics")}`} className="btn-primary btn-sm">
+              Sign in
+            </Link>
+          }
+        />
       ) : !summary || summary.total_creators === 0 ? (
-        <section className="card p-8 text-center">
-          <p className="text-slate-400">No outreach data yet.</p>
-          <p className="mt-2 text-sm text-slate-500">
-            Add creators to a campaign list to see contacted, replied, and reply rates.
-          </p>
-          <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <Link href={OUTREACH_LIBRARY_HREF} className="btn-primary">
-              Browse outreach-ready creators
+        <EmptyState
+          title="Nothing to report yet"
+          description="Add creators to a campaign list and mark who you contacted. Reply rates show up here."
+          action={
+            <Link href={OUTREACH_LIBRARY_HREF} className="btn-secondary btn-sm">
+              Find creators
             </Link>
-            <Link href="/campaigns" className="btn-secondary">
-              Go to campaigns
-            </Link>
-          </div>
-        </section>
+          }
+        />
       ) : (
         <>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -116,7 +113,7 @@ export default function AnalyticsPage() {
               value={String(summary.contacted)}
               sub={`${summary.contact_rate}% of list`}
               bar={summary.contact_rate}
-              accent="bg-mkt-tally"
+              accent="bg-accent"
             />
             <MetricCard
               label="Replied"
@@ -133,9 +130,9 @@ export default function AnalyticsPage() {
           </div>
 
           <section className="card overflow-hidden">
-            <div className="border-b border-white/10 px-6 py-4">
-              <h2 className="section-title">By campaign list</h2>
-              <p className="mt-1 text-sm text-slate-500">
+            <div className="border-b border-line px-6 py-4">
+              <h2 className="h-section">By campaign list</h2>
+              <p className="mt-1 text-sm text-muted">
                 Contact and reply rates per list — click a row to manage outreach.
               </p>
             </div>
@@ -155,20 +152,20 @@ export default function AnalyticsPage() {
                   {campaign?.lists.map((list) => (
                     <tr key={list.id} className="table-row">
                       <td className="px-6 py-4">
-                        <Link href="/campaigns" className="font-medium text-white hover:text-mkt-tally">
+                        <Link href="/campaigns" className="font-medium text-fg hover:text-accent">
                           {list.name}
                         </Link>
                       </td>
-                      <td className="px-4 py-4 text-right text-slate-300">{list.total}</td>
-                      <td className="px-4 py-4 text-right text-mkt-tally">
+                      <td className="px-4 py-4 text-right text-fg">{list.total}</td>
+                      <td className="px-4 py-4 text-right text-accent">
                         {list.contacted}
-                        <span className="ml-1 text-xs text-slate-600">({list.contact_rate}%)</span>
+                        <span className="ml-1 text-xs text-muted">({list.contact_rate}%)</span>
                       </td>
                       <td className="px-4 py-4 text-right text-cyan-300">{list.replied}</td>
-                      <td className="px-4 py-4 text-right font-medium text-white">
+                      <td className="px-4 py-4 text-right font-medium text-fg">
                         {list.reply_rate}%
                       </td>
-                      <td className="px-4 py-4 text-right text-slate-400">
+                      <td className="px-4 py-4 text-right text-muted">
                         {list.negotiating > 0 && `${list.negotiating} neg`}
                         {list.negotiating > 0 && list.contracted > 0 && " · "}
                         {list.contracted > 0 && `${list.contracted} won`}
@@ -182,12 +179,12 @@ export default function AnalyticsPage() {
           </section>
 
           <section className="card p-6">
-            <h2 className="section-title">Pipeline breakdown</h2>
+            <h2 className="h-section">Pipeline breakdown</h2>
             <div className="mt-4 flex flex-wrap gap-4">
-              <PipelinePill label="Identified" value={summary.identified} color="text-slate-400" />
-              <PipelinePill label="Contacted" value={summary.contacted} color="text-mkt-tally" />
-              <PipelinePill label="Negotiating" value={summary.negotiating} color="text-amber-300" />
-              <PipelinePill label="Contracted" value={summary.contracted} color="text-emerald-300" />
+              <PipelinePill label="Identified" value={summary.identified} color="text-muted" />
+              <PipelinePill label="Contacted" value={summary.contacted} color="text-accent" />
+              <PipelinePill label="Negotiating" value={summary.negotiating} color="text-warn" />
+              <PipelinePill label="Contracted" value={summary.contracted} color="text-success" />
               <PipelinePill label="Replied" value={summary.replied} color="text-cyan-300" />
             </div>
           </section>
@@ -198,30 +195,25 @@ export default function AnalyticsPage() {
         <button
           type="button"
           onClick={() => setShowPlatform((v) => !v)}
-          className="flex w-full items-center justify-between px-6 py-4 text-left transition hover:bg-white/[0.02]"
+          className="flex w-full items-center justify-between px-6 py-4 text-left transition hover:bg-subtle"
           aria-expanded={showPlatform}
         >
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">
-              Platform insights
-            </p>
-            <h2 className="mt-1 text-sm font-medium text-slate-300">
-              API quota & database stats
-            </h2>
-            <p className="mt-0.5 text-xs text-slate-600">For operators — not needed for day-to-day outreach.</p>
+            <h2 className="text-sm font-medium text-fg">Library size and data refresh</h2>
+            <p className="mt-0.5 text-xs text-muted">How many creators are in Influx and how much was updated today.</p>
           </div>
-          <span className="text-slate-500">{showPlatform ? "▲" : "▼"}</span>
+          <ChevronDown size={16} strokeWidth={1.75} aria-hidden className={`text-muted transition-transform ${showPlatform ? "rotate-180" : ""}`} />
         </button>
 
         {showPlatform && platform && (
-          <div className="space-y-6 border-t border-white/10 px-6 py-6">
+          <div className="space-y-6 border-t border-line px-6 py-6">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <MetricCard
                 label="API quota used"
                 value={`${platform.quota.percent_used}%`}
                 sub={`${formatNumber(platform.quota.used)} / ${formatNumber(platform.quota.limit)} units`}
                 bar={platform.quota.percent_used}
-                accent="bg-amber-500"
+                accent="bg-warn"
               />
               <MetricCard
                 label="Creators in database"
@@ -233,13 +225,13 @@ export default function AnalyticsPage() {
                 value={`${platform.emailRate}%`}
                 sub={`${platform.withEmail} with email`}
                 bar={platform.emailRate}
-                accent="bg-emerald-500"
+                accent="bg-success"
               />
             </div>
 
             <div>
-              <h3 className="text-sm font-medium text-slate-300">Quota notes</h3>
-              <p className="mt-2 text-xs text-slate-500">
+              <h3 className="text-sm font-medium text-fg">Quota notes</h3>
+              <p className="mt-2 text-xs text-muted">
                 Your enriched library grows nightly via the automated pipeline. Resets at
                 midnight Pacific.
               </p>
@@ -256,7 +248,7 @@ function MetricCard({
   value,
   sub,
   bar,
-  accent = "bg-mkt-tally",
+  accent = "bg-accent",
 }: {
   label: string;
   value: string;
@@ -266,11 +258,11 @@ function MetricCard({
 }) {
   return (
     <div className="card p-5">
-      <p className="text-sm text-slate-500">{label}</p>
-      <p className="mt-1 text-2xl font-semibold text-white">{value}</p>
-      <p className="mt-1 text-xs text-slate-600">{sub}</p>
+      <p className="text-sm text-muted">{label}</p>
+      <p className="mt-1 text-2xl font-semibold text-fg">{value}</p>
+      <p className="mt-1 text-xs text-muted">{sub}</p>
       {bar !== undefined && (
-        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10">
+        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-subtle">
           <div
             className={`h-full rounded-full transition-all ${accent}`}
             style={{ width: `${Math.min(bar, 100)}%` }}
@@ -291,9 +283,9 @@ function PipelinePill({
   color: string;
 }) {
   return (
-    <div className="min-w-[5.5rem] rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
+    <div className="min-w-[5.5rem] rounded-lg border border-line bg-subtle px-4 py-3">
       <span className={`text-xl font-semibold ${color}`}>{value}</span>
-      <p className="mt-0.5 text-xs text-slate-500">{label}</p>
+      <p className="mt-0.5 text-xs text-muted">{label}</p>
     </div>
   );
 }

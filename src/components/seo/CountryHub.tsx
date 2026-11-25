@@ -85,14 +85,14 @@ export async function CountryHub({ country }: { country: Country }) {
   return (
     <MarketingShell>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <nav className="font-mono text-xs uppercase tracking-wider text-mkt-ash">
-        <Link href="/youtubers" className="hover:text-mkt-paper">YouTubers</Link>
+      <nav className="text-xs text-muted">
+        <Link href="/youtubers" className="hover:text-fg">YouTubers</Link>
         {" / "}
         <span>{name}</span>
       </nav>
 
-      <h1 className="mkt-h2 mt-4 !text-4xl">Top {country.demonym} YouTubers for brand deals</h1>
-      <p className="mkt-body mt-3 max-w-2xl">
+      <h1 className="h-page mt-4">Top {country.demonym} YouTubers for brand deals</h1>
+      <p className="text-body mt-3 max-w-2xl">
         {niches.length > 0
           ? `${total} active YouTube creators in ${country.name} across ${niches.length} niches. `
           : `Active YouTube creators in ${country.name}. `}
@@ -102,12 +102,12 @@ export async function CountryHub({ country }: { country: Country }) {
 
       {niches.length > 0 && (
         <section className="mt-8">
-          <h2 className="font-mono text-xs uppercase tracking-wider text-mkt-ash">
+          <h2 className="text-xs text-muted">
             {country.demonym} YouTubers by niche
           </h2>
           <div className="mt-3 flex flex-wrap gap-2">
             {niches.map((c) => (
-              <Link key={c.niche} href={listPath(c.niche, country.slug)} className="mkt-tag hover:text-mkt-paper">
+              <Link key={c.niche} href={listPath(c.niche, country.slug)} className="tag-pill hover:text-fg">
                 {nicheName(c.niche)} ({c.count})
               </Link>
             ))}
@@ -115,27 +115,27 @@ export async function CountryHub({ country }: { country: Country }) {
         </section>
       )}
 
-      <h2 className="mkt-h3 mt-10 !text-xl">Biggest active {country.demonym} creators</h2>
+      <h2 className="h-section mt-10">Biggest active {country.demonym} creators</h2>
       <div className="mt-4">
         <CreatorRankList creators={creators} unlockHref={unlockHref} />
       </div>
 
-      <div className="mkt-card mt-8 p-6 text-center">
-        <p className="mkt-h3 !text-xl">Reach {country.demonym} creators</p>
-        <p className="mkt-body mx-auto mt-2 max-w-md !text-sm">
+      <div className="card mt-8 p-6 text-center">
+        <p className="h-section">Reach {country.demonym} creators</p>
+        <p className="text-body mx-auto mt-2 max-w-md !text-sm">
           See contact details, filter by niche, views and engagement, and track outreach in one place.
         </p>
-        <Link href={unlockHref} className="mkt-btn-primary mt-5 inline-flex">
+        <Link href={unlockHref} className="btn-primary mt-5 inline-flex">
           Get contact details — free
         </Link>
       </div>
 
       <section className="mt-12 space-y-5">
-        <h2 className="mkt-h3 !text-xl">FAQ</h2>
+        <h2 className="h-section">FAQ</h2>
         {faq.map((f) => (
           <div key={f.q}>
-            <h3 className="font-medium text-mkt-paper">{f.q}</h3>
-            <p className="mkt-body mt-1 !text-sm">{f.a}</p>
+            <h3 className="font-medium text-fg">{f.q}</h3>
+            <p className="text-body mt-1 !text-sm">{f.a}</p>
           </div>
         ))}
       </section>

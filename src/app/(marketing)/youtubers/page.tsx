@@ -35,20 +35,19 @@ export default async function YoutubersIndexPage() {
 
   return (
     <MarketingShell>
-      <p className="mkt-eyebrow">Creator lists</p>
-      <h1 className="mkt-h2 mt-3 !text-4xl">YouTube influencers by niche &amp; country</h1>
-      <p className="mkt-body mt-3 max-w-2xl">
+      <h1 className="h-page">YouTube influencers by niche &amp; country</h1>
+      <p className="text-body mt-3 max-w-2xl">
         Ranked lists of active YouTube creators in the USA and Europe. Every creator posted in the last
         45 days, averages 5,000+ views on recent videos, and has real engagement.
       </p>
 
       <section className="mt-8">
-        <h2 className="font-mono text-xs uppercase tracking-wider text-mkt-ash">Browse by country</h2>
+        <h2 className="text-xs text-muted">Browse by country</h2>
         <div className="mt-3 flex flex-wrap gap-2">
           {hubCountries(combos).map((c) => {
             const co = countryByCode(c.code)!;
             return (
-              <Link key={c.code} href={countryPath(co.slug)} className="mkt-tag hover:text-mkt-paper">
+              <Link key={c.code} href={countryPath(co.slug)} className="tag-pill hover:text-fg">
                 {co.demonym} YouTubers ({c.count})
               </Link>
             );
@@ -58,8 +57,8 @@ export default async function YoutubersIndexPage() {
 
       <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {niches.map(([niche, list]) => (
-          <section key={niche} className="mkt-card p-5">
-            <h2 className="mkt-h3 !text-lg">
+          <section key={niche} className="card p-5">
+            <h2 className="h-section">
               <Link href={listPath(niche)} className="hover:underline">
                 {nicheName(niche)} YouTubers
               </Link>
@@ -69,10 +68,10 @@ export default async function YoutubersIndexPage() {
                 const co = countryByCode(c.country)!;
                 return (
                   <li key={c.country}>
-                    <Link href={listPath(niche, co.slug)} className="mkt-link">
+                    <Link href={listPath(niche, co.slug)} className="text-link">
                       {co.name.replace(/^the /, "")}
                     </Link>{" "}
-                    <span className="font-mono text-xs text-mkt-ash">({c.count})</span>
+                    <span className="text-xs text-muted">({c.count})</span>
                   </li>
                 );
               })}

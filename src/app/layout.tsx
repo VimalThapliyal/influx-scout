@@ -1,46 +1,14 @@
 import type { Metadata } from "next";
-import { Inter, Plus_Jakarta_Sans, Bebas_Neue, IBM_Plex_Sans, IBM_Plex_Mono, Literata } from "next/font/google";
+import { Inter } from "next/font/google";
 import { BRAND_NAME } from "@/lib/brand";
 import { SITE_URL } from "@/lib/seo";
 import "./globals.css";
 
+// One family for the whole product. See DESIGN_SYSTEM.md.
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
-});
-
-const jakarta = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  variable: "--font-jakarta",
-});
-
-// Marketing-site type system (contact-sheet / production-log direction).
-// Scoped to the (marketing) route group via the `font-poster`/`font-plex`/
-// `font-mono` Tailwind tokens -- the app dashboard keeps Inter/Jakarta.
-const bebas = Bebas_Neue({
-  subsets: ["latin"],
-  weight: "400",
-  variable: "--font-bebas",
-});
-
-const plexSans = IBM_Plex_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-plex-sans",
-});
-
-const plexMono = IBM_Plex_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-plex-mono",
-});
-
-// Public site headlines ("research report" direction, see .mkt-shell in globals.css).
-const literata = Literata({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  style: ["normal", "italic"],
-  variable: "--font-literata",
+  display: "swap",
 });
 
 const SEO_DESCRIPTION =
@@ -70,9 +38,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${jakarta.variable} ${bebas.variable} ${plexSans.variable} ${plexMono.variable} ${literata.variable}`}
+      className={inter.variable}
     >
-      <body className="font-sans antialiased">{children}</body>
+      <body>{children}</body>
     </html>
   );
 }

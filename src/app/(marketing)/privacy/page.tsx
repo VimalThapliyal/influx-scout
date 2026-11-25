@@ -20,12 +20,12 @@ export default function PrivacyPage() {
 
       <LegalSection title="1. Who this applies to">
         <p>
-          <strong className="text-slate-200">Account users</strong> — people who
+          <strong className="text-fg">Account users</strong> — people who
           sign up, subscribe, or use dashboards, campaigns, and email unlock
           features.
         </p>
         <p>
-          <strong className="text-slate-200">Creators in our library</strong> —
+          <strong className="text-fg">Creators in our library</strong> —
           we index publicly available YouTube channel information and, where
           available, publicly posted contact details (for example emails or
           links on public About pages or linked websites). We do not claim to be
@@ -35,25 +35,25 @@ export default function PrivacyPage() {
 
       <LegalSection title="2. Information we collect">
         <p>
-          <strong className="text-slate-200">Account data:</strong> email
+          <strong className="text-fg">Account data:</strong> email
           address, password (stored hashed by our auth provider), subscription
           status, and profile settings you choose.
         </p>
         <p>
-          <strong className="text-slate-200">Usage data:</strong> pages viewed,
+          <strong className="text-fg">Usage data:</strong> pages viewed,
           searches, filters, campaign list actions, feature usage, approximate
           device/browser information, and IP address for security and abuse
           prevention.
         </p>
         <p>
-          <strong className="text-slate-200">Creator / library data:</strong>{" "}
+          <strong className="text-fg">Creator / library data:</strong>{" "}
           public channel metadata (title, handle, stats, country signals,
           niche labels), publicly sourced contact fields (email, website,
           social links), and enrichment metadata (for example source type and
           when data was last checked).
         </p>
         <p>
-          <strong className="text-slate-200">Communications:</strong> messages
+          <strong className="text-fg">Communications:</strong> messages
           you send us (support, feedback). Outreach emails you send to creators
           are composed by you; we do not send those emails on your behalf unless
           a future feature explicitly says so.
@@ -84,18 +84,18 @@ export default function PrivacyPage() {
         <p>We may share information with:</p>
         <ul className="list-disc space-y-2 pl-5">
           <li>
-            <strong className="text-slate-200">Service providers</strong> such
+            <strong className="text-fg">Service providers</strong> such
             as hosting (e.g. Vercel), database/auth (e.g. Supabase), payment
             processors, and email infrastructure — only as needed to run the
             Service
           </li>
           <li>
-            <strong className="text-slate-200">YouTube / Google APIs</strong> —
+            <strong className="text-fg">YouTube / Google APIs</strong> —
             when you or our systems request public channel data under Google’s
             terms and API policies
           </li>
           <li>
-            <strong className="text-slate-200">Legal / safety</strong> — if
+            <strong className="text-fg">Legal / safety</strong> — if
             required by law or to protect rights, users, or the public
           </li>
         </ul>

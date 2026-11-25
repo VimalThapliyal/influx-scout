@@ -1,28 +1,26 @@
 "use client";
 
 import Link from "next/link";
+import { useState, type ReactNode } from "react";
+import { AlertCircle, BookmarkPlus, ExternalLink, Mail, SearchX } from "lucide-react";
 import type { Channel, Tier } from "@/lib/types";
 import { countryLabel, inferTags, youtubeAboutUrl, youtubeChannelUrl } from "@/lib/tags";
 import { EmailGate } from "@/components/EmailGate";
-import { ChannelTrustMeta } from "@/components/ChannelTrustMeta";
 import { emailStatusLabel } from "@/lib/profile-trust";
 import { PAYMENTS_ENABLED, UPGRADE_LABEL } from "@/lib/billing";
-import {
-  emailSourceHost,
-  emailSourceTypeLabel,
-} from "@/lib/contact-provenance";
-import {
-  emailValidationLabel,
-  emailValidationTone,
-} from "@/lib/email-validation-labels";
+import { nicheLabel } from "@/lib/classify";
+import { emailSourceHost, emailSourceTypeLabel } from "@/lib/contact-provenance";
+import { emailValidationLabel, emailValidationTone } from "@/lib/email-validation-labels";
 
 export { formatRelativeUpdated } from "@/lib/profile-trust";
 export { ChannelTrustMeta, ProfileTrustBanner } from "@/components/ChannelTrustMeta";
 
+/* ── Formatting ── */
+
 export function formatNumber(n: number | null | undefined): string {
   if (n == null) return "—";
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(n >= 100_000 ? 0 : 1)}K`;
   return n.toLocaleString();
 }
 
@@ -31,17 +29,49 @@ export function formatEngagement(rate: number | null | undefined): string {
   return `${(rate * 100).toFixed(1)}%`;
 }
 
-const tierColors: Record<Tier, string> = {
-  nano: "bg-slate-500/20 text-slate-400",
-  micro: "bg-cyan-500/15 text-cyan-400",
-  mid: "bg-mkt-signal/15 text-mkt-signal",
-  macro: "bg-fuchsia-500/15 text-fuchsia-400",
-  mega: "bg-mkt-tally/15 text-mkt-tally",
+export function formatDaysAgo(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  const days = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000));
+  if (days === 0) return "Today";
+  if (days === 1) return "Yesterday";
+  if (days < 60) return `${days} days ago`;
+  return `${Math.floor(days / 30)} months ago`;
+}
+
+/** Recent (last five uploads) numbers when scored, lifetime numbers otherwise. */
+export function recentViews(c: Channel): number | null {
+  return c.avg_views_last5 ?? c.avg_views_per_video ?? null;
+}
+export function recentEngagement(c: Channel): number | null {
+  return c.engagement_last5 ?? c.engagement_rate ?? null;
+}
+
+export function channelHasEmailContact(channel: Channel): boolean {
+  return !!(channel.has_email || channel.email);
+}
+
+/* ── Small pieces ── */
+
+type Tone = "neutral" | "accent" | "success" | "warn" | "danger";
+const toneClass: Record<Tone, string> = {
+  neutral: "bg-subtle text-muted",
+  accent: "bg-accent-soft text-accent",
+  success: "bg-success-soft text-success",
+  warn: "bg-warn-soft text-warn",
+  danger: "bg-danger-soft text-danger",
 };
+
+export function StatusTag({ tone = "neutral", children, title }: { tone?: Tone; children: ReactNode; title?: string }) {
+  return (
+    <span title={title} className={`tag-pill whitespace-nowrap ${toneClass[tone]}`}>
+      {children}
+    </span>
+  );
+}
 
 export function TierBadge({ tier }: { tier: Tier | null }) {
   if (!tier) return null;
-  return <span className={`tag-pill capitalize ${tierColors[tier]}`}>{tier}</span>;
+  return <StatusTag>{tier.charAt(0).toUpperCase() + tier.slice(1)}</StatusTag>;
 }
 
 export function TagPills({ channel }: { channel: Channel }) {
@@ -56,262 +86,214 @@ export function TagPills({ channel }: { channel: Channel }) {
   );
 }
 
-export function channelHasEmailContact(channel: Channel): boolean {
-  return !!(channel.has_email || channel.email);
-}
-
-export function CreatorGridCard({
-  channel,
-  onSave,
-  onOutreach,
-  addedLabel,
-  showEmailBadge = false,
-  showTrustMeta = true,
-}: {
-  channel: Channel;
-  onSave?: (id: string) => void;
-  onOutreach?: (id: string) => void;
-  addedLabel?: string;
-  showEmailBadge?: boolean;
-  showTrustMeta?: boolean;
-}) {
-  const engagement =
-    channel.engagement_rate ??
-    (channel.avg_views_per_video && channel.subscriber_count
-      ? Math.min(channel.avg_views_per_video / channel.subscriber_count, 0.1)
-      : null);
-
-  const scoreColor =
-    channel.influencer_score >= 80
-      ? "text-mkt-signal"
-      : channel.influencer_score >= 60
-        ? "text-mkt-tally"
-        : "text-mkt-ash";
-
+/** Channel thumbnail with an initial as fallback when the image is missing or fails to load. */
+export function Avatar({ src, name, size = 32 }: { src: string | null | undefined; name: string; size?: number }) {
+  const [failed, setFailed] = useState(false);
+  const style = { width: size, height: size };
+  if (!src || failed) {
+    return (
+      <span
+        style={style}
+        aria-hidden
+        className="flex shrink-0 items-center justify-center rounded-full bg-subtle text-xs font-medium text-muted"
+      >
+        {name.trim().charAt(0).toUpperCase() || "?"}
+      </span>
+    );
+  }
   return (
-    <article className="group card flex h-full flex-col overflow-hidden transition hover:border-mkt-tally/30">
-      <div className="p-5">
-        <div className="flex items-start gap-3">
-          {channel.thumbnail_url ? (
-            <img
-              src={channel.thumbnail_url}
-              alt=""
-              className="h-12 w-12 shrink-0 rounded-sm object-cover ring-1 ring-mkt-manila/20"
-            />
-          ) : (
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-sm border border-mkt-manila/25 font-poster text-lg text-mkt-paper">
-              {channel.title.charAt(0)}
-            </div>
-          )}
-          <div className="min-w-0 flex-1">
-            <h3 className="truncate font-semibold text-mkt-paper transition group-hover:text-mkt-tally">
-              {channel.title}
-            </h3>
-            <p className="mt-0.5 font-mono text-xs text-mkt-ash">
-              {countryLabel(channel.country)} · {formatNumber(channel.video_count)} videos
-              {addedLabel ? ` · ${addedLabel}` : ""}
-            </p>
-            {showTrustMeta ? (
-              <div className="mt-1.5">
-                <ChannelTrustMeta channel={channel} compact />
-              </div>
-            ) : null}
-          </div>
-          <div className="flex shrink-0 flex-col items-end gap-1">
-            {showEmailBadge && (channel.email || channel.has_email) && (
-              <span className="rounded-sm bg-mkt-signal/15 px-1.5 py-0.5 font-mono text-[10px] font-medium text-mkt-signal">
-                Email
-              </span>
-            )}
-            <div className={`rounded-sm border border-mkt-manila/20 px-2 py-1 font-mono text-xs font-bold ${scoreColor}`}>
-              {channel.influencer_score}
-            </div>
-          </div>
-        </div>
-        <div className="mt-3">
-          <TagPills channel={channel} />
-        </div>
-      </div>
-
-      <div className="mt-auto grid grid-cols-3 gap-px border-t border-mkt-manila/15 bg-mkt-manila/10">
-        {[
-          { label: "Subs", value: formatNumber(channel.subscriber_count) },
-          { label: "Views", value: formatNumber(channel.avg_views_per_video) },
-          { label: "Engage", value: formatEngagement(engagement) },
-        ].map((m) => (
-          <div key={m.label} className="bg-[#1B1F27] px-3 py-3 text-center">
-            <p className="metric-label">{m.label}</p>
-            <p className="metric-value mt-0.5">{m.value}</p>
-          </div>
-        ))}
-      </div>
-
-      <div className="flex items-center gap-2 border-t border-mkt-manila/15 p-3">
-        {onOutreach && channelHasEmailContact(channel) && (
-          <button
-            type="button"
-            onClick={() => onOutreach(channel.id)}
-            className="btn-primary min-h-[36px] flex-1 gap-1.5 text-xs"
-            title={channel.email_locked ? `${UPGRADE_LABEL}: send from mail app` : "Write outreach email"}
-          >
-            <MailIcon />
-            Outreach
-          </button>
-        )}
-        <Link
-          href={`/channels/${channel.id}`}
-          className={`btn-ghost min-h-[36px] text-xs ${
-            onOutreach && channelHasEmailContact(channel) ? "px-3" : "flex-1"
-          }`}
-        >
-          Profile
-        </Link>
-        {onSave && (
-          <button
-            type="button"
-            onClick={() => onSave(channel.id)}
-            className="flex h-9 w-9 items-center justify-center rounded-sm border border-mkt-manila/20 text-mkt-ash transition hover:border-mkt-tally/40 hover:bg-mkt-tally/10 hover:text-mkt-tally"
-            aria-label="Add to campaign"
-          >
-            <BookmarkIcon />
-          </button>
-        )}
-        <a
-          href={youtubeChannelUrl(channel)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex h-9 w-9 items-center justify-center rounded-sm border border-mkt-manila/20 text-mkt-ash transition hover:border-mkt-manila/40 hover:text-mkt-paper"
-          aria-label="Open on YouTube"
-        >
-          <ExternalIcon />
-        </a>
-      </div>
-    </article>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt=""
+      style={style}
+      loading="lazy"
+      referrerPolicy="no-referrer"
+      onError={() => setFailed(true)}
+      className="shrink-0 rounded-full bg-subtle object-cover"
+    />
   );
 }
 
-export function CreatorListRow({
-  channel,
-  onSave,
-  onOutreach,
-  addedLabel,
-  showEmailBadge = false,
-  showTrustMeta = true,
+export function IconButton({
+  label,
+  onClick,
+  href,
+  children,
 }: {
-  channel: Channel;
-  onSave?: (id: string) => void;
-  onOutreach?: (id: string) => void;
-  addedLabel?: string;
-  showEmailBadge?: boolean;
-  showTrustMeta?: boolean;
+  label: string;
+  onClick?: () => void;
+  href?: string;
+  children: ReactNode;
 }) {
+  const cls =
+    "inline-flex h-7 w-7 items-center justify-center rounded-md text-muted transition-colors hover:bg-subtle hover:text-fg";
+  if (href) {
+    return (
+      <a href={href} target="_blank" rel="noopener noreferrer" aria-label={label} title={label} className={cls}>
+        {children}
+      </a>
+    );
+  }
   return (
-    <article className="card flex flex-wrap items-center gap-3 p-4 transition hover:border-mkt-tally/30 sm:gap-4">
-      <Link href={`/channels/${channel.id}`} className="shrink-0">
-        {channel.thumbnail_url ? (
-          <img src={channel.thumbnail_url} alt="" className="h-11 w-11 rounded-sm object-cover" />
-        ) : (
-          <div className="flex h-11 w-11 items-center justify-center rounded-sm border border-mkt-manila/25 font-poster text-mkt-paper">
-            {channel.title.charAt(0)}
-          </div>
-        )}
-      </Link>
-      <div className="min-w-0 flex-1 basis-[40%]">
-        <div className="flex flex-wrap items-center gap-2">
-          <Link
-            href={`/channels/${channel.id}`}
-            className="truncate font-medium text-mkt-paper hover:text-mkt-tally"
-          >
-            {channel.title}
-          </Link>
-          {showEmailBadge && (channel.email || channel.has_email) && (
-            <span className="rounded-sm bg-mkt-signal/15 px-1.5 py-0.5 font-mono text-[10px] font-medium text-mkt-signal">
-              Email
-            </span>
-          )}
-        </div>
-        <p className="font-mono text-xs text-mkt-ash">
-          {formatNumber(channel.subscriber_count)} subs · {countryLabel(channel.country)}
-          {addedLabel ? ` · ${addedLabel}` : ""}
-        </p>
-        {showTrustMeta ? (
-          <div className="mt-1">
-            <ChannelTrustMeta channel={channel} compact />
-          </div>
-        ) : null}
-      </div>
-      <div className="hidden gap-6 sm:flex">
-        <div className="text-right">
-          <p className="metric-label">Avg views</p>
-          <p className="metric-value">{formatNumber(channel.avg_views_per_video)}</p>
-        </div>
-        <div className="text-right">
-          <p className="metric-label">Score</p>
-          <p className="metric-value text-mkt-tally">{channel.influencer_score}</p>
-        </div>
-      </div>
-      <div className="ml-auto flex shrink-0 items-center gap-2">
-        {onOutreach && channelHasEmailContact(channel) && (
-          <button
-            type="button"
-            onClick={() => onOutreach(channel.id)}
-            className="btn-primary min-h-[36px] gap-1.5 px-3 text-xs"
-            title={channel.email_locked ? `${UPGRADE_LABEL}: send from mail app` : "Write outreach email"}
-          >
-            <MailIcon />
-            Outreach
-          </button>
-        )}
-        <Link href={`/channels/${channel.id}`} className="btn-ghost min-h-[36px] px-3 text-xs">
-          Profile
-        </Link>
-        {onSave && (
-          <button
-            type="button"
-            onClick={() => onSave(channel.id)}
-            className="flex h-9 w-9 items-center justify-center rounded-sm border border-mkt-manila/20 text-mkt-ash transition hover:border-mkt-tally/40 hover:bg-mkt-tally/10 hover:text-mkt-tally"
-            aria-label="Add to campaign"
-          >
-            <BookmarkIcon />
-          </button>
-        )}
-        <a
-          href={youtubeChannelUrl(channel)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex h-9 w-9 items-center justify-center rounded-sm border border-mkt-manila/20 text-mkt-ash transition hover:border-mkt-manila/40 hover:text-mkt-paper"
-          aria-label="Open on YouTube"
-        >
-          <ExternalIcon />
-        </a>
-      </div>
-    </article>
+    <button type="button" onClick={onClick} aria-label={label} title={label} className={cls}>
+      {children}
+    </button>
   );
 }
 
-export function ChannelCard({ channel }: { channel: Channel }) {
-  return <CreatorGridCard channel={channel} />;
+/* ── Creator table: the one way creators are listed in the app ── */
+
+function ContactCell({ channel }: { channel: Channel }) {
+  if (channelHasEmailContact(channel)) return <StatusTag tone="success">Email</StatusTag>;
+  if (channel.has_contact_form) return <StatusTag>Contact form</StatusTag>;
+  if (channel.instagram || channel.twitter || channel.website) return <StatusTag>Social</StatusTag>;
+  return <span className="text-faint">—</span>;
 }
+
+export function CreatorTable({
+  channels,
+  onSave,
+  onOutreach,
+}: {
+  channels: Channel[];
+  onSave?: (channel: Channel) => void;
+  onOutreach?: (channel: Channel) => void;
+}) {
+  const th = "h-9 px-3 font-medium";
+  const num = "px-3 text-right tabular-nums";
+  return (
+    <div className="card overflow-hidden">
+      <table className="w-full table-fixed text-[0.8125rem]">
+        <thead className="table-head">
+          <tr>
+            <th scope="col" className={`${th} w-auto`}>Creator</th>
+            <th scope="col" className={`${th} hidden w-32 lg:table-cell`}>Niche</th>
+            <th scope="col" className={`${th} w-24 text-right`}>Subscribers</th>
+            <th scope="col" className={`${th} hidden w-24 text-right sm:table-cell`}>Avg views</th>
+            <th scope="col" className={`${th} hidden w-24 text-right md:table-cell`}>Engagement</th>
+            <th scope="col" className={`${th} hidden w-28 lg:table-cell`}>Last upload</th>
+            <th scope="col" className={`${th} hidden w-28 md:table-cell`}>Contact</th>
+            <th scope="col" className={`${th} w-[5.5rem]`}>
+              <span className="sr-only">Actions</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {channels.map((c) => (
+            <tr key={c.id} className="table-row h-12">
+              <td className="px-3">
+                <Link href={`/channels/${c.id}`} className="group flex min-w-0 items-center gap-2.5">
+                  <Avatar src={c.thumbnail_url} name={c.title} size={28} />
+                  <span className="min-w-0">
+                    <span className="block truncate font-medium text-fg group-hover:text-accent">{c.title}</span>
+                    <span className="block truncate text-xs text-muted">
+                      {[c.handle, c.country ? countryLabel(c.country) : null].filter(Boolean).join(", ") || "Country not set"}
+                    </span>
+                  </span>
+                </Link>
+              </td>
+              <td className="hidden truncate px-3 text-muted lg:table-cell">
+                {c.primary_niche ? nicheLabel(c.primary_niche) : <span className="text-faint">—</span>}
+              </td>
+              <td className={num}>{formatNumber(c.subscriber_count)}</td>
+              <td className={`${num} hidden sm:table-cell`}>{formatNumber(recentViews(c))}</td>
+              <td className={`${num} hidden md:table-cell`}>{formatEngagement(recentEngagement(c))}</td>
+              <td className="hidden px-3 text-muted lg:table-cell">
+                {c.is_inactive ? <StatusTag tone="warn">Inactive</StatusTag> : formatDaysAgo(c.latest_upload_at)}
+              </td>
+              <td className="hidden px-3 md:table-cell">
+                <ContactCell channel={c} />
+              </td>
+              <td className="px-2">
+                <div className="flex items-center justify-end gap-0.5">
+                  {onOutreach && channelHasEmailContact(c) && (
+                    <IconButton
+                      label={c.email_locked ? `Draft outreach email (${UPGRADE_LABEL})` : "Draft outreach email"}
+                      onClick={() => onOutreach(c)}
+                    >
+                      <Mail size={15} strokeWidth={1.75} />
+                    </IconButton>
+                  )}
+                  {onSave && (
+                    <IconButton label="Add to campaign" onClick={() => onSave(c)}>
+                      <BookmarkPlus size={15} strokeWidth={1.75} />
+                    </IconButton>
+                  )}
+                  <IconButton label="Open on YouTube" href={youtubeChannelUrl(c)}>
+                    <ExternalLink size={15} strokeWidth={1.75} />
+                  </IconButton>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+export function TableSkeleton({ rows = 8 }: { rows?: number }) {
+  return (
+    <div className="card overflow-hidden" role="status" aria-label="Loading creators">
+      <div className="h-9 border-b border-line bg-canvas" />
+      {Array.from({ length: rows }, (_, i) => (
+        <div key={i} className="flex h-12 items-center gap-3 border-b border-line px-3 last:border-0">
+          <span className="skeleton h-7 w-7 rounded-full" />
+          <span className="skeleton h-3 w-40" />
+          <span className="skeleton ml-auto h-3 w-12" />
+          <span className="skeleton hidden h-3 w-12 sm:block" />
+          <span className="skeleton hidden h-3 w-16 md:block" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ── States ── */
 
 export function LoadingSpinner() {
   return (
-    <div className="flex items-center justify-center py-20" role="status" aria-label="Loading">
-      <div className="h-9 w-9 animate-spin rounded-full border-2 border-mkt-manila/20 border-t-mkt-tally" />
+    <div className="flex items-center justify-center py-16" role="status" aria-label="Loading">
+      <div className="h-5 w-5 animate-spin rounded-full border-2 border-line-strong border-t-accent" />
     </div>
   );
 }
 
-export function EmptyState({ title, description }: { title: string; description: string }) {
+export function EmptyState({
+  title,
+  description,
+  action,
+}: {
+  title: string;
+  description: string;
+  action?: ReactNode;
+}) {
   return (
-    <div className="card py-20 text-center">
-      <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-sm border border-mkt-tally/30 text-2xl">
-        ✦
-      </div>
-      <h3 className="font-poster text-lg uppercase tracking-tight text-mkt-paper">{title}</h3>
-      <p className="mx-auto mt-2 max-w-sm text-sm text-mkt-ash">{description}</p>
+    <div className="card flex flex-col items-center px-6 py-14 text-center">
+      <SearchX size={20} strokeWidth={1.75} className="text-faint" aria-hidden />
+      <h3 className="mt-3 text-sm font-semibold text-fg">{title}</h3>
+      <p className="mt-1 max-w-sm text-sm text-muted">{description}</p>
+      {action ? <div className="mt-4">{action}</div> : null}
     </div>
   );
 }
+
+export function ErrorState({ message, onRetry }: { message: string; onRetry?: () => void }) {
+  return (
+    <div role="alert" className="flex items-center gap-3 rounded-lg border border-danger/30 bg-danger-soft px-4 py-3 text-sm text-danger">
+      <AlertCircle size={16} strokeWidth={1.75} className="shrink-0" aria-hidden />
+      <p className="flex-1">{message}</p>
+      {onRetry ? (
+        <button type="button" onClick={onRetry} className="btn-secondary btn-sm">
+          Try again
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
+/* ── Creator detail: contact panel ── */
 
 export function ContactPanel({ channel }: { channel: Channel }) {
   const aboutUrl = youtubeAboutUrl(channel);
@@ -332,31 +314,31 @@ export function ContactPanel({ channel }: { channel: Channel }) {
   const validationTone = emailValidationTone(channel.email_validation_status);
   const validationClass =
     validationTone === "ok"
-      ? "text-mkt-signal"
+      ? "text-success"
       : validationTone === "warn"
-        ? "text-mkt-tally"
+        ? "text-accent"
         : validationTone === "bad"
-          ? "text-red-400"
-          : "text-mkt-ash";
+          ? "text-danger"
+          : "text-muted";
   const formUrl = channel.contact_form_url;
 
   return (
     <div className="space-y-3">
       {channel.email && !channel.email_locked ? (
         <a href={`mailto:${channel.email}`} className="btn-primary w-full gap-2">
-          <MailIcon /> Send email
+          <Mail size={16} strokeWidth={1.75} aria-hidden /> Send email
         </a>
       ) : PAYMENTS_ENABLED ? (
         <Link href="/subscribe" className="btn-primary w-full gap-2">
-          <MailIcon /> Unlock contact
+          <Mail size={16} strokeWidth={1.75} aria-hidden /> Unlock contact
         </Link>
       ) : null}
 
-      <div className="rounded-sm border border-mkt-manila/20 bg-white/[0.02] px-4 py-3">
+      <div className="rounded-md border border-line bg-subtle px-4 py-3">
         <div className="flex items-center justify-between gap-2">
-          <p className="font-mono text-xs font-medium uppercase tracking-wide text-mkt-ash">Email</p>
+          <p className="text-xs font-medium text-muted">Email</p>
           {statusHint ? (
-            <span className="text-[10px] font-medium text-mkt-ash">{statusHint}</span>
+            <span className="text-xs font-medium text-muted">{statusHint}</span>
           ) : null}
         </div>
         <div className="mt-1">
@@ -367,17 +349,17 @@ export function ContactPanel({ channel }: { channel: Channel }) {
           />
         </div>
         {validationLabel ? (
-          <p className={`mt-2 text-[11px] font-medium ${validationClass}`}>
+          <p className={`mt-2 text-xs font-medium ${validationClass}`}>
             {validationLabel}
             {channel.email_is_role ? " · Role inbox" : ""}
           </p>
         ) : null}
         {hasProvenance ? (
-          <div className="mt-2 space-y-0.5 border-t border-mkt-manila/15 pt-2">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-mkt-ash/70">
+          <div className="mt-2 space-y-0.5 border-t border-line pt-2">
+            <p className="text-xs font-semibold text-muted">
               Contact source
             </p>
-            <p className="text-[11px] text-mkt-ash">
+            <p className="text-xs text-muted">
               {sourceTypeLabel ?? "Public web"}
               {sourceHost ? ` · ${sourceHost}` : ""}
             </p>
@@ -386,7 +368,7 @@ export function ContactPanel({ channel }: { channel: Channel }) {
                 href={channel.email_source_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-block text-[11px] text-mkt-tally hover:brightness-110"
+                className="inline-block text-xs text-accent hover:text-accent-hover"
               >
                 View source page
               </a>
@@ -394,7 +376,7 @@ export function ContactPanel({ channel }: { channel: Channel }) {
           </div>
         ) : null}
         {channel.email_status === "locked" && !channel.has_email && !channel.email ? (
-          <p className="mt-2 text-[11px] leading-relaxed text-mkt-ash">
+          <p className="mt-2 text-xs leading-relaxed text-muted">
             A contact may exist on the channel&apos;s About or website, but it was locked
             (sign-in / captcha) when we last checked.
           </p>
@@ -402,9 +384,9 @@ export function ContactPanel({ channel }: { channel: Channel }) {
       </div>
 
       {(channel.has_contact_form || formUrl) && formUrl ? (
-        <div className="rounded-sm border border-cyan-500/20 bg-cyan-500/5 px-4 py-3">
-          <p className="text-xs font-medium text-cyan-300/90">Contact form</p>
-          <p className="mt-1 text-[11px] text-mkt-ash">
+        <div className="rounded-md border border-line bg-subtle px-4 py-3">
+          <p className="text-xs font-medium text-muted">Contact form</p>
+          <p className="mt-1 text-xs text-muted">
             {channel.contact_form_purpose ?? "Public contact available"}
             {channel.contact_form_has_captcha ? " · CAPTCHA present" : ""}
           </p>
@@ -412,80 +394,53 @@ export function ContactPanel({ channel }: { channel: Channel }) {
             href={formUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-2 inline-flex text-[11px] font-medium text-cyan-400 hover:text-cyan-300"
+            className="text-link mt-2 inline-flex text-xs"
           >
-            Open contact page →
+            Open contact page
           </a>
-          <p className="mt-1.5 text-[10px] text-mkt-ash/70">
+          <p className="mt-1.5 text-xs text-muted">
             We never submit this form automatically.
           </p>
         </div>
       ) : null}
 
       {channel.website_robots_allowed === false ? (
-        <p className="text-[11px] text-mkt-tally/90">
+        <p className="text-xs text-accent">
           Website crawl limited by robots.txt for CreatorScoutBot.
         </p>
       ) : null}
 
       <a href={aboutUrl} target="_blank" rel="noopener noreferrer" className="btn-secondary w-full gap-2 text-sm">
-        <ExternalIcon /> YouTube About page
+        <ExternalLink size={16} strokeWidth={1.75} aria-hidden /> YouTube About page
       </a>
 
       {!hasContact && (
-        <p className="text-xs text-mkt-ash">
+        <p className="text-xs text-muted">
           {PAYMENTS_ENABLED
             ? "Upgrade to Pro to unlock emails, or check the YouTube About page directly."
             : "Emails unlock with Pro (coming soon). Check the YouTube About page directly."}
         </p>
       )}
-      <div className="space-y-1 border-t border-mkt-manila/15 pt-3">
-        {channel.website && <SocialRow icon="🌐" label="Website" href={channel.website} />}
-        {channel.instagram && <SocialRow icon="IG" label="Instagram" href={channel.instagram} />}
-        {channel.twitter && <SocialRow icon="X" label="Twitter" href={channel.twitter} />}
-        {channel.tiktok && <SocialRow icon="TT" label="TikTok" href={channel.tiktok} />}
+      <div className="space-y-1 border-t border-line pt-3">
+        {channel.website && <SocialRow label="Website" href={channel.website} />}
+        {channel.instagram && <SocialRow label="Instagram" href={channel.instagram} />}
+        {channel.twitter && <SocialRow label="X (Twitter)" href={channel.twitter} />}
+        {channel.tiktok && <SocialRow label="TikTok" href={channel.tiktok} />}
       </div>
     </div>
   );
 }
 
-function SocialRow({ icon, label, href }: { icon: string; label: string; href: string }) {
+function SocialRow({ label, href }: { label: string; href: string }) {
   return (
     <a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-center gap-3 rounded-sm px-2 py-2 text-sm text-mkt-tally transition hover:bg-white/5"
+      className="flex h-8 items-center justify-between gap-3 rounded-md px-2 text-sm text-fg hover:bg-subtle"
     >
-      <span className="flex h-8 w-8 items-center justify-center rounded-sm border border-mkt-manila/20 text-xs font-medium text-mkt-ash">
-        {icon}
-      </span>
       <span className="truncate">{label}</span>
+      <ExternalLink size={14} strokeWidth={1.75} className="shrink-0 text-muted" aria-hidden />
     </a>
-  );
-}
-
-function BookmarkIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-    </svg>
-  );
-}
-
-function ExternalIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3" />
-    </svg>
-  );
-}
-
-function MailIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-      <polyline points="22,6 12,13 2,6" />
-    </svg>
   );
 }

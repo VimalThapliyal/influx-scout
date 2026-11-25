@@ -22,25 +22,25 @@ import {
 import { countryLabel } from "@/lib/tags";
 
 const freshnessStyles = {
-  fresh: "bg-emerald-500/15 text-emerald-400",
-  recent: "bg-slate-500/20 text-slate-300",
-  stale: "bg-amber-500/15 text-amber-400",
-  unknown: "bg-white/10 text-slate-500",
+  fresh: "bg-success-soft text-success",
+  recent: "bg-subtle text-fg",
+  stale: "bg-warn-soft text-warn",
+  unknown: "bg-subtle text-muted",
 } as const;
 
 const metricsStyles = {
-  current: "bg-emerald-500/15 text-emerald-400",
-  expiring_soon: "bg-amber-500/15 text-amber-400",
-  expired: "bg-rose-500/15 text-rose-400",
-  unknown: "bg-white/10 text-slate-500",
+  current: "bg-success-soft text-success",
+  expiring_soon: "bg-warn-soft text-warn",
+  expired: "bg-danger-soft text-danger",
+  unknown: "bg-subtle text-muted",
 } as const;
 
 const confStyles = {
-  confirmed: "bg-emerald-500/15 text-emerald-400",
-  high: "bg-emerald-500/15 text-emerald-400",
-  medium: "bg-slate-500/20 text-slate-300",
-  low: "bg-amber-500/15 text-amber-400",
-  unknown: "bg-white/10 text-slate-500",
+  confirmed: "bg-success-soft text-success",
+  high: "bg-success-soft text-success",
+  medium: "bg-subtle text-fg",
+  low: "bg-warn-soft text-warn",
+  unknown: "bg-subtle text-muted",
 } as const;
 
 function nicheConfidencePct(n: number | null | undefined): string | null {
@@ -68,32 +68,32 @@ export function ChannelTrustMeta({
 
   return (
     <div
-      className={`flex flex-wrap items-center gap-1.5 ${compact ? "text-[10px]" : "text-xs"}`}
+      className={`flex flex-wrap items-center gap-1.5 ${compact ? "text-xs" : "text-xs"}`}
     >
-      <span className={`rounded-md px-1.5 py-0.5 font-medium ${freshnessStyles[level]}`}>
+      <span className={`rounded-sm px-1.5 py-0.5 font-medium ${freshnessStyles[level]}`}>
         {freshnessLabel(level)}
       </span>
       {channel.quality_pass === true ? (
         <span
-          className="rounded-md bg-emerald-500/15 px-1.5 py-0.5 font-medium text-emerald-400"
+          className="rounded-md bg-success-soft px-1.5 py-0.5 font-medium text-success"
           title="Last-5 views, upload≤45d, engagement≥2%, Tier 1/2"
         >
           Outreach ready
         </span>
       ) : null}
       {channel.is_emerging === true ? (
-        <span className="rounded-md bg-sky-500/15 px-1.5 py-0.5 font-medium text-sky-300">
+        <span className="rounded-md bg-accent-soft px-1.5 py-0.5 font-medium text-accent">
           Emerging
         </span>
       ) : null}
       {channel.is_inactive === true ? (
-        <span className="rounded-md bg-slate-500/20 px-1.5 py-0.5 font-medium text-slate-400">
+        <span className="rounded-md bg-subtle px-1.5 py-0.5 font-medium text-muted">
           Inactive
         </span>
       ) : null}
       {niche ? (
         <span
-          className="rounded-md bg-mkt-tally/15 px-1.5 py-0.5 font-medium text-mkt-tally"
+          className="rounded-md bg-accent-soft px-1.5 py-0.5 font-medium text-accent"
           title={
             nichePct
               ? `Niche confidence ${nichePct}`
@@ -106,18 +106,18 @@ export function ChannelTrustMeta({
       ) : null}
       {metricsStatus === "expired" || metricsStatus === "expiring_soon" ? (
         <span
-          className={`rounded-md px-1.5 py-0.5 font-medium ${metricsStyles[metricsStatus]}`}
+          className={`rounded-sm px-1.5 py-0.5 font-medium ${metricsStyles[metricsStatus]}`}
           title={channel.metrics_expires_at ?? undefined}
         >
           {metricsStatus === "expired" ? "Metrics expired" : "Metrics expiring"}
         </span>
       ) : null}
-      {relative ? <span className="text-slate-500">Updated {relative}</span> : null}
+      {relative ? <span className="text-muted">Updated {relative}</span> : null}
       {channel.country ? (
         <>
-          <span className="text-slate-600">·</span>
+          <span className="text-muted">·</span>
           <span
-            className={`rounded-md px-1.5 py-0.5 font-medium ${confStyles[countryConf] ?? confStyles.unknown}`}
+            className={`rounded-sm px-1.5 py-0.5 font-medium ${confStyles[countryConf] ?? confStyles.unknown}`}
             title={countryConfidenceLabel(countryConf)}
           >
             {countryLabel(channel.country)}
@@ -148,45 +148,43 @@ export function ProfileTrustBanner({ channel }: { channel: Channel }) {
   const countryEvidence = channel.country_evidence?.filter(Boolean) ?? [];
 
   return (
-    <div className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5 text-left">
-      <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-        Data quality
-      </p>
+    <div className="card p-4 text-left">
+      <h2 className="h-section">Data quality</h2>
       <div className="mt-2 flex flex-wrap items-center gap-2">
-        <span className={`rounded-md px-1.5 py-0.5 text-[10px] font-medium ${freshnessStyles[level]}`}>
+        <span className={`rounded-sm px-1.5 py-0.5 text-xs font-medium ${freshnessStyles[level]}`}>
           {freshnessLabel(level)}
         </span>
         <span
-          className={`rounded-md px-1.5 py-0.5 text-[10px] font-medium ${metricsStyles[metricsStatus]}`}
+          className={`rounded-sm px-1.5 py-0.5 text-xs font-medium ${metricsStyles[metricsStatus]}`}
         >
           {metricsLabel}
         </span>
-        <span className="text-xs text-slate-400">
+        <span className="text-xs text-muted">
           {relative ? `Refreshed ${relative}` : "Refresh time unknown"}
         </span>
       </div>
       {niche ? (
-        <p className="mt-1.5 text-xs text-slate-500">
+        <p className="mt-1.5 text-xs text-muted">
           Niche:{" "}
-          <span className="text-slate-300">
+          <span className="text-fg">
             {nicheLabel(niche)}
             {nichePct ? ` · ${nichePct} confidence` : ""}
           </span>
           {nicheEvidence.length > 0 ? (
-            <span className="text-slate-500">
+            <span className="text-muted">
               {" "}
               · evidence: {nicheEvidence.slice(0, 3).join(", ")}
             </span>
           ) : null}
         </p>
       ) : (
-        <p className="mt-1.5 text-xs text-slate-500">Niche: not classified yet</p>
+        <p className="mt-1.5 text-xs text-muted">Niche: not classified yet</p>
       )}
-      <p className="mt-1 text-xs text-slate-500">
+      <p className="mt-1 text-xs text-muted">
         {channel.country ? (
           <>
             Likely country:{" "}
-            <span className="text-slate-300">{countryLabel(channel.country)}</span>
+            <span className="text-fg">{countryLabel(channel.country)}</span>
             {" · "}
             <span
               className={
@@ -203,26 +201,26 @@ export function ProfileTrustBanner({ channel }: { channel: Channel }) {
         )}
       </p>
       {countryEvidence.length > 0 ? (
-        <ul className="mt-1 list-inside list-disc text-[11px] text-slate-600">
+        <ul className="mt-1 list-inside list-disc text-xs text-muted">
           {countryEvidence.slice(0, 3).map((e) => (
             <li key={e}>{e}</li>
           ))}
         </ul>
       ) : null}
       {metricsFetched && metricsStatus !== "unknown" ? (
-        <p className="mt-1.5 text-xs text-slate-500">
+        <p className="mt-1.5 text-xs text-muted">
           Metrics refreshed {metricsFetched}
         </p>
       ) : null}
       {emailHint ? (
-        <p className="mt-1.5 text-xs text-slate-500">
-          <span className="text-slate-300">{emailHint}</span>
+        <p className="mt-1.5 text-xs text-muted">
+          <span className="text-fg">{emailHint}</span>
         </p>
       ) : null}
       {sourceType || sourceHost ? (
-        <p className="mt-1 text-xs text-slate-500">
+        <p className="mt-1 text-xs text-muted">
           Contact:{" "}
-          <span className="text-slate-300">
+          <span className="text-fg">
             {[sourceType, sourceHost].filter(Boolean).join(" · ")}
           </span>
         </p>

@@ -29,23 +29,23 @@ export function SponsorshipCalculator() {
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
-      <div className="mkt-card space-y-4 p-6">
+      <div className="card space-y-4 p-6">
         <label className="block">
-          <span className="font-mono text-[11px] uppercase tracking-wider text-mkt-ash">Average views per video</span>
-          <input inputMode="numeric" value={views} onChange={(e) => setViews(e.target.value)} className="mkt-input mt-1 w-full" />
-          <span className="mt-1 block text-xs text-mkt-ash/80">Use the average of recent videos, not subscribers</span>
+          <span className="text-xs text-muted">Average views per video</span>
+          <input inputMode="numeric" value={views} onChange={(e) => setViews(e.target.value)} className="input-field mt-1 w-full" />
+          <span className="mt-1 block text-xs text-muted">Use the average of recent videos, not subscribers</span>
         </label>
         <label className="block">
-          <span className="font-mono text-[11px] uppercase tracking-wider text-mkt-ash">Niche</span>
-          <select value={niche} onChange={(e) => setNiche(e.target.value)} className="mkt-input mt-1 w-full">
+          <span className="text-xs text-muted">Niche</span>
+          <select value={niche} onChange={(e) => setNiche(e.target.value)} className="input-field mt-1 w-full">
             {NICHE_MULTIPLIER.map((n) => (
               <option key={n.value} value={n.value}>{n.label}</option>
             ))}
           </select>
         </label>
         <label className="block">
-          <span className="font-mono text-[11px] uppercase tracking-wider text-mkt-ash">Sponsorship format</span>
-          <select value={format} onChange={(e) => setFormat(e.target.value)} className="mkt-input mt-1 w-full">
+          <span className="text-xs text-muted">Sponsorship format</span>
+          <select value={format} onChange={(e) => setFormat(e.target.value)} className="input-field mt-1 w-full">
             {Object.entries(FORMAT_CPM).map(([k, f]) => (
               <option key={k} value={k}>{f.label}</option>
             ))}
@@ -53,16 +53,16 @@ export function SponsorshipCalculator() {
         </label>
       </div>
 
-      <div className="mkt-card flex flex-col justify-center p-6 text-center">
-        <p className="font-mono text-[11px] uppercase tracking-wider text-mkt-ash">Estimated price per video</p>
-        <p className="mt-2 font-poster text-5xl text-mkt-paper">
+      <div className="card flex flex-col justify-center p-6 text-center">
+        <p className="text-xs text-muted">Estimated price per video</p>
+        <p className="mt-2 text-5xl text-fg">
           {result ? `${usd(result.low)} – ${usd(result.high)}` : "—"}
         </p>
-        <p className="mt-3 text-xs text-mkt-ash">
+        <p className="mt-3 text-xs text-muted">
           Rough estimate from typical sponsorship CPMs. Real rates vary with audience, usage rights and
           deliverables — always confirm with the creator.
         </p>
-        <Link href="/youtubers" className="mkt-btn-primary mt-6 inline-flex self-center">
+        <Link href="/youtubers" className="btn-primary mt-6 inline-flex self-center">
           Find creators in your budget
         </Link>
       </div>

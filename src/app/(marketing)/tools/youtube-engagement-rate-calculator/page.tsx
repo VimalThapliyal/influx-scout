@@ -42,11 +42,11 @@ export default function EngagementRateCalculatorPage() {
   return (
     <MarketingShell>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <nav className="font-mono text-xs uppercase tracking-wider text-mkt-ash">
-        <Link href="/tools" className="hover:text-mkt-paper">Free tools</Link> / <span>Engagement rate</span>
+      <nav className="text-xs text-muted">
+        <Link href="/tools" className="hover:text-fg">Free tools</Link> / <span>Engagement rate</span>
       </nav>
-      <h1 className="mkt-h2 mt-4 !text-4xl">YouTube Engagement Rate Calculator</h1>
-      <p className="mkt-body mt-3 max-w-2xl">
+      <h1 className="h-page mt-4">YouTube Engagement Rate Calculator</h1>
+      <p className="text-body mt-3 max-w-2xl">
         Enter a video&apos;s views, likes and comments to get its engagement rate — then see how it stacks up
         against YouTube creators of the same size.
       </p>
@@ -56,13 +56,13 @@ export default function EngagementRateCalculatorPage() {
       </div>
 
       <section className="mt-12">
-        <h2 className="mkt-h3 !text-xl">YouTube engagement rate benchmarks by channel size</h2>
-        <p className="mkt-body mt-2 !text-sm">
+        <h2 className="h-section">YouTube engagement rate benchmarks by channel size</h2>
+        <p className="text-body mt-2 !text-sm">
           Based on the last five uploads of active creators tracked by {BRAND_NAME} (updated {updated}).
         </p>
-        <div className="mkt-card mt-4 overflow-x-auto">
+        <div className="card mt-4 overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="font-mono text-[11px] uppercase tracking-wider text-mkt-ash">
+            <thead className="text-xs text-muted">
               <tr>
                 <th className="px-4 py-3">Subscribers</th>
                 <th className="px-4 py-3">Bottom 25%</th>
@@ -70,9 +70,9 @@ export default function EngagementRateCalculatorPage() {
                 <th className="px-4 py-3">Top 25%</th>
               </tr>
             </thead>
-            <tbody className="font-mono text-mkt-paper">
+            <tbody className="text-fg">
               {tiers.map((t) => (
-                <tr key={t.tier} className="border-t border-mkt-manila/15">
+                <tr key={t.tier} className="border-t border-line">
                   <td className="px-4 py-3">{t.label}</td>
                   <td className="px-4 py-3">below {t.p25}%</td>
                   <td className="px-4 py-3">{t.median}%</td>
@@ -85,17 +85,17 @@ export default function EngagementRateCalculatorPage() {
       </section>
 
       <section className="mt-12 space-y-5">
-        <h2 className="mkt-h3 !text-xl">FAQ</h2>
+        <h2 className="h-section">FAQ</h2>
         {faq.map((f) => (
           <div key={f.q}>
-            <h3 className="font-medium text-mkt-paper">{f.q}</h3>
-            <p className="mkt-body mt-1 !text-sm">{f.a}</p>
+            <h3 className="font-medium text-fg">{f.q}</h3>
+            <p className="text-body mt-1 !text-sm">{f.a}</p>
           </div>
         ))}
       </section>
 
-      <p className="mt-10 text-sm text-mkt-ash">
-        Also try the <Link href="/tools/youtube-sponsorship-calculator" className="mkt-link">YouTube sponsorship price calculator</Link>.
+      <p className="mt-10 text-sm text-muted">
+        Also try the <Link href="/tools/youtube-sponsorship-calculator" className="text-link">YouTube sponsorship price calculator</Link>.
       </p>
     </MarketingShell>
   );

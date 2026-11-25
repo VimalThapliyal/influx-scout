@@ -17,9 +17,9 @@ import {
 
 export function MobileTopBar() {
   return (
-    <header className="fixed inset-x-0 top-0 z-40 flex h-14 items-center border-b border-mkt-manila/15 bg-mkt-ink/95 px-4 md:hidden">
+    <header className="fixed inset-x-0 top-0 z-40 flex h-14 items-center border-b border-line bg-canvas px-4 md:hidden">
       <Link href="/dashboard" className="flex items-center gap-2" aria-label="Influx home">
-        <BrandMark size="sm" variant="mkt" />
+        <span className="text-[0.9375rem] font-semibold tracking-[-0.01em] text-fg">Influx</span>
       </Link>
     </header>
   );
@@ -73,7 +73,7 @@ export function MobileNav() {
   return (
     <>
       <nav
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-mkt-manila/15 bg-mkt-ink/95 md:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-canvas md:hidden"
         style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
         aria-label="Mobile navigation"
       >
@@ -85,8 +85,8 @@ export function MobileNav() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex min-h-[64px] flex-col items-center justify-center gap-1 px-1 text-[10px] font-medium transition ${
-                  active ? "text-mkt-tally" : "text-mkt-ash hover:text-mkt-paper"
+                className={`flex min-h-[64px] flex-col items-center justify-center gap-1 px-1 text-xs font-medium transition ${
+                  active ? "text-accent" : "text-muted hover:text-fg"
                 }`}
                 aria-current={active ? "page" : undefined}
               >
@@ -99,8 +99,8 @@ export function MobileNav() {
           <button
             type="button"
             onClick={() => setMoreOpen(true)}
-            className={`flex min-h-[64px] flex-col items-center justify-center gap-1 px-1 text-[10px] font-medium transition ${
-              moreActive ? "text-mkt-tally" : "text-mkt-ash hover:text-mkt-paper"
+            className={`flex min-h-[64px] flex-col items-center justify-center gap-1 px-1 text-xs font-medium transition ${
+              moreActive ? "text-accent" : "text-muted hover:text-fg"
             }`}
             aria-expanded={moreOpen}
             aria-haspopup="dialog"
@@ -115,25 +115,25 @@ export function MobileNav() {
         <div className="fixed inset-0 z-50 md:hidden" role="presentation">
           <button
             type="button"
-            className="absolute inset-0 bg-black/60"
+            className="absolute inset-0 bg-fg/40"
             aria-label="Close menu"
             onClick={() => setMoreOpen(false)}
           />
           <div
-            className="absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto rounded-t-sm border-t border-mkt-manila/20 bg-[#1B1F27] shadow-2xl"
+            className="absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto rounded-t-sm border-t border-line bg-surface shadow-pop"
             style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
             role="dialog"
             aria-modal="true"
             aria-labelledby="mobile-more-title"
           >
-            <div className="flex items-center justify-between border-b border-mkt-manila/15 px-5 py-4">
-              <h2 id="mobile-more-title" className="font-poster text-lg uppercase tracking-tight text-mkt-paper">
+            <div className="flex items-center justify-between border-b border-line px-5 py-4">
+              <h2 id="mobile-more-title" className="text-lg tracking-tight text-fg">
                 More
               </h2>
               <button
                 type="button"
                 onClick={() => setMoreOpen(false)}
-                className="flex h-10 w-10 items-center justify-center rounded-sm text-mkt-ash hover:bg-white/5 hover:text-mkt-paper"
+                className="flex h-10 w-10 items-center justify-center rounded-md text-muted hover:bg-subtle hover:text-fg"
                 aria-label="Close"
               >
                 ✕
@@ -158,19 +158,19 @@ export function MobileNav() {
               })}
             </div>
 
-            <div className="border-t border-mkt-manila/15 p-4">
+            <div className="border-t border-line p-4">
               <PlatformSwitcher variant="sidebar" />
             </div>
 
-            <div className="space-y-3 border-t border-mkt-manila/15 p-4">
+            <div className="space-y-3 border-t border-line p-4">
               {isSubscribed ? (
-                <div className="rounded-sm border border-mkt-signal/30 bg-mkt-signal/10 px-3 py-2.5 text-center font-mono text-xs font-medium uppercase tracking-wide text-mkt-signal">
-                  ✦ Pro plan active
+                <div className="rounded-md border border-success/30 bg-success-soft px-3 py-2.5 text-center text-xs font-medium text-success">
+                  Pro plan active
                 </div>
               ) : PAYMENTS_ENABLED ? (
                 <Link
                   href="/subscribe"
-                  className="mkt-btn-primary flex w-full text-sm"
+                  className="btn-primary flex w-full text-sm"
                   onClick={() => setMoreOpen(false)}
                 >
                   Upgrade to Pro
@@ -178,12 +178,12 @@ export function MobileNav() {
               ) : null}
 
               {user ? (
-                <div className="flex items-center justify-between gap-2 rounded-sm border border-mkt-manila/20 bg-white/[0.02] px-4 py-3">
-                  <p className="truncate font-mono text-xs text-mkt-ash">{user.email}</p>
+                <div className="flex items-center justify-between gap-2 rounded-md border border-line bg-subtle px-4 py-3">
+                  <p className="truncate text-xs text-muted">{user.email}</p>
                   <button
                     type="button"
                     onClick={signOut}
-                    className="shrink-0 text-xs font-medium text-mkt-ash hover:text-mkt-paper"
+                    className="shrink-0 text-xs font-medium text-muted hover:text-fg"
                   >
                     Sign out
                   </button>
@@ -191,7 +191,7 @@ export function MobileNav() {
               ) : (
                 <Link
                   href="/login"
-                  className="mkt-btn-secondary flex w-full text-sm"
+                  className="btn-secondary flex w-full text-sm"
                   onClick={() => setMoreOpen(false)}
                 >
                   Sign in
@@ -200,7 +200,7 @@ export function MobileNav() {
 
               <Link
                 href="/"
-                className="block text-center text-xs text-mkt-ash/70 hover:text-mkt-ash"
+                className="block text-center text-xs text-muted hover:text-muted"
                 onClick={() => setMoreOpen(false)}
               >
                 Back to marketing site

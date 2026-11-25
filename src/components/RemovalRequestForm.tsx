@@ -36,44 +36,44 @@ export function RemovalRequestForm() {
 
   if (state === "done") {
     return (
-      <div className="mkt-card p-6 text-center">
-        <p className="text-3xl text-mkt-signal">✓</p>
-        <p className="mkt-body mt-3">{message}</p>
+      <div className="card p-6 text-center">
+        <p className="text-3xl text-success">✓</p>
+        <p className="text-body mt-3">{message}</p>
       </div>
     );
   }
 
   return (
-    <form onSubmit={submit} className="mkt-card space-y-4 p-6">
+    <form onSubmit={submit} className="card space-y-4 p-6">
       <label className="block">
-        <span className="font-mono text-[11px] uppercase tracking-wider text-mkt-ash">Your YouTube channel link</span>
+        <span className="text-xs text-muted">Your YouTube channel link</span>
         <input
           required
           value={channel}
           onChange={(e) => setChannel(e.target.value)}
           placeholder="https://www.youtube.com/@yourhandle"
-          className="mkt-input mt-1 w-full"
+          className="input-field mt-1 w-full"
         />
       </label>
       <label className="block">
-        <span className="font-mono text-[11px] uppercase tracking-wider text-mkt-ash">Your email</span>
+        <span className="text-xs text-muted">Your email</span>
         <input
           required
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@example.com"
-          className="mkt-input mt-1 w-full"
+          className="input-field mt-1 w-full"
         />
-        <span className="mt-1 block text-xs text-mkt-ash/80">Only used to follow up on this request.</span>
+        <span className="mt-1 block text-xs text-muted">Only used to follow up on this request.</span>
       </label>
       <label className="block">
-        <span className="font-mono text-[11px] uppercase tracking-wider text-mkt-ash">Reason (optional)</span>
+        <span className="text-xs text-muted">Reason (optional)</span>
         <textarea
           value={reason}
           onChange={(e) => setReason(e.target.value)}
           rows={3}
-          className="mkt-input mt-1 w-full"
+          className="input-field mt-1 w-full"
         />
       </label>
       {/* Honeypot — hidden from people, bots fill it in */}
@@ -86,9 +86,9 @@ export function RemovalRequestForm() {
         aria-hidden="true"
         name="company"
       />
-      {state === "error" && <p className="text-sm text-red-400" role="alert">{message}</p>}
-      <button type="submit" disabled={state === "sending"} className="mkt-btn-primary w-full">
-        {state === "sending" ? "Sending…" : "Remove my listing"}
+      {state === "error" && <p className="text-sm text-danger" role="alert">{message}</p>}
+      <button type="submit" disabled={state === "sending"} className="btn-primary w-full">
+        {state === "sending" ? "Sending" : "Remove my listing"}
       </button>
     </form>
   );

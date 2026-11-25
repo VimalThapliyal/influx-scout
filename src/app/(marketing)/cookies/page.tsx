@@ -30,17 +30,17 @@ export default function CookiesPage() {
       <LegalSection title="2. How we use them">
         <ul className="list-disc space-y-2 pl-5">
           <li>
-            <strong className="text-slate-200">Essential:</strong> sign-in
+            <strong className="text-fg">Essential:</strong> sign-in
             sessions (via our auth provider), security, load balancing, and
             remembering basic UI preferences needed for the Service to work
           </li>
           <li>
-            <strong className="text-slate-200">Functional:</strong> items such
+            <strong className="text-fg">Functional:</strong> items such
             as outreach draft defaults stored in your browser (for example brand
             name fields you save locally)
           </li>
           <li>
-            <strong className="text-slate-200">Analytics (if enabled):</strong>{" "}
+            <strong className="text-fg">Analytics (if enabled):</strong>{" "}
             aggregated usage to improve the product. We will update this notice
             if we add third-party analytics cookies
           </li>

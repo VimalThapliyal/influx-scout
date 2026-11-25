@@ -116,11 +116,11 @@ export function CampaignPicker({
                 type="button"
                 disabled={loading}
                 onClick={() => addToCampaign(c.id, c.name)}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-left text-sm transition hover:border-mkt-tally/40 hover:bg-mkt-tally/10 disabled:opacity-50"
+                className="w-full rounded-lg border border-line bg-subtle px-4 py-3 text-left text-sm transition hover:border-accent/40 hover:bg-accent-soft disabled:opacity-50"
               >
-                <span className="font-medium text-white">{c.name}</span>
+                <span className="font-medium text-fg">{c.name}</span>
                 {c.description && (
-                  <span className="mt-0.5 block text-xs text-slate-500">{c.description}</span>
+                  <span className="mt-0.5 block text-xs text-muted">{c.description}</span>
                 )}
               </button>
             </li>
@@ -129,11 +129,11 @@ export function CampaignPicker({
       )}
 
       {campaigns.length === 0 && !showCreate && (
-        <p className="text-sm text-slate-500">No lists yet. Create one below to track outreach.</p>
+        <p className="text-sm text-muted">No lists yet. Create one below to track outreach.</p>
       )}
 
       {showCreate ? (
-        <form onSubmit={createAndAdd} className="space-y-3 rounded-xl border border-white/10 bg-white/5 p-4">
+        <form onSubmit={createAndAdd} className="space-y-3 rounded-lg border border-line bg-subtle p-4">
           <input
             type="text"
             className="input-field"
@@ -152,7 +152,7 @@ export function CampaignPicker({
           />
           <div className="flex gap-2">
             <button type="submit" className="btn-primary flex-1" disabled={loading}>
-              {loading ? "Creating…" : "Create & add"}
+              {loading ? "Creating" : "Create & add"}
             </button>
             <button
               type="button"
@@ -168,20 +168,20 @@ export function CampaignPicker({
         <button
           type="button"
           onClick={() => setShowCreate(true)}
-          className="w-full rounded-xl border border-dashed border-white/15 px-4 py-3 text-sm font-medium text-mkt-tally transition hover:border-mkt-tally/40 hover:bg-mkt-tally/5"
+          className="w-full rounded-lg border border-dashed border-line px-4 py-3 text-sm font-medium text-accent transition hover:border-accent/40 hover:bg-accent-soft"
         >
           + Create new list
         </button>
       )}
 
       {message && (
-        <p className="text-sm text-red-400" role="alert">
+        <p className="text-sm text-danger" role="alert">
           {message}
         </p>
       )}
 
       {!showCreate && campaigns.length > 0 && (
-        <p className="text-center text-xs text-slate-600">{submitLabel}</p>
+        <p className="text-center text-xs text-muted">{submitLabel}</p>
       )}
     </div>
   );

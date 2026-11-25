@@ -1,12 +1,13 @@
 "use client";
 
 import { Suspense, useCallback, useEffect, useState } from "react";
-import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { Channel } from "@/lib/types";
+import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import {
   FilterBar,
-  ViewToggle,
+  FilterSelect,
+  activeFilterCount,
   defaultFilters,
   subscriberRangeToMinMax,
   avgViewsToMin,
@@ -18,18 +19,12 @@ import {
   type MarketFilter,
   type ContactFilter,
 } from "@/components/FilterBar";
-import {
-  CreatorGridCard,
-  CreatorListRow,
-  LoadingSpinner,
-  EmptyState,
-} from "@/components/ui";
+import { CreatorTable, EmptyState, ErrorState, LoadingSpinner, TableSkeleton } from "@/components/ui";
 import { SaveToCampaignModal } from "@/components/SaveToCampaignModal";
 import { EmailOutreachModal } from "@/components/EmailOutreachModal";
 import { EmailLockedBanner } from "@/components/EmailGate";
-import { DATA_SOURCE } from "@/lib/data-sources";
 
-const PAGE_SIZE = 24;
+const PAGE_SIZE = 25;
 
 export type LibrarySort = "recent" | "score";
 
@@ -139,38 +134,6 @@ function buildShareParams(
   return params;
 }
 
-function LibrarySortToggle({
-  value,
-  onChange,
-}: {
-  value: LibrarySort;
-  onChange: (sort: LibrarySort) => void;
-}) {
-  const options: { id: LibrarySort; label: string }[] = [
-    { id: "recent", label: "Recently added" },
-    { id: "score", label: "Top score" },
-  ];
-
-  return (
-    <div className="flex rounded-xl border border-white/10 bg-white/5 p-1">
-      {options.map((opt) => (
-        <button
-          key={opt.id}
-          type="button"
-          onClick={() => onChange(opt.id)}
-          className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
-            value === opt.id
-              ? "bg-mkt-tally/20 text-mkt-tally"
-              : "text-slate-500 hover:text-slate-300"
-          }`}
-        >
-          {opt.label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 function PaginationBar({
   page,
   total,
@@ -190,32 +153,31 @@ function PaginationBar({
   const to = Math.min(page * pageSize, total);
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/5 pt-4">
-      <p className="text-xs text-slate-500">
-        Showing {from.toLocaleString()}–{to.toLocaleString()} of {total.toLocaleString()}
+    <nav aria-label="Pagination" className="flex flex-wrap items-center justify-between gap-3">
+      <p className="text-[0.8125rem] tabular-nums text-muted">
+        {from.toLocaleString()}–{to.toLocaleString()} of {total.toLocaleString()}
       </p>
       <div className="flex items-center gap-2">
         <button
           type="button"
           disabled={loading || page <= 1}
           onClick={() => onChange(page - 1)}
-          className="btn-ghost min-h-[36px] px-3 text-xs disabled:opacity-40"
+          className="btn-secondary btn-sm"
         >
+          <ChevronLeft size={14} strokeWidth={1.75} aria-hidden />
           Previous
         </button>
-        <span className="text-xs text-slate-400">
-          Page {page} of {totalPages}
-        </span>
         <button
           type="button"
           disabled={loading || page >= totalPages}
           onClick={() => onChange(page + 1)}
-          className="btn-ghost min-h-[36px] px-3 text-xs disabled:opacity-40"
+          className="btn-secondary btn-sm"
         >
           Next
+          <ChevronRight size={14} strokeWidth={1.75} aria-hidden />
         </button>
       </div>
-    </div>
+    </nav>
   );
 }
 
@@ -235,13 +197,13 @@ function ChannelsPageContent() {
   const [channels, setChannels] = useState<Channel[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [q, setQ] = useState(() => searchParams.get("q") ?? "");
   const [filters, setFilters] = useState<SearchFilters>(() =>
     filtersFromSearchParams(searchParams)
   );
   const [sort, setSort] = useState<LibrarySort>(() => sortFromSearchParams(searchParams));
   const [page, setPage] = useState(() => pageFromSearchParams(searchParams));
-  const [view, setView] = useState<"grid" | "list">("grid");
   const [saveChannel, setSaveChannel] = useState<Channel | null>(null);
   const [outreachChannel, setOutreachChannel] = useState<Channel | null>(null);
 
@@ -267,6 +229,7 @@ function ChannelsPageContent() {
   const loadChannels = useCallback(
     async (searchQuery = q, pageNum = page) => {
       setLoading(true);
+      setLoadError(false);
       try {
         const params = buildQueryParams(filters, searchQuery, sort, pageNum);
         const res = await fetch(`/api/channels?${params}`);
@@ -274,7 +237,11 @@ function ChannelsPageContent() {
         if (res.ok) {
           setChannels(data.channels ?? []);
           setTotal(data.total ?? 0);
+        } else {
+          setLoadError(true);
         }
+      } catch {
+        setLoadError(true);
       } finally {
         setLoading(false);
       }
@@ -316,141 +283,97 @@ function ChannelsPageContent() {
     loadChannels(q, 1);
   }
 
-  const emailOnly = filters.contact === "email";
   const hasSearchQuery = q.trim().length > 0;
-
-  function toggleEmailFilter() {
-    updateFilters({
-      ...filters,
-      contact: filters.contact === "email" ? "all" : "email",
-    });
-  }
+  const filtered = activeFilterCount(filters) > 0 || hasSearchQuery;
 
   return (
-    <div className="space-y-8">
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-mkt-tally">
-          {DATA_SOURCE.database.label}
-        </p>
-        <h1 className="page-title mt-1">Browse enriched creators</h1>
-        <p className="page-subtitle">
-          Your enriched YouTube library (USA & Europe focus) — emails, scores, and outreach
-          filters.
-        </p>
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="h-page">Creators</h1>
+          <p className="page-subtitle tabular-nums">
+            {loading ? "Loading creators" : `${total.toLocaleString()} ${total === 1 ? "creator" : "creators"}`}
+            {!loading && filters.quality === "ready" ? " ready for outreach" : ""}
+            {!loading && filters.market === "us-eu" && !filters.country ? " in the US and Europe" : ""}
+          </p>
+        </div>
+        <FilterSelect
+          label="Sort by"
+          value={sort}
+          options={[
+            { value: "recent", label: "Newest first" },
+            { value: "score", label: "Highest score" },
+          ]}
+          onChange={(v) => updateSort(v as LibrarySort)}
+        />
       </div>
 
-      <div className="card flex gap-3 p-4">
+      <form
+        role="search"
+        onSubmit={(e) => {
+          e.preventDefault();
+          runSearch();
+        }}
+        className="relative"
+      >
+        <Search size={16} strokeWidth={1.75} aria-hidden className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-faint" />
         <input
           type="search"
-          className="input-field flex-1"
-          placeholder="Search your database by name or niche…"
+          aria-label="Search creators"
+          className="input-field pl-9"
+          placeholder="Search by channel name or niche"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && runSearch()}
         />
-        <button type="button" onClick={runSearch} className="btn-primary shrink-0">
-          Search database
-        </button>
-      </div>
-
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <LibrarySortToggle value={sort} onChange={updateSort} />
-          <button
-            type="button"
-            onClick={toggleEmailFilter}
-            className={`rounded-xl border px-3 py-2 text-xs font-medium transition ${
-              emailOnly
-                ? "border-emerald-500/40 bg-emerald-500/15 text-emerald-300"
-                : "border-white/10 bg-white/5 text-slate-400 hover:border-white/20 hover:text-slate-200"
-            }`}
-          >
-            ✉ Has email
-          </button>
-        </div>
-        <ViewToggle view={view} onChange={setView} />
-      </div>
+      </form>
 
       <FilterBar filters={filters} onChange={updateFilters} onClear={clearFilters} />
 
-      <p className="text-sm text-slate-400">
-        Quality and market filters show a subset of saved creators. Choose All quality
-        and Worldwide to browse the complete library. Refreshing a creator keeps its original added date.
-      </p>
+      {filters.quality === "ready" && (
+        <p className="text-xs text-muted">
+          Ready for outreach means the creator posted in the last 45 days, averages 5,000+ views on recent
+          videos and has 2%+ engagement.
+        </p>
+      )}
+
+      {loadError ? (
+        <ErrorState message="We couldn’t load creators. Check your connection and try again." onRetry={() => loadChannels()} />
+      ) : loading ? (
+        <TableSkeleton rows={10} />
+      ) : channels.length === 0 ? (
+        <EmptyState
+          title="No creators match"
+          description={
+            hasSearchQuery
+              ? `Nothing matches “${q.trim()}” with these filters. Try a shorter search or fewer filters.`
+              : "No creators match these filters. Remove a filter to see more."
+          }
+          action={
+            filtered ? (
+              <button
+                type="button"
+                className="btn-secondary btn-sm"
+                onClick={() => {
+                  setQ("");
+                  setFilters(defaultFilters);
+                  setPage(1);
+                  syncUrl({ filters: defaultFilters, q: "", page: 1 });
+                  loadChannels("", 1);
+                }}
+              >
+                Reset search and filters
+              </button>
+            ) : undefined
+          }
+        />
+      ) : (
+        <>
+          <CreatorTable channels={channels} onSave={setSaveChannel} onOutreach={setOutreachChannel} />
+          <PaginationBar page={page} total={total} pageSize={PAGE_SIZE} loading={loading} onChange={updatePage} />
+        </>
+      )}
 
       <EmailLockedBanner />
-
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="font-display text-lg font-semibold text-white">
-              {DATA_SOURCE.database.label}
-            </h2>
-            <p className="text-xs text-slate-500">
-              {loading
-                ? "Loading…"
-                : `${total.toLocaleString()} creators match`}
-              {emailOnly ? " with email" : ""}
-              {filters.uploadedWithin !== "all"
-                ? ` · active ${filters.uploadedWithin}d`
-                : ""}
-              {filters.market === "us-eu" && !filters.country
-                ? " · USA & Europe (+ unknown country)"
-                : ""}
-            </p>
-          </div>
-        </div>
-
-        {loading ? (
-          <LoadingSpinner />
-        ) : channels.length === 0 ? (
-          <EmptyState
-            title="No matches in your database"
-            description={
-              emailOnly
-                ? 'No email contacts in this view. Try turning off "Has email" or resetting filters.'
-                : hasSearchQuery
-                  ? `No creators match "${q.trim()}" in your database yet. Try a different search.`
-                  : "Your database is empty for these filters. Try resetting filters."
-            }
-          />
-        ) : (
-          <>
-            <div
-              className={
-                view === "grid" ? "grid gap-4 sm:grid-cols-2 xl:grid-cols-3" : "space-y-3"
-              }
-            >
-              {channels.map((ch) =>
-                view === "grid" ? (
-                  <CreatorGridCard
-                    key={ch.id}
-                    channel={ch}
-                    onSave={() => setSaveChannel(ch)}
-                    onOutreach={() => setOutreachChannel(ch)}
-                    showEmailBadge
-                  />
-                ) : (
-                  <CreatorListRow
-                    key={ch.id}
-                    channel={ch}
-                    onSave={() => setSaveChannel(ch)}
-                    onOutreach={() => setOutreachChannel(ch)}
-                    showEmailBadge
-                  />
-                )
-              )}
-            </div>
-            <PaginationBar
-              page={page}
-              total={total}
-              pageSize={PAGE_SIZE}
-              loading={loading}
-              onChange={updatePage}
-            />
-          </>
-        )}
-      </section>
 
       {outreachChannel && (
         <EmailOutreachModal

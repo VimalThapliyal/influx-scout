@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export const revalidate = 3600;
 
 export default async function Home() {
-  let data: LandingData = { libraryCount: null, passCount: null, creators: [] };
+  let data: LandingData = { passCount: null, withEmailCount: null, creators: [] };
   let combos: SeoCombo[] = [];
   try {
     [data, combos] = await Promise.all([getLandingData(), getSeoCombos()]);

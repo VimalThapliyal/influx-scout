@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { X } from "lucide-react";
 import type { CampaignInfluencer, InfluencerStatus } from "@/lib/types";
 
 const STATUSES: { value: InfluencerStatus; label: string }[] = [
@@ -74,59 +75,59 @@ export function CampaignTrackingModal({
     : null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-4 backdrop-blur-sm sm:items-center">
-      <div className="card w-full max-w-lg overflow-hidden shadow-2xl shadow-mkt-tally/10" role="dialog">
-        <div className="border-b border-white/10 px-6 py-4">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-fg/40 p-4 sm:items-center">
+      <div className="card w-full max-w-lg overflow-hidden shadow-pop" role="dialog"
+        aria-modal="true">
+        <div className="border-b border-line px-6 py-4">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-mkt-tally">Track outreach</p>
-              <h2 className="mt-1 font-display text-lg font-semibold text-white">{creatorName}</h2>
+              <h2 className="h-section">{creatorName}</h2>
               {lastContact && (
-                <p className="mt-1 text-xs text-slate-500">Last contacted: {lastContact}</p>
+                <p className="mt-1 text-xs text-muted">Last contacted: {lastContact}</p>
               )}
             </div>
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg p-2 text-slate-400 hover:bg-white/5 hover:text-white"
+              className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted hover:bg-subtle hover:text-fg"
               aria-label="Close"
             >
-              ✕
+              <X size={16} strokeWidth={1.75} aria-hidden />
             </button>
           </div>
         </div>
 
         <div className="space-y-4 px-6 py-4">
           <div>
-            <label className="mb-1 block text-xs font-medium text-slate-400">Pipeline status</label>
+            <label className="mb-1 block text-xs font-medium text-muted">Pipeline status</label>
             <select
               className="input-field"
               value={status}
               onChange={(e) => setStatus(e.target.value as InfluencerStatus)}
             >
               {STATUSES.map((s) => (
-                <option key={s.value} value={s.value} className="bg-[#0f172a]">
+                <option key={s.value} value={s.value} className="bg-surface">
                   {s.label}
                 </option>
               ))}
             </select>
           </div>
 
-          <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+          <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-line bg-subtle px-4 py-3">
             <input
               type="checkbox"
               checked={replied}
               onChange={(e) => setReplied(e.target.checked)}
-              className="h-4 w-4 rounded border-white/20 bg-white/10 text-mkt-tally focus:ring-mkt-tally/30"
+              className="h-4 w-4 rounded border-line bg-subtle text-accent focus:ring-accent/30"
             />
             <div>
-              <p className="text-sm font-medium text-white">Creator replied</p>
-              <p className="text-xs text-slate-500">Mark when you receive a response</p>
+              <p className="text-sm font-medium text-fg">Creator replied</p>
+              <p className="text-xs text-muted">Mark when you receive a response</p>
             </div>
           </label>
 
           <div>
-            <label className="mb-1 block text-xs font-medium text-slate-400">Notes</label>
+            <label className="mb-1 block text-xs font-medium text-muted">Notes</label>
             <textarea
               className="input-field min-h-[100px] resize-y"
               placeholder="Follow-up details, budget discussed, next steps…"
@@ -137,7 +138,7 @@ export function CampaignTrackingModal({
           </div>
 
           {error && (
-            <p className="text-sm text-red-400" role="alert">{error}</p>
+            <p className="text-sm text-danger" role="alert">{error}</p>
           )}
 
           <div className="flex flex-wrap gap-2">
@@ -150,7 +151,7 @@ export function CampaignTrackingModal({
               Mark contacted today
             </button>
             <button type="button" className="btn-primary flex-1" disabled={saving} onClick={() => save()}>
-              {saving ? "Saving…" : "Save"}
+              {saving ? "Saving" : "Save"}
             </button>
           </div>
         </div>
@@ -179,35 +180,35 @@ export function PipelineSummary({
   }
 
   const items = [
-    { label: "Identified", value: statusCounts.identified, color: "text-slate-400" },
-    { label: "Contacted", value: statusCounts.contacted, color: "text-mkt-tally" },
-    { label: "Negotiating", value: statusCounts.negotiating, color: "text-amber-300" },
-    { label: "Contracted", value: statusCounts.contracted, color: "text-emerald-300" },
-    { label: "Replied", value: replied, color: "text-cyan-300" },
+    { label: "Identified", value: statusCounts.identified },
+    { label: "Contacted", value: statusCounts.contacted },
+    { label: "Replied", value: replied },
+    { label: "Negotiating", value: statusCounts.negotiating },
+    { label: "Contracted", value: statusCounts.contracted },
   ];
 
   return (
-    <div className="flex flex-wrap gap-3 border-b border-white/10 px-6 py-3">
+    <dl className="flex flex-wrap gap-x-6 gap-y-1 border-b border-line px-4 py-2.5 text-[0.8125rem]">
       {items.map((item) => (
-        <div key={item.label} className="flex items-center gap-2 text-xs">
-          <span className={`font-semibold ${item.color}`}>{item.value}</span>
-          <span className="text-slate-500">{item.label}</span>
+        <div key={item.label} className="flex items-baseline gap-1.5">
+          <dd className="font-semibold tabular-nums text-fg">{item.value}</dd>
+          <dt className="text-muted">{item.label}</dt>
         </div>
       ))}
-    </div>
+    </dl>
   );
 }
 
 export function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
-    identified: "bg-slate-500/20 text-slate-400",
-    contacted: "bg-mkt-tally/20 text-mkt-tally",
-    negotiating: "bg-amber-500/20 text-amber-300",
-    contracted: "bg-emerald-500/20 text-emerald-300",
-    completed: "bg-emerald-500/20 text-emerald-400",
+    identified: "bg-subtle text-muted",
+    contacted: "bg-accent-soft text-accent",
+    negotiating: "bg-warn-soft text-warn",
+    contracted: "bg-success-soft text-success",
+    completed: "bg-success-soft text-success",
   };
   return (
-    <span className={`inline-flex rounded-lg px-2.5 py-0.5 text-xs font-medium capitalize ${colors[status] ?? colors.identified}`}>
+    <span className={`tag-pill capitalize ${colors[status] ?? colors.identified}`}>
       {status}
     </span>
   );

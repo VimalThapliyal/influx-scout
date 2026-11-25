@@ -16,6 +16,8 @@ export function hasEmailValue(email: string | null | undefined): boolean {
   return !!email && email.length > 3 && email.includes("@");
 }
 
+const EMAIL_IN_TEXT = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi;
+
 export type ChannelWithEmail = {
   email?: string | null;
   [key: string]: unknown;
@@ -43,6 +45,10 @@ export function redactChannelEmail<T extends ChannelWithEmail>(
 
   return {
     ...channel,
+    // The bio often repeats the business email in plain text; hide it too.
+    ...(typeof channel.description === "string"
+      ? { description: channel.description.replace(EMAIL_IN_TEXT, "[email hidden]") }
+      : {}),
     email: null,
     email_masked: maskEmail(channel.email!),
     email_locked: true,

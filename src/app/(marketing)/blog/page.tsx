@@ -16,17 +16,16 @@ const fmt = (iso: string) =>
 export default function BlogIndexPage() {
   return (
     <MarketingShell>
-      <p className="mkt-eyebrow">Blog</p>
-      <h1 className="mkt-h2 mt-3 !text-4xl">YouTube influencer marketing, by the numbers</h1>
-      <p className="mkt-body mt-3 max-w-2xl">
+      <h1 className="h-page">YouTube influencer marketing, by the numbers</h1>
+      <p className="text-body mt-3 max-w-2xl">
         Guides built on data from the 200,000+ YouTube channels Influx has scored.
       </p>
       <div className="mt-10 grid gap-6">
         {POSTS.map((p) => (
-          <Link key={p.slug} href={`/blog/${p.slug}`} className="mkt-card block p-6 hover:border-mkt-tally/50">
-            <p className="font-mono text-[11px] uppercase tracking-wider text-mkt-ash">{fmt(p.published)}</p>
-            <h2 className="mkt-h3 mt-2 !text-xl">{p.title}</h2>
-            <p className="mkt-body mt-2 !text-sm">{p.description}</p>
+          <Link key={p.slug} href={`/blog/${p.slug}`} className="card block p-6 hover:border-accent/50">
+            <p className="text-xs text-muted">{fmt(p.published)}</p>
+            <h2 className="h-section mt-2">{p.title}</h2>
+            <p className="text-body mt-2 !text-sm">{p.description}</p>
           </Link>
         ))}
       </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { X } from "lucide-react";
 import Link from "next/link";
 import type { Channel } from "@/lib/types";
 import type { OutreachGoal, OutreachTone } from "@/lib/outreach";
@@ -216,28 +217,26 @@ export function EmailOutreachModal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-4 backdrop-blur-sm sm:items-center">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-fg/40 p-4 sm:items-center">
       <div
-        className="card flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden shadow-2xl shadow-mkt-tally/10"
+        className="card flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden shadow-pop"
         role="dialog"
+        aria-modal="true"
         aria-labelledby="outreach-title"
       >
-        <div className="border-b border-white/10 px-6 py-4">
+        <div className="border-b border-line px-6 py-4">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-mkt-tally">
-                Email outreach
-              </p>
-              <h2 id="outreach-title" className="mt-1 font-display text-lg font-semibold text-white">
+              <h2 id="outreach-title" className="h-section">
                 {step === "campaign" ? `Add ${channel.title} to a list` : `Write to ${channel.title}`}
               </h2>
               {step === "compose" && campaignName && (
-                <p className="mt-1 text-sm text-slate-500">
-                  Tracking in: <span className="text-mkt-tally">{campaignName}</span>
+                <p className="mt-1 text-sm text-muted">
+                  Tracking in: <span className="text-accent">{campaignName}</span>
                 </p>
               )}
               {step === "campaign" && (
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-1 text-sm text-muted">
                   Add to a campaign list first so outreach status is tracked automatically.
                 </p>
               )}
@@ -245,10 +244,10 @@ export function EmailOutreachModal({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg p-2 text-slate-400 hover:bg-white/5 hover:text-white"
+              className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted hover:bg-subtle hover:text-fg"
               aria-label="Close"
             >
-              ✕
+              <X size={16} strokeWidth={1.75} aria-hidden />
             </button>
           </div>
         </div>
@@ -256,12 +255,12 @@ export function EmailOutreachModal({
         {step === "campaign" ? (
           <div className="flex-1 space-y-4 overflow-y-auto px-6 py-4">
             {membershipsLoading ? (
-              <p className="text-sm text-slate-500">Loading lists…</p>
+              <p className="text-sm text-muted">Loading lists</p>
             ) : (
               <>
                 {memberships.length > 1 && (
                   <div className="space-y-2">
-                    <p className="text-xs font-medium text-slate-400">Already in these lists</p>
+                    <p className="text-xs font-medium text-muted">Already in these lists</p>
                     <ul className="space-y-2">
                       {memberships.map((m) => (
                         <li key={m.influencer_id}>
@@ -271,17 +270,17 @@ export function EmailOutreachModal({
                               setSelectedMembership(m);
                               setStep("compose");
                             }}
-                            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-left text-sm transition hover:border-mkt-tally/40 hover:bg-mkt-tally/10"
+                            className="w-full rounded-lg border border-line bg-subtle px-4 py-3 text-left text-sm transition hover:border-accent/40 hover:bg-accent-soft"
                           >
-                            <span className="font-medium text-white">{m.campaign_name}</span>
-                            <span className="mt-0.5 block text-xs capitalize text-slate-500">
+                            <span className="font-medium text-fg">{m.campaign_name}</span>
+                            <span className="mt-0.5 block text-xs capitalize text-muted">
                               Status: {m.status.replace("_", " ")}
                             </span>
                           </button>
                         </li>
                       ))}
                     </ul>
-                    <p className="text-xs text-slate-600">Or add to another list:</p>
+                    <p className="text-xs text-muted">Or add to another list:</p>
                   </div>
                 )}
 
@@ -306,11 +305,11 @@ export function EmailOutreachModal({
           <>
             <div className="flex-1 space-y-4 overflow-y-auto px-6 py-4">
               {!campaignInfluencerId && (
-                <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+                <div className="rounded-lg border border-warn/30 bg-warn-soft px-4 py-3 text-sm text-warn">
                   No campaign list selected — outreach won&apos;t be tracked.{" "}
                   <button
                     type="button"
-                    className="font-medium underline hover:text-amber-100"
+                    className="font-medium underline hover:text-fg"
                     onClick={() => setStep("campaign")}
                   >
                     Add to a list
@@ -320,7 +319,7 @@ export function EmailOutreachModal({
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-slate-400">Your brand</label>
+                  <label className="mb-1 block text-xs font-medium text-muted">Your brand</label>
                   <input
                     className="input-field"
                     placeholder="Acme Co."
@@ -329,7 +328,7 @@ export function EmailOutreachModal({
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-slate-400">Your name</label>
+                  <label className="mb-1 block text-xs font-medium text-muted">Your name</label>
                   <input
                     className="input-field"
                     placeholder="Jane Smith"
@@ -341,28 +340,28 @@ export function EmailOutreachModal({
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-slate-400">Goal</label>
+                  <label className="mb-1 block text-xs font-medium text-muted">Goal</label>
                   <select
                     className="input-field"
                     value={goal}
                     onChange={(e) => setGoal(e.target.value as OutreachGoal)}
                   >
                     {GOALS.map((g) => (
-                      <option key={g.value} value={g.value} className="bg-[#0f172a]">
+                      <option key={g.value} value={g.value} className="bg-surface">
                         {g.label}
                       </option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-slate-400">Tone</label>
+                  <label className="mb-1 block text-xs font-medium text-muted">Tone</label>
                   <select
                     className="input-field"
                     value={tone}
                     onChange={(e) => setTone(e.target.value as OutreachTone)}
                   >
                     {TONES.map((t) => (
-                      <option key={t.value} value={t.value} className="bg-[#0f172a]">
+                      <option key={t.value} value={t.value} className="bg-surface">
                         {t.label}
                       </option>
                     ))}
@@ -371,8 +370,8 @@ export function EmailOutreachModal({
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-medium text-slate-400">
-                  Extra notes <span className="text-slate-600">(optional)</span>
+                <label className="mb-1 block text-xs font-medium text-muted">
+                  Extra notes <span className="text-muted">(optional)</span>
                 </label>
                 <textarea
                   className="input-field min-h-[72px] resize-y"
@@ -389,18 +388,18 @@ export function EmailOutreachModal({
                 disabled={loading}
                 className="btn-primary w-full"
               >
-                {loading ? "Generating…" : "✦ Generate personalized email"}
+                {loading ? "Generating" : "Generate personalized email"}
               </button>
 
               {source && (
-                <p className="text-center text-xs text-slate-500">
+                <p className="text-center text-xs text-muted">
                   Generated via {source === "ai" ? "AI" : "smart template"}
                 </p>
               )}
 
               {error && (
                 <p
-                  className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm text-red-300"
+                  className="rounded-lg border border-danger/30 bg-danger-soft px-4 py-2 text-sm text-danger"
                   role="alert"
                 >
                   {error}
@@ -408,9 +407,9 @@ export function EmailOutreachModal({
               )}
 
               {(subject || body) && (
-                <div className="space-y-3 rounded-xl border border-white/10 bg-white/5 p-4">
+                <div className="space-y-3 rounded-lg border border-line bg-subtle p-4">
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-slate-400">Subject</label>
+                    <label className="mb-1 block text-xs font-medium text-muted">Subject</label>
                     <input
                       className="input-field"
                       value={subject}
@@ -418,9 +417,9 @@ export function EmailOutreachModal({
                     />
                   </div>
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-slate-400">Message</label>
+                    <label className="mb-1 block text-xs font-medium text-muted">Message</label>
                     <textarea
-                      className="input-field min-h-[200px] resize-y font-mono text-sm leading-relaxed"
+                      className="input-field min-h-[200px] resize-y text-sm leading-relaxed"
                       value={body}
                       onChange={(e) => setBody(e.target.value)}
                       rows={10}
@@ -430,7 +429,7 @@ export function EmailOutreachModal({
               )}
 
               {!hasEmail && (
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-muted">
                   Email address locked.{" "}
                   {PAYMENTS_ENABLED ? (
                     <>
@@ -446,18 +445,18 @@ export function EmailOutreachModal({
               )}
 
               {markedContacted && (
-                <p className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300">
+                <p className="rounded-lg border border-success/30 bg-success-soft px-4 py-2 text-sm text-success">
                   Marked as contacted in {campaignName}
                 </p>
               )}
             </div>
 
             {(subject || body) && (
-              <div className="space-y-3 border-t border-white/10 px-6 py-4">
+              <div className="space-y-3 border-t border-line px-6 py-4">
                 {showMarkPrompt && campaignInfluencerId && !markedContacted && (
-                  <div className="rounded-xl border border-mkt-tally/30 bg-mkt-tally/10 p-4">
-                    <p className="text-sm font-medium text-white">Mark as contacted?</p>
-                    <p className="mt-1 text-xs text-slate-400">
+                  <div className="rounded-lg border border-accent/30 bg-accent-soft p-4">
+                    <p className="text-sm font-medium text-fg">Mark as contacted?</p>
+                    <p className="mt-1 text-xs text-muted">
                       Update {campaignName} pipeline — sets status to contacted and records send time.
                     </p>
                     <div className="mt-3 flex gap-2">
@@ -467,7 +466,7 @@ export function EmailOutreachModal({
                         disabled={markingContacted}
                         className="btn-primary flex-1 text-sm"
                       >
-                        {markingContacted ? "Saving…" : "Yes, mark contacted"}
+                        {markingContacted ? "Saving" : "Yes, mark contacted"}
                       </button>
                       <button
                         type="button"
@@ -483,14 +482,14 @@ export function EmailOutreachModal({
                 <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
-                    className="btn-secondary min-h-[40px] flex-1 text-sm"
+                    className="btn-secondary flex-1 text-sm"
                     onClick={() => copyText("all", `Subject: ${subject}\n\n${body}`)}
                   >
                     {copied === "all" ? "Copied!" : "Copy all"}
                   </button>
                   <button
                     type="button"
-                    className="btn-secondary min-h-[40px] text-sm"
+                    className="btn-secondary text-sm"
                     onClick={() => copyText("body", body)}
                   >
                     {copied === "body" ? "Copied!" : "Copy body"}
@@ -499,14 +498,14 @@ export function EmailOutreachModal({
                     <a
                       href={mailto}
                       onClick={handleMailtoClick}
-                      className="btn-primary min-h-[40px] flex-1 text-center text-sm"
+                      className="btn-primary flex-1 text-center text-sm"
                     >
                       Open in mail app
                     </a>
                   ) : (
                     <button
                       type="button"
-                      className="btn-primary min-h-[40px] flex-1 opacity-50"
+                      className="btn-primary flex-1 opacity-50"
                       disabled
                     >
                       Open in mail app
