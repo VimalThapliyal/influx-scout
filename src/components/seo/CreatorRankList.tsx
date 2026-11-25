@@ -61,7 +61,7 @@ export function CreatorRankList({
           <div className="w-24 shrink-0 text-right">
             {c.has_contact ? (
               <Link href={unlockHref} className="font-mono text-[11px] uppercase tracking-wider text-mkt-tally hover:brightness-110">
-                Contact →
+                Get contact
               </Link>
             ) : (
               <span className="font-mono text-[11px] uppercase tracking-wider text-mkt-ash/60">—</span>

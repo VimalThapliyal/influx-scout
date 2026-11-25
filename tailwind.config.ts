@@ -7,10 +7,11 @@ const config: Config = {
       fontFamily: {
         sans: ["var(--font-plex-sans)", "system-ui", "sans-serif"],
         display: ["var(--font-jakarta)", "system-ui", "sans-serif"],
-        // Marketing-site type system -- contact-sheet / production-log.
-        poster: ["var(--font-bebas)", "system-ui", "sans-serif"],
+        // Marketing/app type tokens. Values come from CSS variables so the public
+        // site (.mkt-shell, "research report" look) and the app can differ.
+        poster: ["var(--mkt-display)", "system-ui", "sans-serif"],
         plex: ["var(--font-plex-sans)", "system-ui", "sans-serif"],
-        mono: ["var(--font-plex-mono)", "ui-monospace", "monospace"],
+        mono: ["var(--mkt-label)", "ui-monospace", "monospace"],
       },
       colors: {
         brand: {
@@ -21,14 +22,18 @@ const config: Config = {
           700: "#b91c1c",
           900: "#7f1d1d",
         },
-        // Marketing-site palette (contact-sheet / production-log).
+        // Semantic palette, defined as RGB channels in globals.css:
+        // ink = page background, paper = strongest text, ash = body text,
+        // manila = rules/borders, tally = accent, signal = positive.
         mkt: {
-          ink: "#15181E",
-          manila: "#C9BFA6",
-          tally: "#E8A33D",
-          signal: "#4FBA6F",
-          paper: "#F3EEE3",
-          ash: "#8B93A0",
+          ink: "rgb(var(--mkt-ink) / <alpha-value>)",
+          manila: "rgb(var(--mkt-manila) / <alpha-value>)",
+          tally: "rgb(var(--mkt-tally) / <alpha-value>)",
+          signal: "rgb(var(--mkt-signal) / <alpha-value>)",
+          paper: "rgb(var(--mkt-paper) / <alpha-value>)",
+          ash: "rgb(var(--mkt-ash) / <alpha-value>)",
+          surface: "rgb(var(--mkt-surface) / <alpha-value>)",
+          fail: "rgb(var(--mkt-fail) / <alpha-value>)",
         },
       },
       animation: {
