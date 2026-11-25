@@ -14,6 +14,9 @@ export const SITE_URL = (
 /** A list page is published only with at least this many creators. */
 export const MIN_CREATORS_PER_PAGE = 10;
 export const CREATORS_PER_PAGE = 50;
+/** Pages promise "posted in the last 45 days"; hide creators whose last known upload is older. */
+const ACTIVE_DAYS = 45;
+const activeSince = () => new Date(Date.now() - ACTIVE_DAYS * 86_400_000).toISOString();
 
 export const SEO_COUNTRIES: { code: string; slug: string; name: string; demonym: string }[] = [
   { code: "US", slug: "united-states", name: "the United States", demonym: "American" },
@@ -79,6 +82,7 @@ export async function getSeoCombos(): Promise<SeoCombo[]> {
       .select("primary_niche, country")
       .eq("quality_pass", true)
       .is("opted_out_at", null)
+    .gte("latest_upload_at", activeSince())
       .not("primary_niche", "is", null)
       .in("country", codes)
       .order("id")
@@ -131,6 +135,7 @@ export async function getTopCreators(
     .select(CREATOR_COLUMNS)
     .eq("quality_pass", true)
     .is("opted_out_at", null)
+    .gte("latest_upload_at", activeSince())
     .eq("primary_niche", niche)
     .order("subscriber_count", { ascending: false, nullsFirst: false })
     .limit(limit);
@@ -138,6 +143,37 @@ export async function getTopCreators(
   const { data, error } = await q;
   if (error) throw new Error(error.message);
   return (data ?? []).map(toSeoCreator);
+}
+
+/** Top passing creators in one country across every niche (country hub pages). */
+export async function getTopCreatorsInCountry(
+  countryCode: string,
+  limit = CREATORS_PER_PAGE
+): Promise<SeoCreator[]> {
+  const { data, error } = await getSupabaseAdmin()
+    .from("channels")
+    .select(CREATOR_COLUMNS)
+    .eq("quality_pass", true)
+    .is("opted_out_at", null)
+    .gte("latest_upload_at", activeSince())
+    .eq("country", countryCode)
+    .order("subscriber_count", { ascending: false, nullsFirst: false })
+    .limit(limit);
+  if (error) throw new Error(error.message);
+  return (data ?? []).map(toSeoCreator);
+}
+
+/** Countries with enough niche lists to deserve a hub page, with their total creator count. */
+export function hubCountries(combos: SeoCombo[]): { code: string; count: number }[] {
+  const totals = new Map<string, number>();
+  for (const c of combos) totals.set(c.country, (totals.get(c.country) ?? 0) + c.count);
+  return Array.from(totals.entries())
+    .map(([code, count]) => ({ code, count }))
+    .sort((a, b) => b.count - a.count);
+}
+
+export function countryPath(countrySlug: string): string {
+  return `/youtubers/${countrySlug}`;
 }
 
 export function formatCount(n: number | null | undefined): string {

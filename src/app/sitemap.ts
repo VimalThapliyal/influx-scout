@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { SITE_URL, countryByCode, getSeoCombos, listPath } from "@/lib/seo";
+import { SITE_URL, countryByCode, countryPath, getSeoCombos, hubCountries, listPath } from "@/lib/seo";
 import { COMPARISONS } from "@/lib/comparisons";
 
 export const revalidate = 86400;
@@ -44,5 +44,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  return [...staticPages, ...nichePages, ...listPages];
+  const countryPages = hubCountries(combos).map((c) => ({
+    url: `${SITE_URL}${countryPath(countryByCode(c.code)!.slug)}`,
+    lastModified: now,
+    changeFrequency: "daily" as const,
+    priority: 0.8,
+  }));
+
+  return [...staticPages, ...countryPages, ...nichePages, ...listPages];
 }

@@ -3,11 +3,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MarketingShell } from "@/components/MarketingShell";
 import { CreatorRankList } from "@/components/seo/CreatorRankList";
+import { CountryHub, countryHubMetadata } from "@/components/seo/CountryHub";
 import { BRAND_NAME } from "@/lib/brand";
 import {
   MIN_CREATORS_PER_PAGE,
   SITE_URL,
   countryByCode,
+  countryBySlug,
   getSeoCombos,
   getTopCreators,
   isNicheSlug,
@@ -21,9 +23,13 @@ export function generateStaticParams() {
   return [];
 }
 
+// This segment serves two kinds of page: a niche ("/youtubers/fitness") or a
+// country hub ("/youtubers/germany"). Niche and country slugs never overlap.
 type Params = { params: { niche: string } };
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
+  const country = countryBySlug(params.niche);
+  if (country) return countryHubMetadata(country);
   if (!isNicheSlug(params.niche)) return {};
   const label = nicheName(params.niche);
   const year = new Date().getFullYear();
@@ -41,6 +47,8 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 }
 
 export default async function NichePage({ params }: Params) {
+  const country = countryBySlug(params.niche);
+  if (country) return <CountryHub country={country} />;
   if (!isNicheSlug(params.niche)) notFound();
   const niche = params.niche;
   const creators = await getTopCreators(niche);

@@ -9,6 +9,7 @@ import {
   SITE_URL,
   countryByCode,
   countryBySlug,
+  countryPath,
   formatCount,
   getSeoCombos,
   getTopCreators,
@@ -113,7 +114,9 @@ export default async function NicheCountryPage({ params }: Params) {
         {" / "}
         <Link href={listPath(r.niche)} className="hover:text-mkt-paper">{label}</Link>
         {" / "}
-        <span>{r.country.name.replace(/^the /, "")}</span>
+        <Link href={countryPath(r.country.slug)} className="hover:text-mkt-paper">
+          {r.country.name.replace(/^the /, "")}
+        </Link>
       </nav>
 
       <h1 className="mkt-h2 mt-4 !text-4xl">
