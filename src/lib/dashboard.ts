@@ -2,7 +2,7 @@ import { getSupabaseAdmin } from "@/lib/supabase";
 import { canViewEmails } from "@/lib/auth";
 import { redactChannels } from "@/lib/email";
 import { TARGET_MARKET_LABEL } from "@/lib/markets";
-import { INDEPENDENT_FILTER, activeSince, getLibraryCounts } from "@/lib/library-counts";
+import { INDEPENDENT_FILTER, OUTREACH_EMAIL, activeSince, getLibraryCounts } from "@/lib/library-counts";
 import type { Channel, InfluencerStatus } from "@/lib/types";
 
 export interface LibraryStats {
@@ -41,7 +41,7 @@ export async function getRecommendedCreators(): Promise<Channel[]> {
       .eq("quality_pass", true)
       .gte("latest_upload_at", activeSince())
       .is("opted_out_at", null)
-      .not("email", "is", null)
+      .or(OUTREACH_EMAIL)
       .or(INDEPENDENT_FILTER)
       .order("avg_views_last5", { ascending: false, nullsFirst: false })
       .limit(5);

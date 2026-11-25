@@ -124,7 +124,7 @@ export async function getSeoCombos(): Promise<SeoCombo[]> {
 }
 
 const CREATOR_COLUMNS =
-  "id, title, handle, thumbnail_url, subscriber_count, avg_views_last5, latest_upload_at, country, primary_niche, email, website, instagram, has_contact_form";
+  "id, title, handle, thumbnail_url, subscriber_count, avg_views_last5, latest_upload_at, country, primary_niche, email, email_validation_status, website, instagram, has_contact_form";
 
 function toSeoCreator(r: Record<string, any>): SeoCreator {
   return {
@@ -138,7 +138,7 @@ function toSeoCreator(r: Record<string, any>): SeoCreator {
     country: r.country ?? null,
     primary_niche: r.primary_niche ?? null,
     // Only a boolean leaves the server — never the address itself.
-    has_contact: Boolean(r.email || r.has_contact_form || r.website || r.instagram),
+    has_contact: Boolean((r.email && r.email_validation_status !== "risky") || r.has_contact_form || r.website || r.instagram),
   };
 }
 

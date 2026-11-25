@@ -46,8 +46,9 @@ export function recentEngagement(c: Channel): number | null {
   return c.engagement_last5 ?? c.engagement_rate ?? null;
 }
 
+/** Has an email worth writing to (general inboxes like customer service don't count). */
 export function channelHasEmailContact(channel: Channel): boolean {
-  return !!(channel.has_email || channel.email);
+  return !!(channel.has_email || channel.email) && channel.email_validation_status !== "risky";
 }
 
 /* ── Small pieces ── */

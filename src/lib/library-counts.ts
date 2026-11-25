@@ -24,6 +24,12 @@ export const activeSince = () => new Date(Date.now() - ACTIVE_DAYS * 86_400_000)
 /** PostgREST filter: independent creators, including ones not classified yet. */
 export const INDEPENDENT_FILTER = "channel_kind.is.null,channel_kind.eq.independent";
 
+/**
+ * PostgREST condition: has an email worth writing to. Customer-service, privacy
+ * and shop inboxes are flagged "risky" and don't count as a lead.
+ */
+export const OUTREACH_EMAIL = "and(email.not.is.null,or(email_validation_status.is.null,email_validation_status.neq.risky))";
+
 export const getLibraryCounts = cache(async (): Promise<LibraryCounts | null> => {
   try {
     const db = getSupabaseAdmin();
@@ -32,8 +38,8 @@ export const getLibraryCounts = cache(async (): Promise<LibraryCounts | null> =>
     const [all, independent, withEmail, reachable] = await Promise.all([
       listed(),
       listed().or(INDEPENDENT_FILTER),
-      listed().not("email", "is", null),
-      listed().or("email.not.is.null,has_contact_form.eq.true"),
+      listed().or(OUTREACH_EMAIL),
+      listed().or(`${OUTREACH_EMAIL},has_contact_form.eq.true`),
     ]);
     if (all.error || all.count == null) return null;
     return {

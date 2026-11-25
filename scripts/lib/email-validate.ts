@@ -81,6 +81,28 @@ const BUSINESS_ROLE_OK = new Set([
   "pr",
 ]);
 
+/**
+ * Inboxes that exist for something other than partnerships: customer service,
+ * privacy officers, web shops, ticketing. A brand deal sent there goes nowhere,
+ * so these are never stored or counted as outreach contacts.
+ */
+const NON_OUTREACH_LOCALS = new Set([
+  "customerservice", "customer-service", "customer.service", "customercare", "customersupport",
+  "support", "help", "helpdesk", "service", "webmaster", "postmaster", "hostmaster",
+  "dpo", "privacy", "gdpr", "legal", "compliance", "abuse", "security", "dmca", "copyright",
+  "noreply", "no-reply", "no_reply", "donotreply", "do-not-reply", "mailer-daemon",
+  "shop", "store", "orders", "order", "returns", "shipping", "billing", "invoices", "accounts", "payments",
+  "tickets", "tours", "reservations", "careers", "jobs", "hr", "recruiting", "recruitment",
+  "newsletter", "unsubscribe", "subscriptions", "donations", "donate", "membership",
+]);
+
+export function isNonOutreachAddress(email: string): boolean {
+  const e = normalizeEmail(email);
+  if (!e) return false;
+  const base = ((e.split("@")[0] ?? "").split("+")[0] ?? "").replace(/\d+$/, "");
+  return NON_OUTREACH_LOCALS.has(base);
+}
+
 const SYNTAX_RE =
   /^[a-z0-9](?:[a-z0-9._%+-]{0,62}[a-z0-9])?@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/i;
 
@@ -196,7 +218,7 @@ export async function validatePublicEmail(
 
   // Generic role inboxes are usable but tagged risky if not business roles
   const local = (normalized.split("@")[0] ?? "").split("+")[0] ?? "";
-  if (isRole && !BUSINESS_ROLE_OK.has(local) && ["noreply", "no-reply", "donotreply", "abuse", "postmaster"].includes(local)) {
+  if (!BUSINESS_ROLE_OK.has(local) && isNonOutreachAddress(normalized)) {
     return {
       normalized,
       status: "risky",

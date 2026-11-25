@@ -27,7 +27,7 @@ export async function getLandingData(): Promise<LandingData> {
     db
       .from("channels")
       .select(
-        "id, title, handle, thumbnail_url, country, primary_niche, subscriber_count, avg_views_last5, engagement_last5, latest_upload_at, email, has_contact_form, website, instagram"
+        "id, title, handle, thumbnail_url, country, primary_niche, subscriber_count, avg_views_last5, engagement_last5, latest_upload_at, email, email_validation_status, has_contact_form, website, instagram"
       )
       .eq("quality_pass", true)
       .is("opted_out_at", null)
@@ -62,7 +62,7 @@ export async function getLandingData(): Promise<LandingData> {
       avg_views_last5: r.avg_views_last5,
       engagement_last5: r.engagement_last5,
       latest_upload_at: r.latest_upload_at,
-      has_email: Boolean(r.email),
+      has_email: Boolean(r.email) && r.email_validation_status !== "risky",
       has_contact_form: r.has_contact_form,
       email: null,
       website: r.website ? "public" : null,

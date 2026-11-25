@@ -3,6 +3,7 @@
  * Does NOT touch YouTube CAPTCHA / "View email address".
  */
 
+import { isNonOutreachAddress } from "./email-validate";
 import {
   CRAWLER_USER_AGENT,
   checkRobotsUrl,
@@ -207,6 +208,8 @@ export function isJunkEmail(email: string): boolean {
   if (!e.includes("@") || e.length < 6 || e.length > 120) return true;
   if (JUNK_EMAIL_PARTS.some((p) => e.includes(p))) return true;
   if (/^\d+@/.test(e)) return true;
+  // Customer service, privacy, shop and similar inboxes are not outreach contacts.
+  if (isNonOutreachAddress(e)) return true;
   return false;
 }
 

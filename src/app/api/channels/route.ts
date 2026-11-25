@@ -3,7 +3,7 @@ import { getSupabaseAdmin } from "@/lib/supabase";
 import { canViewEmails } from "@/lib/auth";
 import { redactChannels } from "@/lib/email";
 import { targetMarketOrFilter } from "@/lib/markets";
-import { INDEPENDENT_FILTER, activeSince } from "@/lib/library-counts";
+import { INDEPENDENT_FILTER, OUTREACH_EMAIL, activeSince } from "@/lib/library-counts";
 
 export async function GET(request: NextRequest) {
   try {
@@ -68,11 +68,11 @@ export async function GET(request: NextRequest) {
       if (useNiche && niche) {
         query = query.or(`primary_niche.eq.${niche},category.eq.${niche}`);
       }
-      if (hasEmail === "true") query = query.not("email", "is", null);
+      if (hasEmail === "true") query = query.or(OUTREACH_EMAIL);
       if (hasContactForm === "true") query = query.eq("has_contact_form", true);
       // Email or a contact form on the creator's own site.
       if (searchParams.get("has_direct_contact") === "true") {
-        query = query.or("email.not.is.null,has_contact_form.eq.true");
+        query = query.or(`${OUTREACH_EMAIL},has_contact_form.eq.true`);
       }
       if (hasSocial === "true") {
         query = query.or(
