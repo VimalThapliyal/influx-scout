@@ -261,6 +261,7 @@ async function main() {
     }
 
     let progressed = 0;
+    let stillUnscored = 0; // transient errors that stay in the unscored window
 
     // --- Paid pass: group channels so videos.list is shared ---
     for (let g = 0; g < survivors.length; g += GROUP) {
@@ -295,7 +296,16 @@ async function main() {
         const title = titleById.get(r.id) ?? r.id;
         if (r.error || !r.score || !r.dbFields) {
           errored++;
-          console.warn(`  skip ${title}: ${r.error ?? "no score"}`);
+          console.warn(`  skip ${title}: ${(r.error ?? "no score").slice(0, 120)}`);
+          // The uploads playlist does not exist: the channel has no public videos.
+          // Mark it failed so it leaves the queue instead of being retried (and
+          // charged) on every page.
+          if (/playlistItems 404/.test(r.error ?? "") && !args.dryRun && !noQualityCol && args.unscoredOnly) {
+            await markFailed(supabase, [r.id], "no_uploads");
+            progressed++;
+            continue;
+          }
+          stillUnscored++;
           if (!args.dryRun && !noQualityCol && args.unscoredOnly) {
             // Keep transient errors unscored so the next run retries them.
             // An API failure must not turn an existing lead into a quality failure.
@@ -348,6 +358,10 @@ async function main() {
       (args.unscoredOnly || args.refreshPass) && !noQualityCol && !args.dryRun;
     if (!windowSelfConsumes || progressed + prefiltered === 0) {
       offset += rows.length;
+    } else {
+      // Rows that errored transiently are still in the window; step past them
+      // so the next page doesn't fetch (and pay for) them again.
+      offset += stillUnscored;
     }
   }
 

@@ -8,7 +8,8 @@
  *   npm run census:direct -- --limit 250000 --max-units 5000
  *   npm run census:direct -- --limit 2000 --dry-run
  *
- * Kept: >= --min-subs subscribers (default 5000), >= 3 videos, and a channel
+ * Kept: >= --min-subs subscribers (default 5000), >= 3 videos, >= 3,000 lifetime
+ * average views per video (--min-lifetime-avg), and a channel
  * country in the US/UK/CA/AU/Europe tiers or no country set (soft keep, same
  * rule as the quality gate).
  */
@@ -46,6 +47,9 @@ async function main() {
   const maxUnits = numberArg("--max-units", 5000);
   const minSubs = numberArg("--min-subs", 5000);
   const minVideos = numberArg("--min-videos", 3);
+  // Lifetime views ÷ videos (free in channels.list). Under 3,000 almost nobody
+  // clears the recent-views floor: 0.8% of passing creators vs 19% of failures.
+  const minLifetimeAvg = numberArg("--min-lifetime-avg", 3000);
   const db = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
   const { data: saved, error: readErr } = await db.storage.from(BUCKET).download(KEY);
@@ -92,17 +96,25 @@ async function main() {
       for (let i = 0; i < ids.length; i += 50) {
         if (units >= maxUnits) break;
         const batch = ids.slice(i, i + 50);
-        const res = await youtubeGet<{ items?: ChannelItem[] }>("channels", {
-          part: "snippet,statistics",
-          id: batch.join(","),
-          maxResults: "50",
-        });
+        let res: { items?: ChannelItem[] };
+        try {
+          res = await youtubeGet<{ items?: ChannelItem[] }>("channels", {
+            part: "snippet,statistics",
+            id: batch.join(","),
+            maxResults: "50",
+          });
+        } catch (err) {
+          if (!(err instanceof QuotaError)) throw err;
+          quotaHit = true; // save the progress made in this chunk, then stop
+          console.warn(`Quota exhausted: ${err.message}`);
+          break;
+        }
         units++;
         const now = new Date().toISOString();
         const rows: Record<string, unknown>[] = [];
         for (const item of res.items ?? []) {
-          const { subs, videos } = channelCounts(item);
-          if (subs < minSubs || videos < minVideos) {
+          const { subs, videos, views } = channelCounts(item);
+          if (subs < minSubs || videos < minVideos || views / Math.max(videos, 1) < minLifetimeAvg) {
             small++;
             continue;
           }
@@ -129,7 +141,7 @@ async function main() {
         if (up.error) throw up.error;
       }
       console.log(`  checked ${checked} · kept ${kept} · small ${small} · outside US/EU ${outside} · dead ${dead} · ~${units}u`);
-      if (used < ids.length) break; // stopped mid-chunk on the unit cap
+      if (quotaHit || used < ids.length) break; // stopped mid-chunk (unit cap or quota)
     }
   } catch (err) {
     if (!(err instanceof QuotaError)) throw err;
@@ -141,7 +153,7 @@ async function main() {
   console.log("---------------------");
   console.log(`IDs checked     ${checked} (lines ${startOffset}–${cursor.nextOffset})`);
   console.log(`kept            ${kept} (inserted ${inserted}, rest already saved)`);
-  console.log(`too small       ${small} (< ${minSubs} subs or < ${minVideos} videos)`);
+  console.log(`too small       ${small} (< ${minSubs} subs, < ${minVideos} videos or < ${minLifetimeAvg} lifetime avg views)`);
   console.log(`outside US/EU   ${outside}`);
   console.log(`dead/hidden     ${dead}`);
   console.log(`units used      ~${units}`);

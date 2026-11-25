@@ -9,7 +9,7 @@ on:
     inputs:
       refresh_units:
         description: YouTube API units for re-checking passing creators (runs first)
-        default: '7000'
+        default: '1500'
       score_limit:
         description: Maximum new channels to score
         default: '11000'
@@ -42,8 +42,8 @@ jobs:
       # Sellable inventory first: passing creators scored >30 days ago, oldest first.
       - name: Re-check passing creators (freshness)
         continue-on-error: true
-        run: npm run score:quality -- --all-countries --refresh-pass --refresh-days 30 --limit 8000 --max-units "${{ inputs.refresh_units || '7000' }}"
+        run: npm run score:quality -- --all-countries --refresh-pass --refresh-days 14 --limit 8000 --max-units "${{ inputs.refresh_units || '1500' }}"
 
       - name: Quality-score new channels (spills across keys 2/3 after key 1's quota)
         # Census channels are saved from 5k subs; under that almost none pass the views floor.
-        run: npm run score:quality -- --all-countries --min-subs 5000 --limit "${{ inputs.score_limit || '11000' }}" --max-units "${{ inputs.score_units || '12000' }}"
+        run: npm run score:quality -- --all-countries --min-subs 5000 --min-lifetime-views 3000 --limit "${{ inputs.score_limit || '11000' }}" --max-units "${{ inputs.score_units || '12000' }}"

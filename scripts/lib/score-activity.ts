@@ -300,6 +300,7 @@ export async function scoreChannelsBatched(
       allIds.push(...ids);
     } catch (err) {
       if (err instanceof QuotaExhaustedError) throw err;
+      units += 1; // failed calls still cost quota
       results.push({
         id: ch.id,
         error: err instanceof Error ? err.message : String(err),
