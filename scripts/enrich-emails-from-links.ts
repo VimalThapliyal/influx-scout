@@ -28,6 +28,9 @@ interface CliArgs {
   preferLinks: boolean;
   tryInstagram: boolean;
   passOnly: boolean;
+  /** Only channels never crawled before; every crawled channel is stamped. */
+  unchecked: boolean;
+  concurrency: number;
 }
 
 function parseArgs(argv: string[]): CliArgs {
@@ -38,6 +41,8 @@ function parseArgs(argv: string[]): CliArgs {
     preferLinks: false,
     tryInstagram: false,
     passOnly: false,
+    unchecked: false,
+    concurrency: 1,
   };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
@@ -47,6 +52,8 @@ function parseArgs(argv: string[]): CliArgs {
     else if (a === "--prefer-links") args.preferLinks = true;
     else if (a === "--try-instagram") args.tryInstagram = true;
     else if (a === "--pass-only") args.passOnly = true;
+    else if (a === "--unchecked") args.unchecked = true;
+    else if (a === "--concurrency" && argv[i + 1]) args.concurrency = Math.min(10, Math.max(1, parseInt(argv[++i], 10) || 1));
     else if (a === "--help" || a === "-h") {
       console.log(`
 Backfill emails + contact forms from websites (HTTP, no CAPTCHA bypass)
@@ -56,6 +63,8 @@ Backfill emails + contact forms from websites (HTTP, no CAPTCHA bypass)
   --prefer-links      Only channels with website or Instagram
   --try-instagram     Also try Instagram (off by default)
   --pass-only         Only quality-pass creators
+  --unchecked         Only channels never crawled (for the daily run)
+  --concurrency <n>   Channels crawled at once (default 1, max 10)
   --dry-run
 `);
       process.exit(0);
@@ -123,6 +132,7 @@ async function main() {
       .order("id");
     if (args.preferLinks) query = query.or("website.not.is.null,instagram.not.is.null");
     if (args.passOnly) query = query.eq("quality_pass", true);
+    if (args.unchecked) query = query.is("contact_form_checked_at", null);
 
     const want = Math.min(500, args.limit - channels.length);
     const { data: rows, error } = await query.range(from, from + want - 1);
@@ -138,7 +148,13 @@ async function main() {
   let updatedSocial = 0;
   const sources: Record<string, number> = {};
 
-  for (const ch of channels) {
+  // Stamp every channel we looked at, so --unchecked never crawls it twice.
+  const markChecked = async (id: string) => {
+    if (args.dryRun) return;
+    await supabase.from("channels").update({ contact_form_checked_at: new Date().toISOString() }).eq("id", id);
+  };
+
+  const crawl = async (ch: Record<string, any>) => {
     const desc = ch.description ?? "";
     const urls = [
       ...extractUrlsFromText(desc),
@@ -148,7 +164,8 @@ async function main() {
 
     if (urls.length === 0 && !ch.website) {
       skipped++;
-      continue;
+      await markChecked(ch.id);
+      return;
     }
 
     try {
@@ -196,7 +213,8 @@ async function main() {
       const patch: Record<string, unknown> = {
         updated_at: new Date().toISOString(),
       };
-      let changed = false;
+      if (args.unchecked) patch.contact_form_checked_at = new Date().toISOString();
+      let changed = args.unchecked;
 
       if (email) {
         const now = new Date().toISOString();
@@ -297,8 +315,17 @@ async function main() {
     } catch (err) {
       skipped++;
       console.warn(`  skip ${ch.title}:`, err instanceof Error ? err.message : err);
+      await markChecked(ch.id).catch(() => undefined);
     }
-  }
+  };
+
+  // Small worker pool: different creators' sites, so parallel requests hit different hosts.
+  let next = 0;
+  await Promise.all(
+    Array.from({ length: args.concurrency }, async () => {
+      while (next < channels.length) await crawl(channels[next++]!);
+    })
+  );
 
   console.log(`
 [enrich:emails] done

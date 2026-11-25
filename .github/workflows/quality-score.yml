@@ -47,3 +47,24 @@ jobs:
       - name: Quality-score new channels (spills across keys 2/3 after key 1's quota)
         # Census channels are saved from 5k subs; under that almost none pass the views floor.
         run: npm run score:quality -- --all-countries --min-subs 5000 --min-lifetime-views 3000 --limit "${{ inputs.score_limit || '11000' }}" --max-units "${{ inputs.score_units || '12000' }}"
+
+  # Public business emails and contact forms from creators' own websites and
+  # link pages (0 YouTube quota). Runs after scoring so today's new passing
+  # creators are included; each creator is crawled once.
+  contacts:
+    needs: score
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Find public contacts for passing creators
+        run: npm run enrich:emails -- --pass-only --unchecked --limit 3000 --concurrency 6
