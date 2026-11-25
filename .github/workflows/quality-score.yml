@@ -48,6 +48,18 @@ jobs:
         # Census channels are saved from 5k subs; under that almost none pass the views floor.
         run: npm run score:quality -- --all-countries --min-subs 5000 --min-lifetime-views 3000 --limit "${{ inputs.score_limit || '11000' }}" --max-units "${{ inputs.score_units || '12000' }}"
 
+      # YouTube's own topic categories (1 unit per 50 creators), then re-run the
+      # niche classifier so lists don't rely on keywords alone.
+      - name: Fetch topic categories for passing creators
+        if: always()
+        continue-on-error: true
+        run: npm run topics:fetch -- --limit 20000
+
+      - name: Reclassify niches of passing creators
+        if: always()
+        continue-on-error: true
+        run: npm run classify:channels -- --pass-only --force
+
   # Public business emails and contact forms from creators' own websites and
   # link pages (0 YouTube quota). Runs after scoring so today's new passing
   # creators are included; each creator is crawled once.
