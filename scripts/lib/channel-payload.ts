@@ -73,6 +73,14 @@ export interface ChannelItem {
     hiddenSubscriberCount?: boolean;
   };
   contentDetails?: { relatedPlaylists?: { uploads?: string } };
+  topicDetails?: { topicCategories?: string[] };
+}
+
+/** "https://en.wikipedia.org/wiki/Physical_fitness" → "Physical_fitness" */
+export function topicNames(item: ChannelItem): string[] | null {
+  const urls = item.topicDetails?.topicCategories;
+  if (!urls?.length) return null;
+  return urls.map((u) => decodeURIComponent(u.split("/").pop() ?? "")).filter(Boolean);
 }
 
 export function channelCounts(item: ChannelItem) {
@@ -121,6 +129,7 @@ export function buildChannelPayload(item: ChannelItem, now = new Date().toISOStr
     tier: subs > 0 ? classifyTier(subs) : null,
     country: item.snippet?.country ?? null,
     published_at: item.snippet?.publishedAt ?? null,
+    topic_categories: topicNames(item),
     data_source: "api",
     last_updated: now,
     updated_at: now,

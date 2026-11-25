@@ -155,8 +155,8 @@ async function main() {
   let quotaHit = false;
 
   const part = args.withActivity
-    ? "snippet,statistics,contentDetails"
-    : "snippet,statistics";
+    ? "snippet,statistics,contentDetails,topicDetails"
+    : "snippet,statistics,topicDetails";
 
   const validatedKeys: string[] = [];
   const deadKeys: string[] = [];

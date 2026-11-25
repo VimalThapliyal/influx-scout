@@ -42,6 +42,7 @@
     "census:stream": "tsx scripts/stream-tubecensus.ts",
     "census:validate": "tsx scripts/validate-seed.ts",
     "census:direct": "tsx scripts/census-direct.ts",
+    "topics:fetch": "tsx scripts/fetch-topics.ts",
     "census:daily": "npm run census:stream -- --limit 60000 && npm run census:validate -- --limit 60000 --max-units 1500 && npm run score:quality -- --all-countries --limit 5000 --max-units 6000",
     "grow": "tsx scripts/grow.ts",
     "grow:loop": "tsx scripts/grow.ts --loop",

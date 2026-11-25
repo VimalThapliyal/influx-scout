@@ -75,7 +75,7 @@ async function main() {
   while (processed < args.limit) {
     let query = supabase
       .from("channels")
-      .select("id, title, description, country, website, category, primary_niche, recent_videos")
+      .select("id, title, description, country, website, category, primary_niche, recent_videos, topic_categories")
       .gt("id", lastId)
       .order("id")
       .limit(Math.min(PAGE, args.limit - processed));
@@ -104,9 +104,11 @@ async function main() {
         country: row.country,
         website: row.website,
         category: row.category,
+        topic_categories: row.topic_categories,
       });
+      const hasTopics = Array.isArray(row.topic_categories) && row.topic_categories.length > 0;
 
-      if (!classified.primary_niche && classified.country_confidence === "unknown") {
+      if (!classified.primary_niche && !hasTopics && classified.country_confidence === "unknown") {
         skipped++;
         continue;
       }
@@ -126,12 +128,13 @@ async function main() {
         country_classified_at: classified.country_classified_at,
         updated_at: new Date().toISOString(),
       };
-      // Never replace an existing niche with "no niche".
-      if (classified.primary_niche) {
+      // Never replace an existing niche with "no niche" on keywords alone; with
+      // YouTube topics we trust a "none of our niches" answer and clear it.
+      if (classified.primary_niche || (hasTopics && row.primary_niche)) {
         Object.assign(patch, {
           primary_niche: classified.primary_niche,
           niche_confidence: classified.niche_confidence,
-          niche_method: extra ? "weighted_rules+videos" : classified.niche_method,
+          niche_method: classified.primary_niche && extra ? `${classified.niche_method}+videos` : classified.niche_method,
           niche_evidence: classified.niche_evidence,
           niche_classified_at: classified.niche_classified_at,
           category: classified.category,

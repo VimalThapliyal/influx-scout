@@ -99,7 +99,7 @@ async function main() {
         let res: { items?: ChannelItem[] };
         try {
           res = await youtubeGet<{ items?: ChannelItem[] }>("channels", {
-            part: "snippet,statistics",
+            part: "snippet,statistics,topicDetails",
             id: batch.join(","),
             maxResults: "50",
           });

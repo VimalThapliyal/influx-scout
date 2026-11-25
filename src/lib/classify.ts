@@ -54,6 +54,9 @@ const NICHE_RULES: Array<{ niche: NicheSlug; weight: number; phrase: string }> =
   { niche: "fitness", weight: 3, phrase: "workout" },
   { niche: "fitness", weight: 2, phrase: "nutrition" },
   { niche: "fitness", weight: 2, phrase: "yoga" },
+  { niche: "fitness", weight: 5, phrase: "pilates" },
+  { niche: "fitness", weight: 4, phrase: "calisthenics" },
+  { niche: "fitness", weight: 4, phrase: "bodybuilding" },
   // gaming
   { niche: "gaming", weight: 5, phrase: "lets play" },
   { niche: "gaming", weight: 5, phrase: "let's play" },
@@ -300,59 +303,106 @@ function phraseMatcher(phrase: string): RegExp {
   return re;
 }
 
+/**
+ * YouTube's own topic categories for a channel (channels.list topicDetails,
+ * stored as the last path segment of the Wikipedia URL, e.g. "Physical_fitness").
+ * Specific topics are strong evidence; broad ones only tip a close call.
+ */
+const MUSIC_TOPIC = /(^|_)music$|^(Hip_hop_music|Rhythm_and_blues|Jazz|Reggae|Soul_music|Pop_music|Rock_music)$/;
+const SPORT_TOPICS = new Set([
+  "Sport", "Association_football", "American_football", "Baseball", "Basketball", "Boxing",
+  "Cricket", "Golf", "Ice_hockey", "Mixed_martial_arts", "Motorsport", "Professional_wrestling",
+  "Tennis", "Volleyball",
+]);
+const TOPIC_WEIGHTS: Record<string, [NicheSlug, number]> = {
+  Physical_fitness: ["fitness", 6],
+  Health: ["fitness", 2],
+  Video_game_culture: ["gaming", 6],
+  Food: ["food", 6],
+  Tourism: ["travel", 6],
+  Fashion: ["fashion", 6],
+  Physical_attractiveness: ["beauty", 6],
+  Technology: ["tech", 6],
+  Pet: ["pets", 6],
+  Business: ["business", 6],
+  Knowledge: ["education", 5],
+  Humour: ["entertainment", 5],
+  Entertainment: ["entertainment", 4],
+  Film: ["entertainment", 4],
+  Television_program: ["entertainment", 4],
+  Performing_arts: ["entertainment", 3],
+  Hobby: ["home", 1],
+  "Lifestyle_(sociology)": ["lifestyle", 1],
+};
+
+function topicNiche(topic: string): [NicheSlug, number] | null {
+  if (TOPIC_WEIGHTS[topic]) return TOPIC_WEIGHTS[topic]!;
+  if (/_game$/.test(topic)) return ["gaming", 6];
+  if (SPORT_TOPICS.has(topic)) return ["sports", 6];
+  if (MUSIC_TOPIC.test(topic)) return ["music", 6];
+  return null;
+}
+
+/** Without YouTube topic support, keywords alone must score at least this much. */
+const KEYWORD_ONLY_MIN = 8;
+
 export function classifyNiche(input: {
   title?: string | null;
   description?: string | null;
+  topics?: string[] | null;
 }): {
   primary_niche: NicheSlug | null;
   niche_confidence: number | null;
   niche_method: string | null;
   niche_evidence: string[];
 } {
+  const empty = {
+    primary_niche: null,
+    niche_confidence: null,
+    niche_method: null,
+    niche_evidence: [] as string[],
+  };
   const text = `${input.title ?? ""} ${input.description ?? ""}`.toLowerCase();
-  if (!text.trim()) {
-    return {
-      primary_niche: null,
-      niche_confidence: null,
-      niche_method: null,
-      niche_evidence: [],
-    };
-  }
+  const topics = (input.topics ?? []).filter(Boolean);
+  if (!text.trim() && topics.length === 0) return empty;
 
-  const scores = new Map<NicheSlug, { score: number; evidence: string[] }>();
+  const scores = new Map<NicheSlug, { score: number; evidence: string[]; topic: boolean }>();
+  const add = (niche: NicheSlug, weight: number, evidence: string, topic: boolean) => {
+    const prev = scores.get(niche) ?? { score: 0, evidence: [], topic: false };
+    if (prev.evidence.includes(evidence)) return;
+    prev.evidence.push(evidence);
+    prev.score += weight;
+    prev.topic = prev.topic || topic;
+    scores.set(niche, prev);
+  };
 
   for (const rule of NICHE_RULES) {
-    if (!phraseMatcher(rule.phrase).test(text)) continue;
-    const prev = scores.get(rule.niche) ?? { score: 0, evidence: [] };
-    if (!prev.evidence.includes(rule.phrase)) {
-      prev.evidence.push(rule.phrase);
-    }
-    prev.score += rule.weight;
-    scores.set(rule.niche, prev);
+    if (phraseMatcher(rule.phrase).test(text)) add(rule.niche, rule.weight, rule.phrase, false);
   }
-
-  if (scores.size === 0) {
-    return {
-      primary_niche: null,
-      niche_confidence: null,
-      niche_method: null,
-      niche_evidence: [],
-    };
+  // One topic contribution per niche (e.g. Action_game + Video_game_culture = one).
+  const topicBest = new Map<NicheSlug, [number, string]>();
+  for (const t of topics) {
+    const m = topicNiche(t);
+    if (m && m[1] > (topicBest.get(m[0])?.[0] ?? 0)) topicBest.set(m[0], [m[1], t]);
   }
+  topicBest.forEach(([weight, t], niche) => add(niche, weight, `topic:${t}`, weight >= 3));
 
-  const ranked = Array.from(scores.entries()).sort(
-    (a, b) => b[1].score - a[1].score
-  );
+  if (scores.size === 0) return empty;
+
+  const ranked = Array.from(scores.entries()).sort((a, b) => b[1].score - a[1].score);
   const [topNiche, top] = ranked[0]!;
+  // YouTube's topics say this channel is about something else (or something we
+  // don't list, like vehicles or politics): a stray keyword is not enough.
+  if (topics.length > 0 && !top.topic && top.score < KEYWORD_ONLY_MIN) return empty;
+
   const second = ranked[1]?.[1].score ?? 0;
-  // Confidence from score magnitude + margin over second place
   const raw = Math.min(0.95, 0.35 + top.score * 0.06 + Math.max(0, top.score - second) * 0.04);
   const confidence = Math.round(raw * 100) / 100;
 
   return {
     primary_niche: topNiche,
     niche_confidence: confidence,
-    niche_method: "weighted_rules",
+    niche_method: topics.length > 0 ? "rules+youtube_topics" : "weighted_rules",
     niche_evidence: top.evidence.slice(0, 6),
   };
 }
@@ -456,6 +506,7 @@ export function withChannelClassification<T extends Record<string, unknown>>(
   const niche = classifyNiche({
     title: typeof row.title === "string" ? row.title : null,
     description: typeof row.description === "string" ? row.description : null,
+    topics: Array.isArray(row.topic_categories) ? (row.topic_categories as string[]) : null,
   });
   const country = classifyCountry({
     country: typeof row.country === "string" ? row.country : null,
