@@ -40,7 +40,8 @@ async function main() {
       if (s.sponsored) sponsored++;
       if (s.sponsors.length) named++;
       for (const b of s.sponsors) brands.set(b, (brands.get(b) ?? 0) + 1);
-      if (apply) {
+      // Only sponsored creators need a write; everyone else stays NULL ("none found").
+      if (apply && s.sponsored) {
         const { error: e } = await db
           .from("channels")
           .update({ sponsored_recent: s.sponsored, recent_sponsors: s.sponsors.length ? s.sponsors : null })
