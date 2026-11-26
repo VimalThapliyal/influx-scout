@@ -25,6 +25,7 @@ export interface SearchFilters {
   uploadedWithin: UploadedWithinFilter;
   quality: QualityFilter;
   kind: KindFilter;
+  sponsored: boolean;
 }
 
 export const defaultFilters: SearchFilters = {
@@ -38,6 +39,7 @@ export const defaultFilters: SearchFilters = {
   uploadedWithin: "all",
   quality: "ready",
   kind: "independent",
+  sponsored: false,
 };
 
 export function subscriberRangeToMinMax(range: SubscriberRange) {
@@ -136,6 +138,7 @@ export function activeFilterCount(filters: SearchFilters): number {
     filters.uploadedWithin !== "all",
     filters.quality !== "ready",
     filters.kind !== "independent",
+    filters.sponsored,
   ].filter(Boolean).length;
 }
 
@@ -206,6 +209,16 @@ export function FilterBar({ filters, onChange, onClear }: FilterBarProps) {
         isActive={filters.contact !== "all"}
         options={CONTACT_OPTIONS}
         onChange={(v) => onChange({ ...filters, contact: v as ContactFilter })}
+      />
+      <FilterSelect
+        label="Sponsorships"
+        value={filters.sponsored ? "yes" : ""}
+        isActive={filters.sponsored}
+        options={[
+          { value: "", label: "Any sponsorship history" },
+          { value: "yes", label: "Sponsored in last 5 videos" },
+        ]}
+        onChange={(v) => onChange({ ...filters, sponsored: v === "yes" })}
       />
       {active > 0 && (
         <button type="button" onClick={onClear} className="btn-ghost btn-sm">

@@ -60,6 +60,7 @@ function filtersFromSearchParams(params: URLSearchParams): SearchFilters {
   filters.uploadedWithin = parseUploadedWithin(
     params.get("uploaded_within") ?? params.get("uploaded_within_days")
   );
+  if (params.get("sponsored") === "true") filters.sponsored = true;
   const kind = params.get("kind");
   if (kind === "organisation" || kind === "all" || kind === "independent") filters.kind = kind;
   const quality = params.get("quality");
@@ -92,6 +93,7 @@ function buildQueryParams(
   params.set("sort", sort === "recent" ? "created_at" : sort === "subscribers" ? "subscriber_count" : "avg_views_last5");
   params.set("order", "desc");
   if (filters.kind !== "all") params.set("kind", filters.kind);
+  if (filters.sponsored) params.set("sponsored", "true");
   if (q) params.set("q", q);
   const { min, max } = subscriberRangeToMinMax(filters.subscriberRange);
   if (min) params.set("min_subscribers", String(min));
@@ -123,6 +125,7 @@ function buildShareParams(
   if (q) params.set("q", q);
   if (sort !== "views") params.set("sort", sort);
   if (filters.kind !== "independent") params.set("kind", filters.kind);
+  if (filters.sponsored) params.set("sponsored", "true");
   if (page > 1) params.set("page", String(page));
   if (filters.subscriberRange !== "all") params.set("subscribers", filters.subscriberRange);
   if (filters.avgViews !== "all") params.set("avg_views", filters.avgViews);

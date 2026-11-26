@@ -4,6 +4,7 @@
  */
 
 import { EUROPE_COUNTRY_CODES, USA_COUNTRY_CODE } from "./markets";
+import { detectSponsors } from "./sponsors";
 
 /** Avg views on last 5 uploads — override per niche when needed. */
 export const DEFAULT_MIN_AVG_VIEWS_LAST5 = 5_000;
@@ -256,7 +257,11 @@ export function scoreChannelQuality(
 
 /** Fields to merge onto a channels row after scoring. */
 export function qualityFieldsForDb(score: QualityScoreResult) {
+  const sponsor = detectSponsors(score.recent_videos.map((v) => v.description));
   return {
+    // Sponsorships disclosed in the last five videos' descriptions.
+    sponsored_recent: sponsor.sponsored,
+    recent_sponsors: sponsor.sponsors.length ? sponsor.sponsors : null,
     latest_upload_at: score.latest_upload_at,
     avg_views_last5: score.avg_views_last5,
     engagement_last5: score.engagement_last5,
@@ -278,7 +283,7 @@ export function qualityFieldsForDb(score: QualityScoreResult) {
 }
 
 export function isMissingQualityColumnError(message: string): boolean {
-  return /latest_upload_at|avg_views_last5|engagement_last5|quality_pass|location_tier|is_emerging|is_inactive|activity_bucket|next_refresh_at|recent_videos|quality_fail|quality_scored/i.test(
+  return /latest_upload_at|avg_views_last5|engagement_last5|quality_pass|location_tier|is_emerging|is_inactive|activity_bucket|next_refresh_at|recent_videos|quality_fail|quality_scored|sponsored_recent|recent_sponsors/i.test(
     message
   );
 }
@@ -300,6 +305,8 @@ export function stripQualityFields<T extends Record<string, unknown>>(
     "activity_bucket",
     "next_refresh_at",
     "recent_videos",
+    "sponsored_recent",
+    "recent_sponsors",
     "discovery_source",
   ]) {
     delete out[k];

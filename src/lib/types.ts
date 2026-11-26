@@ -85,6 +85,9 @@ export interface Channel {
   engagement_rate: number | null;
   avg_views_per_video: number | null;
   /** Last-5 quality gates (migration 019) */
+  /** Sponsorship disclosures found in the last five videos' descriptions. */
+  sponsored_recent?: boolean | null;
+  recent_sponsors?: string[] | null;
   latest_upload_at?: string | null;
   avg_views_last5?: number | null;
   engagement_last5?: number | null;

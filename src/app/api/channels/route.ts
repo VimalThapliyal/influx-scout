@@ -47,6 +47,7 @@ export async function GET(request: NextRequest) {
       // count is exact and matches the totals shown elsewhere on the site.
       const countMode = useQuality && quality === "ready" ? "exact" : "estimated";
       let query = supabase.from("channels").select("*", { count: countMode }).is("opted_out_at", null);
+      if (searchParams.get("sponsored") === "true") query = query.eq("sponsored_recent", true);
       if (kind === "independent") query = query.or(INDEPENDENT_FILTER);
       else if (kind === "organisation") query = query.eq("channel_kind", "organisation");
 

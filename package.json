@@ -17,6 +17,7 @@
     "enrich:emails": "tsx scripts/enrich-emails-from-links.ts",
     "emails:from-descriptions": "tsx scripts/backfill-description-emails.ts",
     "emails:flag-general": "tsx scripts/flag-general-inboxes.ts",
+    "sponsors:backfill": "tsx scripts/backfill-sponsors.ts",
     "enrich:socials": "tsx scripts/enrich-socials.ts",
     "score:quality": "tsx scripts/score-quality.ts",
     "benchmarks:build": "tsx scripts/build-benchmarks.ts",

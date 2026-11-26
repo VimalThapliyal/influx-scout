@@ -264,6 +264,11 @@ export default function ChannelDetailPage({ params }: { params: { id: string } }
             <div className="mt-2 flex flex-wrap gap-1.5">
               {channel.quality_pass === true && <StatusTag tone="success">Ready for outreach</StatusTag>}
               {channel.is_inactive === true && <StatusTag tone="warn">Inactive</StatusTag>}
+              {channel.sponsored_recent === true && (
+                <StatusTag tone="accent" title="A sponsorship is disclosed in the description of one of the last five videos">
+                  Takes sponsorships
+                </StatusTag>
+              )}
               {tags.map((t) => (
                 <StatusTag key={t}>{t}</StatusTag>
               ))}
@@ -410,6 +415,23 @@ export default function ChannelDetailPage({ params }: { params: { id: string } }
               </div>
             )}
           </section>
+
+          {channel.sponsored_recent === true && (
+            <section aria-labelledby="sponsors-title">
+              <h2 id="sponsors-title" className="h-section">Recent sponsors</h2>
+              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
+                {channel.recent_sponsors?.length ? (
+                  <>
+                    Named in the descriptions of the last five videos:{" "}
+                    <span className="font-medium text-fg">{channel.recent_sponsors.join(", ")}</span>.
+                  </>
+                ) : (
+                  "One of the last five videos is marked as sponsored, without naming the brand in the description."
+                )}{" "}
+                Sponsors mentioned only in the video itself are not detected.
+              </p>
+            </section>
+          )}
 
           {channel.description && (
             <section aria-labelledby="about-title">
