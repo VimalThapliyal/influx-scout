@@ -10,7 +10,7 @@ import type { LandingData } from "@/lib/landing-data";
 const CHECKS: { rule: string; failShare: number }[] = [
   { rule: "Posted a video in the last 45 days", failShare: 41.9 },
   { rule: "Based in the US, UK, Canada, Australia or Europe", failShare: 40.5 },
-  { rule: "Averages 5,000+ views on the last five videos", failShare: 38.7 },
+  { rule: "Averages 5,000+ views on the last five videos (1,500+ under 50K subscribers)", failShare: 38.7 },
   { rule: "At least 2% of viewers like or comment", failShare: 27.1 },
 ];
 

@@ -18,6 +18,7 @@
     "emails:from-descriptions": "tsx scripts/backfill-description-emails.ts",
     "emails:flag-general": "tsx scripts/flag-general-inboxes.ts",
     "sponsors:backfill": "tsx scripts/backfill-sponsors.ts",
+    "quality:micro": "tsx scripts/apply-micro-rule.ts",
     "enrich:socials": "tsx scripts/enrich-socials.ts",
     "score:quality": "tsx scripts/score-quality.ts",
     "benchmarks:build": "tsx scripts/build-benchmarks.ts",

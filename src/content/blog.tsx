@@ -202,7 +202,7 @@ export const POSTS: BlogPost[] = [
           Because the market still prices creators by subscribers, mid-size and smaller channels with strong
           recent views are often under-priced. Every list on{" "}
           <Link href="/youtubers">Influx&apos;s creator pages</Link> is filtered for recent uploads, 5,000+ average
-          views and 2%+ engagement, so you start from creators who are delivering now.
+          views (1,500+ for channels under 50K subscribers) and 2%+ engagement, so you start from creators who are delivering now.
         </p>
       </>
     ),

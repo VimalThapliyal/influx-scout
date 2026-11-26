@@ -5,7 +5,7 @@
 Influx filters YouTube channels down to the creators a brand can actually work with. Of ~200,000 channels scored, fewer than 5% pass:
 
 - uploaded in the last 45 days
-- 5,000+ average views on the last 5 videos (higher floor for some niches)
+- 5,000+ average views on the last 5 videos (higher for some niches; 1,500+ with 3% engagement for channels under 50K subscribers)
 - 2%+ engagement rate ((likes + comments) ÷ views)
 - based in the US, UK, Canada, Australia or Europe
 

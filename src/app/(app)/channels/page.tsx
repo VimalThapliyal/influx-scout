@@ -337,7 +337,8 @@ function ChannelsPageContent() {
       {filters.quality === "ready" && (
         <p className="text-xs text-muted">
           The four checks: posted in the last 45 days, 5,000+ average views on the last five videos, 2%+
-          engagement, and based in the US or Europe. Average views are for the last five videos.
+          engagement, and based in the US or Europe. Creators under 50K subscribers can instead pass with
+          1,500+ average views and 3%+ engagement.
         </p>
       )}
 

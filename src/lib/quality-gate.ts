@@ -12,6 +12,32 @@ export const DEFAULT_MAX_DAYS_SINCE_UPLOAD = 45;
 export const DEFAULT_MIN_ENGAGEMENT = 0.02; // 2%
 export const DEFAULT_MIN_VIDEOS_REQUIRED = 3;
 
+/**
+ * Smaller creators: a channel under 50K subscribers cannot be expected to
+ * average 5,000 views, so it may instead pass on 1,500+ average views if its
+ * audience is clearly engaged (3%+) and its country is known to be in our
+ * markets (small channels with no country set are too often elsewhere).
+ * Passing the standard floor still counts.
+ */
+export const MICRO_MAX_SUBS = 50_000;
+export const MICRO_MIN_AVG_VIEWS = 1_500;
+export const MICRO_MIN_ENGAGEMENT = 0.03;
+
+/** True when a small channel clears the micro-creator bar. */
+export function passesMicroBar(
+  subscriberCount: number | null | undefined,
+  avgViews: number | null | undefined,
+  engagement: number | null | undefined
+): boolean {
+  const subs = subscriberCount ?? 0;
+  return (
+    subs > 0 &&
+    subs < MICRO_MAX_SUBS &&
+    (avgViews ?? 0) >= MICRO_MIN_AVG_VIEWS &&
+    (engagement ?? 0) >= MICRO_MIN_ENGAGEMENT
+  );
+}
+
 /** Location tiers for outreach markets. */
 export const LOCATION_TIER1 = new Set<string>([
   USA_COUNTRY_CODE,
@@ -202,9 +228,8 @@ export function scoreChannelQuality(
   const viewSum = videos.reduce((s, v) => s + (v.view_count || 0), 0);
   const avgViews =
     videos.length > 0 ? Math.round(viewSum / videos.length) : null;
-  if (avgViews == null || avgViews < minViews) {
-    fail.push("avg_views_low");
-  }
+  // Decided below, once engagement is known (small channels have their own bar).
+  const viewsBelowStandard = avgViews == null || avgViews < minViews;
 
   let likeSum = 0;
   let commentSum = 0;
@@ -221,6 +246,11 @@ export function scoreChannelQuality(
     hasEngStats && viewsForEng > 0
       ? (likeSum + commentSum) / viewsForEng
       : null;
+
+  const knownMarket = tier === "tier1" || tier === "tier2";
+  if (viewsBelowStandard && !(knownMarket && passesMicroBar(input.subscriberCount, avgViews, engagement))) {
+    fail.push("avg_views_low");
+  }
 
   if (engagement == null) {
     fail.push("engagement_unknown");

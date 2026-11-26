@@ -48,7 +48,7 @@ export async function CountryHub({ country }: { country: Country }) {
   const faq = [
     {
       q: `How do I find ${country.demonym} YouTubers for a brand campaign?`,
-      a: `Pick a niche below to see active ${country.demonym} creators in it, ranked by average views on their last five videos. Every creator uploaded in the last 45 days, averages at least 5,000 views on recent videos, and has an engagement rate of 2% or more.`,
+      a: `Pick a niche below to see active ${country.demonym} creators in it, ranked by average views on their last five videos. Every creator uploaded in the last 45 days, averages at least 5,000 views on recent videos (1,500 for channels under 50K subscribers), and has an engagement rate of 2% or more.`,
     },
     {
       q: `How do I contact ${country.demonym} YouTubers?`,

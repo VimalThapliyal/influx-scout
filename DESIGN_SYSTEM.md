@@ -28,6 +28,8 @@ pieces are in `src/components/ui.tsx`.
 - **Independent creators by default.** Studios, networks, labels and brands
   (`channel_kind = organisation`) are kept out of public lists and behind the
   "Creator type" filter in the library.
+- **Small creators:** channels under 50K subscribers in a known US/EU country also pass with
+  1,500+ recent average views and 3%+ engagement (`passesMicroBar` in `quality-gate.ts`).
 - Public data pages revalidate hourly.
 
 ## Tokens

@@ -114,7 +114,7 @@ export const INFLUX_ROW = {
 };
 
 export const INFLUX_STRENGTHS = [
-  "Every listed creator passes a quality check: uploaded in the last 45 days, 5,000+ average views on recent videos, 2%+ engagement",
+  "Every listed creator passes a quality check: uploaded in the last 45 days, 5,000+ average views on recent videos (1,500+ for small channels), 2%+ engagement",
   "Focused on creators in the USA, UK, Canada, Australia and Europe",
   "Public business contacts: email, website or contact form",
   "Statistics refreshed continuously so lists don't go stale",

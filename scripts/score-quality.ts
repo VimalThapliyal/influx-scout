@@ -33,6 +33,7 @@ import {
   isMissingQualityColumnError,
   locationTier,
 } from "../src/lib/quality-gate";
+import { MICRO_MAX_SUBS } from "../src/lib/quality-gate";
 
 interface Row {
   id: string;
@@ -104,6 +105,8 @@ function parseArgs(argv: string[]) {
  *   - a country that is explicitly outside tier1/tier2 (blank stays in)
  * `--min-lifetime-views` adds an optional lossy heuristic on top.
  */
+const SMALL_CHANNEL_LIFETIME_FLOOR = 800;
+
 function preFilterReason(
   row: Row,
   opts: { videosRequired: number; minLifetimeViews: number }
@@ -113,7 +116,10 @@ function preFilterReason(
     return "prefilter_location";
   if (opts.minLifetimeViews > 0 && row.video_count && row.view_count) {
     const lifetimeAvg = row.view_count / row.video_count;
-    if (lifetimeAvg < opts.minLifetimeViews) return "prefilter_low_views";
+    // Small channels pass on 1,500 recent views, so their lifetime floor is lower.
+    const small = (row.subscriber_count ?? 0) > 0 && (row.subscriber_count ?? 0) < MICRO_MAX_SUBS;
+    const floor = small ? Math.min(opts.minLifetimeViews, SMALL_CHANNEL_LIFETIME_FLOOR) : opts.minLifetimeViews;
+    if (lifetimeAvg < floor) return "prefilter_low_views";
   }
   return null;
 }

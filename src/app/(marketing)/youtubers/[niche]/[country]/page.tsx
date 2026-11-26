@@ -67,7 +67,7 @@ export default async function NicheCountryPage({ params }: Params) {
   const faq = [
     {
       q: `How are these ${label.toLowerCase()} YouTubers ranked?`,
-      a: `By average views on their last five videos. Every creator listed is independent, active (uploaded in the last 45 days), averages at least 5,000 views on recent videos, and has an engagement rate of 2% or more.`,
+      a: `By average views on their last five videos. Every creator listed is independent, active (uploaded in the last 45 days), averages at least 5,000 views on recent videos (1,500 for channels under 50K subscribers), and has an engagement rate of 2% or more.`,
     },
     {
       q: `How do I contact ${r.country.demonym} ${label.toLowerCase()} YouTubers?`,

@@ -19,7 +19,7 @@ loadEnv();
 import { createClient } from "@supabase/supabase-js";
 import { fetchCensusIds } from "./lib/census-source";
 import { QuotaError, buildChannelPayload, channelCounts, youtubeGet, type ChannelItem } from "./lib/channel-payload";
-import { locationTier } from "../src/lib/quality-gate";
+import { MICRO_MAX_SUBS, locationTier } from "../src/lib/quality-gate";
 
 const argv = process.argv.slice(2);
 function numberArg(name: string, fallback: number) {
@@ -114,7 +114,9 @@ async function main() {
         const rows: Record<string, unknown>[] = [];
         for (const item of res.items ?? []) {
           const { subs, videos, views } = channelCounts(item);
-          if (subs < minSubs || videos < minVideos || views / Math.max(videos, 1) < minLifetimeAvg) {
+          // Small channels pass on 1,500 recent views, so their lifetime floor is lower.
+          const lifetimeFloor = subs < MICRO_MAX_SUBS ? Math.min(minLifetimeAvg, 800) : minLifetimeAvg;
+          if (subs < minSubs || videos < minVideos || views / Math.max(videos, 1) < lifetimeFloor) {
             small++;
             continue;
           }
